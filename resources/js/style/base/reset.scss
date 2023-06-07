@@ -1,0 +1,299 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// html,
+// body,
+// #root,
+// #page-site {
+//   height: 100%;
+//   scroll-behavior: smooth;
+// }
+
+html {
+  font-size: $font-size-root;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+// Custom browser scrollbar
+::-webkit-scrollbar {
+  @include rem(
+    (
+      width: 8px,
+      height: 8px,
+    )
+  );
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: none;
+  background-color: $gray-500;
+}
+
+::-webkit-scrollbar-thumb {
+  outline: none;
+  background-color: $gray-600;
+
+  @include rem(
+    (
+      border-radius: 4px,
+    )
+  );
+}
+
+a {
+  @include transition(0.25s all ease);
+
+  &:hover {
+    color: $link-hover-color;
+  }
+}
+.font-noto-serif {
+  font-family: 'Noto Serif JP';
+}
+.font-noto-san {
+  font-family: 'Noto Sans JP';
+}
+img {
+  max-width: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.line-vertical {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  // background-color: $fx-divider-stock;
+  vertical-align: middle;
+}
+/* Change the white to any color ;) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  @include themify() {
+    -webkit-box-shadow: 0 0 0 9999rem $white inset !important;
+  }
+}
+
+/*Change text in autofill textbox*/
+input:-webkit-autofill {
+  @include themify() {
+    -webkit-text-fill-color: $black !important;
+  }
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+hr {
+  border-top-color: $border-color;
+}
+
+.text-black {
+  color: $black !important;
+}
+
+.truncate {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.overflow-x {
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.overflow-y {
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-reset {
+  overflow: initial !important;
+}
+
+.badge {
+  line-height: 1;
+  @include rem(
+    (
+      padding: 6px 15px,
+      border-radius: 15px,
+    )
+  );
+}
+
+.rounded-xl {
+  border-radius: $border-radius-xl !important;
+}
+
+.daterangepicker {
+  z-index: 9;
+}
+
+// Font size
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    @each $prop, $abbrev in (font-size: fs) {
+      @each $size, $length in $arr-font-size {
+        .#{$abbrev}#{$infix}-#{$size} {
+          #{$prop}: $length !important;
+        }
+      }
+    }
+  }
+}
+
+// Font weight
+@each $name, $val in $arr-font-weight {
+  .#{$name} {
+    font-weight: $val;
+  }
+}
+
+// Colors
+@each $name, $val in $arr-colors-name {
+  .text-#{$name} {
+    color: $val;
+  }
+
+  .bg-#{$name} {
+    background-color: $val;
+  }
+
+  .btn-#{$name} {
+    background-color: $val;
+  }
+
+  .border-#{$name} {
+    border-color: $val !important;
+  }
+}
+
+// @each $name, $val in $fx-arr-colors-name {
+//   .text-#{$name} {
+//     color: $val;
+//   }
+
+//   .bg-#{$name} {
+//     background-color: $val;
+//   }
+
+//   .border-#{$name} {
+//     border-color: $val !important;
+//   }
+// }
+
+// Width %
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    @each $prop, $abbrev in (width: w, max-width: mw, height: h, max-height: mh)
+    {
+      @each $size, $length in $sizes {
+        .#{$abbrev}#{$infix}-#{$size} {
+          #{$prop}: $length !important;
+        }
+      }
+    }
+  }
+}
+
+// Margin & Padding
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    @each $prop, $abbrev in (margin: m, padding: p) {
+      @each $size, $length in $mp {
+        .#{$abbrev}#{$infix}-#{$size} {
+          #{$prop}: $length !important;
+        }
+
+        .#{$abbrev}t#{$infix}-#{$size},
+        .#{$abbrev}y#{$infix}-#{$size} {
+          #{$prop}-top: $length !important;
+        }
+
+        .#{$abbrev}r#{$infix}-#{$size},
+        .#{$abbrev}x#{$infix}-#{$size} {
+          #{$prop}-right: $length !important;
+        }
+
+        .#{$abbrev}b#{$infix}-#{$size},
+        .#{$abbrev}y#{$infix}-#{$size} {
+          #{$prop}-bottom: $length !important;
+        }
+
+        .#{$abbrev}l#{$infix}-#{$size},
+        .#{$abbrev}x#{$infix}-#{$size} {
+          #{$prop}-left: $length !important;
+        }
+      }
+    }
+
+    // Some special margin utils
+    .m#{$infix}-auto {
+      margin: auto !important;
+    }
+
+    .mt#{$infix}-auto,
+    .my#{$infix}-auto {
+      margin-top: auto !important;
+    }
+
+    .mr#{$infix}-auto,
+    .mx#{$infix}-auto {
+      margin-right: auto !important;
+    }
+
+    .mb#{$infix}-auto,
+    .my#{$infix}-auto {
+      margin-bottom: auto !important;
+    }
+
+    .ml#{$infix}-auto,
+    .mx#{$infix}-auto {
+      margin-left: auto !important;
+    }
+  }
+}
+
+.line-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@each $val in 1, 2, 3, 4, 5 {
+  .line-clamp--#{$val} {
+    -webkit-line-clamp: $val;
+  }
+}

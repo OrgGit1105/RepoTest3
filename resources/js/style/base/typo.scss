@@ -1,0 +1,35 @@
+.fs-lg-144 {
+  @include rem(
+    (
+      font-size: 144px,
+      line-height: 169px,
+    )
+  );
+
+  @include media-breakpoint-down(sm) {
+    @include rem(
+      (
+        font-size: 70px,
+        line-height: 80px,
+      )
+    );
+  }
+}
+
+.fs-60 {
+  @include rem(
+    (
+      font-size: 60px,
+      line-height: 60px,
+    )
+  );
+
+  @include media-breakpoint-down(sm) {
+    @include rem(
+      (
+        font-size: 30px,
+        line-height: 30px,
+      )
+    );
+  }
+}

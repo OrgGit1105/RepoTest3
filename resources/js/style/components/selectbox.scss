@@ -1,0 +1,26 @@
+.menu-select-custom-list{
+    width: 100%;
+    margin-top: 6px;
+}
+.menu-select-custom-item{
+    height: 48px;
+    font-size: 16px;
+}
+.menu-select-custom-title::after{
+    display: none;
+}
+.menu-select-custom-title{
+    border:none;
+}
+.menu-select-custom-title:hover{
+    background-color: #FB8C00 !important;
+    border-radius: 4px;
+}
+.menu-select-custom-title:focus{
+    background-color: #FB8C00 !important;
+    border: none;
+    outline: none;
+}
+
+
+

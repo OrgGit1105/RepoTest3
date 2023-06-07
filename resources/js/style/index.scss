@@ -1,0 +1,58 @@
+/*-------------------------------------------------------------------/*
+Template name: DxStaffs
+Version      : 1.0.0
+Author       : dotBraind
+-------------------------------------------------------------------*/
+
+// Import variables
+@import 'variables';
+@import 'themeUI';
+
+// Import libraries
+@import 'libraries/bootstrap-4.6.0/bootstrap';
+// @import "libraries/bootstrap-4.4.1/bootstrap-grid";
+// @import "libraries/bootstrap-4.4.1/bootstrap-reboot";
+
+@import 'libraries/fontawesome-5.13.0/scss/fontawesome';
+@import 'libraries/fontawesome-5.13.0/scss/brands';
+@import 'libraries/fontawesome-5.13.0/scss/regular';
+@import 'libraries/fontawesome-5.13.0/scss/solid';
+@import 'libraries/fontawesome-5.13.0/scss/v4-shims';
+
+// FontAwesome Pro
+@import 'libraries/fontawesome-pro-5.13.0/sass/pro-fontawesome';
+@import 'libraries/fontawesome-pro-5.13.0/sass/light';
+@import 'libraries/fontawesome-pro-5.13.0/sass/regular';
+@import 'libraries/fontawesome-pro-5.13.0/sass/solid';
+
+// Import mixins
+@import 'mixins';
+
+// Base
+@import 'base/reset';
+@import 'base/typo';
+@import 'base/form';
+@import 'base/button';
+@import 'base/tabs';
+@import 'base/modal';
+@import 'base/table';
+
+// Layouts
+@import 'layouts/header';
+@import 'layouts/main';
+@import 'layouts/footer';
+@import 'layouts/sidebar';
+@import 'layouts/404';
+
+// Page
+@import 'pages/dashboard';
+
+// Components: Shortcode
+@import 'components/toast';
+@import 'components/utils';
+@import 'components/modal';
+@import 'components/selectbox';
+@import 'components/toolbar';
+@import 'components/pagination';
+
+// Components: Shortcode React

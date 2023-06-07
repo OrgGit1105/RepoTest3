@@ -1,0 +1,53 @@
+.order-picture__img {
+  position: relative;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+.text-pic-left, .text-pic2-left{
+  position: absolute;
+  width: 20px;
+  top: 33.33%;
+  font-size: 16px;
+  left: 20%;
+  line-height: 1.2;
+}
+
+.text-pic2-left{
+  top: 50%;
+}
+
+.text-pic-center, .text-pic2-center{
+  position: absolute;
+  top: 15%;
+  width: 20px;
+  line-height: 1.2;
+}
+.text-pic2-center{
+  top: 25%;
+}
+
+.text-pic-right{
+  position: absolute;
+  width: 20px;
+  top: 33.33%;
+  font-size: 16px;
+  right: 20%;
+  line-height: 1.2;
+}
+
+.modal-header-ec {
+  display: block;
+  border-bottom: none;
+  padding: 0px;
+}
+
+
+
+
+
+
+
+

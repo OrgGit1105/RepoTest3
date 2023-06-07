@@ -1,0 +1,69 @@
+#my-pagination {
+  .nav-tabs {
+    .nav-link {
+      border: 1px solid #dee2e6;
+      border-radius: 0;
+      padding: 5px 10px;
+      color: #6c757d;
+    }
+  }
+}
+.pagination {
+  .page-item {
+    min-width: 26px;
+    height: 26px;
+    text-align: center;
+    margin-left: 10px;
+  }
+
+  @include media-breakpoint-down(sm) {
+    justify-content: center !important;
+    .page-arrow-first,
+    .page-arrow-last {
+      display: none;
+    }
+    .page-item {
+      margin-left: 5px;
+    }
+  }
+
+  .page-link {
+    display: block;
+    padding: 0 5px;
+    height: 100%;
+    line-height: 26px;
+    font-weight: $font-weight-semi-bold;
+    // color: $dx-text-primary !important;
+    // background: $fx-gray-gradient-hover;
+    // border: 1px solid $fx-custom-1;
+    border-radius: $border-radius !important;
+    cursor: pointer !important;
+    @include rem(
+      (
+        font-size: 12px,
+      )
+    );
+
+    &:hover:not(.page-dot) {
+      border: 0;
+      color: $white !important;
+      border-color: transparent;
+      background: $dx-blue;
+      box-shadow: 1px 1px 4px rgba($black, 0.1);
+    }
+
+    &.active-page {
+      background: $dx-blue !important;
+      color: $white !important;
+      border-color: transparent;
+      font-weight: $font-weight-bold;
+      box-shadow: none !important;
+      border: 0;
+    }
+
+    &.page-dot {
+      pointer-events: none;
+      cursor: default !important;
+    }
+  }
+}

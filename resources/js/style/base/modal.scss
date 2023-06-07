@@ -1,0 +1,7 @@
+.modal-header {
+  .close {
+    &:focus {
+      outline: none;
+    }
+  }
+}

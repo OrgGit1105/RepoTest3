@@ -1,0 +1,17 @@
+.sidebar-left {
+  width: $sidebar-width;
+  .sidebar-head {
+    h1 {
+      line-height: 1.2;
+    }
+  }
+  .main-menu {
+    a:hover {
+      color: $white;
+    }
+  }
+  .category_management {
+    line-height: 1.2;
+    font-weight: 300;
+  }
+}
