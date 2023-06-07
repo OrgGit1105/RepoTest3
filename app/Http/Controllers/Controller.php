@@ -13,7 +13,7 @@ use Illuminate\Routing\Controller as BaseController;
  *     schemes={"http","https"},
  *     @OA\Info(
  *         version="1.0.0",
- *         title="Enrollment Project",
+ *         title="Veho Saas",
  *     )
  * )
  */
