@@ -113,5 +113,31 @@ class AuthController extends BaseController
     public function getProfile(){
         return $this->responseJson(200, auth()->user());
     }
+  /**
+   * @OA\Post(
+   *   path="/api/auth/logout",
+   *   tags={"Auth"},
+   *   summary="logout",
+   *   operationId="logout",
+   *   @OA\Response(
+   *     response=200,
+   *     description="Logout success",
+   *     @OA\MediaType(
+   *      mediaType="application/json",
+   *      example={"code":200,"message":"Logout success"}
+   *     ),
+   *   ),
+   *   security={{"auth": {}}},
+   * )
+   * Display a listing of the resource.
+   *
+   * @return \Illuminate\Http\JsonResponse
+   */
+  public function logout()
+  {
+
+    $this->authRepository->logout();
+    return $this->responseJson(Response::HTTP_OK, null, trans('api.logout.success'));
+  }
 }
 
