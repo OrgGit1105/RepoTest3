@@ -14,8 +14,6 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         //
-      'App\Console\Commands\GetDataMailCommand',
-      'App\Console\Commands\SendDigitacoFileCommand'
     ];
 
     /**
@@ -26,11 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
-      $schedule->command('GetMail:import')->monthlyOn(3, '00:00')->withoutOverlapping();
-      $schedule->command('DigitacoFile:sendFile')->monthlyOn(3, '03:00')->withoutOverlapping();
-//      $schedule->command('GetMail:import')->dailyAt('16:00')->withoutOverlapping();
-//      $schedule->command('DigitacoFile:sendFile')->dailyAt('16:30')->withoutOverlapping();
+
     }
 
     /**
