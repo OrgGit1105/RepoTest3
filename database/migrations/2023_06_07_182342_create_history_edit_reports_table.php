@@ -15,6 +15,9 @@ class CreateHistoryEditReportsTable extends Migration
     {
         Schema::create('history_edit_reports', function (Blueprint $table) {
             $table->id();
+            $table->integer('report_id');
+            $table->timestamp('in_time');
+            $table->timestamp('out_time')->nullable();
             $table->timestamps();
         });
     }

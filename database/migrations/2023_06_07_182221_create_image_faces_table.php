@@ -15,7 +15,11 @@ class CreateImageFacesTable extends Migration
     {
         Schema::create('image_faces', function (Blueprint $table) {
             $table->id();
+            $table->text('file');
+            $table->integer('user_id');
+            $table->string('type')->collation('utf8_general_ci');
             $table->timestamps();
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
