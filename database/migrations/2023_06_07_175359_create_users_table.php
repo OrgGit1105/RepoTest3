@@ -15,15 +15,15 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->collation('utf8_general_ci');
-            $table->string('email')->collation('utf8_general_ci');
-            $table->string('password')->collation('utf8_general_ci');
+            $table->string('name');
+            $table->string('email');
+            $table->string('password');
             $table->integer('role_id');
-            $table->string('jwt_active')->collation('utf8_general_ci');
-            $table->timestamp('retirement date')->nullable();
+            $table->string('jwt_active')->nullable();
+            $table->timestamp('retirement_date')->nullable();
             $table->integer('status');
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

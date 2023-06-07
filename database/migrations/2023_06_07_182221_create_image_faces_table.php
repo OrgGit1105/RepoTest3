@@ -17,9 +17,9 @@ class CreateImageFacesTable extends Migration
             $table->id();
             $table->text('file');
             $table->integer('user_id');
-            $table->string('type')->collation('utf8_general_ci');
+            $table->string('type');
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

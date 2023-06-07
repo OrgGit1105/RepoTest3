@@ -18,12 +18,17 @@ class ImageFace extends Model
 
     protected $table = 'image_faces';
 
-    protected $fillable = [];
+    protected $fillable = [
+      'file',
+      'user_id',
+      'type',
+    ];
 
     protected $dates = ['deleted_at'];
 
     protected $casts = [
-        'data' => 'array'
+      'created_at' => 'datetime:Y-m-d H:i:s',
+      'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
 }

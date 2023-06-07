@@ -18,7 +18,9 @@ class Role extends Model
 
     protected $table = 'roles';
 
-    protected $fillable = [];
+    protected $fillable = [
+      'name'
+    ];
 
     protected $dates = ['deleted_at'];
 

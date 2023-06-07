@@ -18,12 +18,21 @@ class User extends Model
 
     protected $table = 'users';
 
-    protected $fillable = [];
+    protected $fillable = [
+      'name',
+      'email',
+      'password',
+      'role_id',
+      'jwt_active',
+      'retirement_date',
+      'status',
+    ];
 
     protected $dates = ['deleted_at'];
 
     protected $casts = [
-        'data' => 'array'
+      'created_at' => 'datetime:Y-m-d H:i:s',
+      'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
 }

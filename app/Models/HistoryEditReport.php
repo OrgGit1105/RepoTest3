@@ -18,12 +18,17 @@ class HistoryEditReport extends Model
 
     protected $table = 'history_edit_reports';
 
-    protected $fillable = [];
+    protected $fillable = [
+      'report_id',
+      'in_time',
+      'out_time',
+    ];
 
     protected $dates = ['deleted_at'];
 
     protected $casts = [
-        'data' => 'array'
+      'created_at' => 'datetime:Y-m-d H:i:s',
+      'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
 }
