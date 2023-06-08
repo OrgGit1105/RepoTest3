@@ -47,7 +47,10 @@ class UserRequest extends FormRequest
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
-
+              'name'     => 'required',
+              'email'     => 'required|unique:users',
+              'role_id' => 'required|numeric',
+              'password' => 'required|min:3',
             ];
         }
      }

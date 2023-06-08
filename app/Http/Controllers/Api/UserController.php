@@ -12,6 +12,7 @@ use App\Http\Requests\UserRequest;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\UserResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -100,7 +101,7 @@ class UserController extends Controller
      */
     public function store(UserRequest $request)
     {
-        try {
+      try {
             $data = $this->repository->create($request->all());
             return $this->responseJson(200, new UserResource($data));
         } catch (\Exception $e) {

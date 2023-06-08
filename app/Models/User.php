@@ -28,6 +28,8 @@ class User extends Model
       'status',
     ];
 
+    public $timestamps = false;
+
     protected $dates = ['deleted_at'];
 
     protected $casts = [

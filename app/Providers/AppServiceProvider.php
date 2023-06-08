@@ -8,6 +8,7 @@ use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 use Repository\ArrivingReportRepository;
@@ -16,6 +17,7 @@ use Repository\AuthRepository;
 use Laravel\Dusk\DuskServiceProvider;
 use Repository\HistoryEditReportRepository;
 use Repository\ImageFaceRepository;
+use Repository\RoleRepository;
 use Repository\UserRepository;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
   {
     $this->app->bind(BaseRepositoryInterface::class, BaseRepository::class);
     $this->app->bind(AuthRepositoryInterface::class, AuthRepository::class);
+    $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
     $this->app->bind(UserRepositoryInterface::class,UserRepository::class);
     $this->app->bind(ArrivingReportRepositoryInterface::class,ArrivingReportRepository::class);
     $this->app->bind(HistoryEditReportRepositoryInterface::class,HistoryEditReportRepository::class);
