@@ -24,6 +24,9 @@ class ImageFace extends Model
       'type',
     ];
 
+    const WITH_MASK = "WITH_MASK";
+    const WITHOUT_MASK = "WITHOUT_MASK";
+
     protected $dates = ['deleted_at'];
 
     protected $casts = [

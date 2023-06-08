@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ImageFaceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
@@ -19,5 +20,9 @@ use Illuminate\Support\Facades\Route;
 //Role
 Route::get('/role',[RoleController::class, 'index']);
 
-//Role
+//User
 Route::apiResource('user', UserController::class);
+
+//ImageFace
+Route::get('/image_face', [ImageFaceController::class, 'index']);
+Route::post('/image_face/{id}', [ImageFaceController::class, 'create']);

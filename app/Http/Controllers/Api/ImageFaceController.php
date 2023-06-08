@@ -75,4 +75,50 @@ class ImageFaceController extends Controller
         return $this->responseJson(200, BaseResource::collection($data));
     }
 
+    /**
+     * @OA\Get(
+     *   path="/api/user/{id}",
+     *   tags={"User"},
+     *   summary="Detail User",
+     *   operationId="user_show",
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function create(ImageFaceRequest $request,$id)
+    {
+        try {
+          $data = $this->repository->createImageFace($request->all(),$id);
+          return $this->responseJson(200, new BaseResource($data));
+        } catch (\Exception $e) {
+          throw $e;
+        }
+    }
+
 }

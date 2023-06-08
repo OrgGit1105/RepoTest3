@@ -153,7 +153,7 @@ class UserController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name":"......"}}
+     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
      *     )
      *   ),
      *   @OA\Response(
@@ -173,8 +173,8 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $department = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($department));
+            $data = $this->repository->find($id);
+            return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -193,19 +193,6 @@ class UserController extends Controller
      *     @OA\Schema(
      *      type="string",
      *     ),
-     *   ),
-     *   @OA\RequestBody(
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"name":"string"},
-     *          @OA\Schema(
-     *            required={"name"},
-     *            @OA\Property(
-     *              property="name",
-     *              format="string",
-     *            ),
-     *         )
-     *      )
      *   ),
      *   @OA\RequestBody(
      *       @OA\MediaType(
@@ -253,7 +240,7 @@ class UserController extends Controller
     public function update(UserRequest $request, $id)
     {
         if ($request->get('password')){
-          $request->validate(['password' => 'required|confirmed']);
+          $request->validate(['password' => 'required|min:3|confirmed']);
         }
         $attributes = $request->except([]);
         $data = $this->repository->update($attributes, $id);

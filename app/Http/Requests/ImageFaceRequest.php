@@ -7,6 +7,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ImageFace;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +33,7 @@ class ImageFaceRequest extends FormRequest
           switch (Route::getCurrentRoute()->getActionMethod()){
                 case 'update':
                     return $this->getCustomRule();
-                case 'store':
+                case 'create':
                     return $this->getCustomRule();
                 default:
                     return [];
@@ -45,9 +46,12 @@ class ImageFaceRequest extends FormRequest
 
             ];
         }
-        if(Route::getCurrentRoute()->getActionMethod() == 'store'){
+        if(Route::getCurrentRoute()->getActionMethod() == 'create'){
             return  [
-
+              'name'     => 'required',
+              'file'     => 'required',
+              'user_id'     => 'required|numeric',
+              'type' => 'required|in:WITH_MASK,WITHOUT_MASK',
             ];
         }
      }

@@ -43,14 +43,14 @@ class UserRequest extends FormRequest
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
               'name'     => 'required',
-              'email'     => 'required',
+              'email'     => 'required|exists:emails',
               'role_id' => 'required|numeric',
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
               'name'     => 'required',
-              'email'     => 'required|unique:users',
+              'email'     => 'required|unique:users|exists:emails',
               'role_id' => 'required|numeric',
               'password' => 'required|min:3|confirmed',
             ];
