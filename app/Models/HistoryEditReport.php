@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 
 class HistoryEditReport extends Model
 {
-  use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'history_edit_reports';
 

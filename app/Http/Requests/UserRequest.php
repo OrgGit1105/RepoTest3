@@ -42,7 +42,9 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-
+              'name'     => 'required',
+              'email'     => 'required',
+              'role_id' => 'required|numeric',
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
@@ -50,7 +52,7 @@ class UserRequest extends FormRequest
               'name'     => 'required',
               'email'     => 'required|unique:users',
               'role_id' => 'required|numeric',
-              'password' => 'required|min:3',
+              'password' => 'required|min:3|confirmed',
             ];
         }
      }

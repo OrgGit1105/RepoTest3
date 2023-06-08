@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 
 class ImageFace extends Model
 {
-  use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'image_faces';
 

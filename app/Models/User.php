@@ -26,6 +26,8 @@ class User extends Model
       'jwt_active',
       'retirement_date',
       'status',
+      'created_at',
+      'updated_at'
     ];
 
     public $timestamps = false;

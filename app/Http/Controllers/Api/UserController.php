@@ -82,16 +82,41 @@ class UserController extends Controller
      *   tags={"User"},
      *   summary="Add new user",
      *   operationId="user_create",
-     *   @OA\Parameter(name="name", in="query", required=true,
-     *     @OA\Schema(type="string"),
+     *   @OA\RequestBody(
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string"},
+     *          @OA\Schema(
+     *            required={"name", "email","role_id","password","password_confirmation"},
+     *            @OA\Property(
+     *              property="name",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="email",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="role_id",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="password",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="password_confirmation",
+     *              format="integer",
+     *            ),
+     *         )
+     *      )
      *   ),
-     *
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name": "......"}}
+     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
      *     )
      *   ),
      *   security={},
@@ -182,13 +207,34 @@ class UserController extends Controller
      *         )
      *      )
      *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Send request success",
-     *     @OA\MediaType(
-     *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name":  "............."}}
-     *     ),
+     *   @OA\RequestBody(
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
+     *          @OA\Schema(
+     *            required={"name", "email","role_id","password","password_confirmation"},
+     *            @OA\Property(
+     *              property="name",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="email",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="role_id",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="password",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="password_confirmation",
+     *              format="integer",
+     *            ),
+     *         )
+     *      )
      *   ),
      *   @OA\Response(
      *     response=403,
@@ -206,6 +252,9 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, $id)
     {
+        if ($request->get('password')){
+          $request->validate(['password' => 'required|confirmed']);
+        }
         $attributes = $request->except([]);
         $data = $this->repository->update($attributes, $id);
         return $this->responseJson(200, new BaseResource($data));
