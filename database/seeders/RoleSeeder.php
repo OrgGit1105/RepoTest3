@@ -1,21 +1,29 @@
 <?php
 
-
 namespace Database\Seeders;
 
-use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
-  public function run()
-  {
-    $data = [
-      ['name' => 'Headquater_Role', 'display_name' => '', 'description' => ''],
-      ['name' => 'Department_Role', 'display_name' => '', 'description'=> ''],
-
-    ];
-    DB::table('roles')->insert($data);
-  }
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+      DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+      DB::table('roles')->truncate();
+      DB::table('roles')->insert([
+        [
+          'name' => 'Manager',
+        ],
+        [
+          'name' => 'Staff',
+        ],
+      ]);
+      DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+    }
 }

@@ -7,7 +7,7 @@
 
 namespace App\Http\Resources;
 
-class UserResource extends BaseResource
+class ArrivingReportResource extends BaseResource
 {
     /**
      * Transform the resource into an array.

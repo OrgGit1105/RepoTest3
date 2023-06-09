@@ -7,13 +7,13 @@
 
 namespace Repository;
 
-use App\Models\Role;
-use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Models\HistoryEditReport;
+use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 
-class RoleRepository extends BaseRepository implements RoleRepositoryInterface
+class HistoryEditReportRepository extends BaseRepository implements HistoryEditReportRepositoryInterface
 {
 
      public function __construct(Application $app)
@@ -25,12 +25,12 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
     /**
        * Instantiate model
        *
-       * @param Role $model
+       * @param HistoryEditReport $model
        */
 
     public function model()
     {
-        return Role::class;
+        return HistoryEditReport::class;
     }
 
 

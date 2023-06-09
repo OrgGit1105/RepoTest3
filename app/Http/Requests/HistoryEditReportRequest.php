@@ -10,7 +10,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
-class UserRequest extends FormRequest
+class HistoryEditReportRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,17 +42,12 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-              'name'     => 'required',
-              'email'     => 'required|email',
-              'role_id' => 'required|numeric',
+
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
-              'name'     => 'required',
-              'email'     => 'required|unique:users|email',
-              'role_id' => 'required|numeric',
-              'password' => 'required|min:3|confirmed',
+
             ];
         }
      }

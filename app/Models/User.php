@@ -1,47 +1,34 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: cuongnt
+ * Year: 2023-06-07
+ */
 
 namespace App\Models;
 
-use Illuminate\Auth\Authenticatable as AuthenticableTrait;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Laratrust\Traits\LaratrustUserTrait;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use LaratrustUserTrait;
     use HasFactory;
-    use Notifiable;
-    use AuthenticableTrait;
     use SoftDeletes;
 
     protected $table = 'users';
-    public $timestamps = true;
-    protected $dates = ['deleted_at'];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
-        'username',
-        'email',
-        'phone',
-        'password',
-        'name',
-        'role_id',
-        'fax',
-        'address',
-        'avatar',
-        'gender',
-        'status',
-        'department_id',
+      'name',
+      'email',
+      'password',
+      'role_id',
+      'retirement_date',
+      'status',
+      'created_at',
+      'updated_at'
     ];
 
     /**
@@ -50,55 +37,46 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password',
-        'remember_token',
-        'deleted_at',
-//        'department_id',
+      'password', 'jwt_active',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
+    public $timestamps = false;
+
+    protected $dates = ['deleted_at'];
+
     protected $casts = [
-        'email_verified_at' => 'datetime',
+      'created_at' => 'datetime:Y-m-d H:i:s',
+      'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
+    public function role(){
+      return $this->hasOne(Role::class,'id','role_id');
+    }
 
+    public function scopeFindByName($query)
+    {
+      if (request()->filled('name')) {
+        $query
+          ->where('name', 'LIKE', '%' . request()->get('name') . '%');
+      }
+      return $query;
+    }
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+    public function scopeFindByRole($query)
+    {
+      if (request()->filled('role_id')) {
+        $query->where('role_id', request()->get('role_id'));
+      }
+      return $query;
+    }
+
     public function getJWTIdentifier()
     {
-        return $this->getKey();
+      return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
-        return [
-            'guard' => 'user'
-        ];
+      return [];
     }
-
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = Hash::make($value);
-    }
-
-    public function roles(){
-      return $this->belongsTo(Role::class, 'role_id')->select(['id', 'name', 'display_name', 'description']);
-    }
-
-    public function company_branchs(){
-      return $this->belongsTo(CompanyBranch::class,'department_id')->select(['id', 'name', 'address', 'description']);
-  }
 }

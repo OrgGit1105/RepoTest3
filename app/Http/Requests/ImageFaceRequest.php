@@ -7,10 +7,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ImageFace;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
-class UserRequest extends FormRequest
+class ImageFaceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,8 +33,10 @@ class UserRequest extends FormRequest
           switch (Route::getCurrentRoute()->getActionMethod()){
                 case 'update':
                     return $this->getCustomRule();
-                case 'store':
+                case 'create':
                     return $this->getCustomRule();
+                case 'index':
+                  return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -42,19 +45,22 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-              'name'     => 'required',
-              'email'     => 'required|email',
-              'role_id' => 'required|numeric',
+
             ];
         }
-        if(Route::getCurrentRoute()->getActionMethod() == 'store'){
+        if(Route::getCurrentRoute()->getActionMethod() == 'create'){
             return  [
               'name'     => 'required',
-              'email'     => 'required|unique:users|email',
-              'role_id' => 'required|numeric',
-              'password' => 'required|min:3|confirmed',
+              'file'     => 'required',
+              'user_id'     => 'required|numeric',
+              'type' => 'required|in:WITH_MASK,WITHOUT_MASK',
             ];
         }
+       if(Route::getCurrentRoute()->getActionMethod() == 'index'){
+         return  [
+           'user_id'     => 'required|numeric',
+         ];
+       }
      }
 
     public function messages()

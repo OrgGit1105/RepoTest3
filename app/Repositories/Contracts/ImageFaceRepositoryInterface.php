@@ -8,7 +8,7 @@
 namespace App\Repositories\Contracts;
 
 
-interface UserRepositoryInterface extends BaseRepositoryInterface
+interface ImageFaceRepositoryInterface extends BaseRepositoryInterface
 {
     //
 }

@@ -5,7 +5,7 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'Enrollment Project',
+                'title' => 'Veho Saas',
             ],
 
             'routes' => [

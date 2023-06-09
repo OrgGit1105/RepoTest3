@@ -7,16 +7,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exports\UserExport;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UserRequest;
-use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Http\Requests\ArrivingReportRequest;
+use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use App\Http\Resources\BaseResource;
-use App\Http\Resources\UserResource;
-use Carbon\Carbon;
+use App\Http\Resources\ArrivingReportResource;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+class ArrivingReportController extends Controller
 {
 
      /**
@@ -24,17 +22,17 @@ class UserController extends Controller
      */
     protected $repository;
 
-    public function __construct(UserRepositoryInterface $repository)
+    public function __construct(ArrivingReportRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
     /**
      * @OA\Get(
-     *   path="/api/user",
-     *   tags={"User"},
-     *   summary="List user",
-     *   operationId="user_index",
+     *   path="/api/arriving_report",
+     *   tags={"ArrivingReport"},
+     *   summary="List arriving_report",
+     *   operationId="arriving_report_index",
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -71,53 +69,28 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(UserRequest $request)
+    public function index(ArrivingReportRequest $request)
     {
-        $data = $this->repository->pagination($request);
+        $data = $this->repository->paginate($request->per_page);
         return $this->responseJson(200, BaseResource::collection($data));
     }
 
     /**
      * @OA\Post(
-     *   path="/api/user",
-     *   tags={"User"},
-     *   summary="Add new user",
-     *   operationId="user_create",
-     *   @OA\RequestBody(
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string"},
-     *          @OA\Schema(
-     *            required={"name", "email","role_id","password","password_confirmation"},
-     *            @OA\Property(
-     *              property="name",
-     *              format="string",
-     *            ),
-     *            @OA\Property(
-     *              property="email",
-     *              format="string",
-     *            ),
-     *            @OA\Property(
-     *              property="role_id",
-     *              format="integer",
-     *            ),
-     *            @OA\Property(
-     *              property="password",
-     *              format="integer",
-     *            ),
-     *            @OA\Property(
-     *              property="password_confirmation",
-     *              format="integer",
-     *            ),
-     *         )
-     *      )
+     *   path="/api/arriving_report",
+     *   tags={"ArrivingReport"},
+     *   summary="Add new arriving_report",
+     *   operationId="arriving_report_create",
+     *   @OA\Parameter(name="name", in="query", required=true,
+     *     @OA\Schema(type="string"),
      *   ),
+     *
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *      example={"code":200,"data":{"id": 1,"name": "......"}}
      *     )
      *   ),
      *   security={},
@@ -125,11 +98,11 @@ class UserController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function store(UserRequest $request)
+    public function store(ArrivingReportRequest $request)
     {
-      try {
+        try {
             $data = $this->repository->create($request->all());
-            return $this->responseJson(200, new UserResource($data));
+            return $this->responseJson(200, new ArrivingReportResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -137,10 +110,10 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *   path="/api/user/{id}",
-     *   tags={"User"},
-     *   summary="Detail User",
-     *   operationId="user_show",
+     *   path="/api/arriving_report/{id}",
+     *   tags={"ArrivingReport"},
+     *   summary="Detail ArrivingReport",
+     *   operationId="arriving_report_show",
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -154,7 +127,7 @@ class UserController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *      example={"code":200,"data":{"id": 1,"name":"......"}}
      *     )
      *   ),
      *   @OA\Response(
@@ -174,8 +147,8 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($data));
+            $department = $this->repository->find($id);
+            return $this->responseJson(200, new BaseResource($department));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -183,10 +156,10 @@ class UserController extends Controller
 
     /**
      * @OA\PUT(
-     *   path="/api/user/{id}",
-     *   tags={"User"},
-     *   summary="Update User",
-     *   operationId="user_update",
+     *   path="/api/arriving_report/{id}",
+     *   tags={"ArrivingReport"},
+     *   summary="Update ArrivingReport",
+     *   operationId="arriving_report_update",
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -198,31 +171,23 @@ class UserController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
+     *          example={"name":"string"},
      *          @OA\Schema(
-     *            required={"name", "email","role_id","password","password_confirmation"},
+     *            required={"name"},
      *            @OA\Property(
      *              property="name",
      *              format="string",
      *            ),
-     *            @OA\Property(
-     *              property="email",
-     *              format="string",
-     *            ),
-     *            @OA\Property(
-     *              property="role_id",
-     *              format="integer",
-     *            ),
-     *            @OA\Property(
-     *              property="password",
-     *              format="integer",
-     *            ),
-     *            @OA\Property(
-     *              property="password_confirmation",
-     *              format="integer",
-     *            ),
      *         )
      *      )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{"id": 1,"name":  "............."}}
+     *     ),
      *   ),
      *   @OA\Response(
      *     response=403,
@@ -238,11 +203,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(UserRequest $request, $id)
+    public function update(ArrivingReportRequest $request, $id)
     {
-        if ($request->get('password')){
-          $request->validate(['password' => 'required|min:3|confirmed']);
-        }
         $attributes = $request->except([]);
         $data = $this->repository->update($attributes, $id);
         return $this->responseJson(200, new BaseResource($data));
@@ -250,10 +212,10 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
-     *   path="/api/user/{id}",
-     *   tags={"User"},
+     *   path="/api/arriving_report/{id}",
+     *   tags={"ArrivingReport"},
      *   summary="Delete ..............",
-     *   operationId="user_delete",
+     *   operationId="arriving_report_delete",
      *   @OA\Parameter(
      *      name="id",
      *      in="path",

@@ -7,13 +7,13 @@
 
 namespace Repository;
 
-use App\Models\Role;
-use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Models\ArrivingReport;
+use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 
-class RoleRepository extends BaseRepository implements RoleRepositoryInterface
+class ArrivingReportRepository extends BaseRepository implements ArrivingReportRepositoryInterface
 {
 
      public function __construct(Application $app)
@@ -25,12 +25,12 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
     /**
        * Instantiate model
        *
-       * @param Role $model
+       * @param ArrivingReport $model
        */
 
     public function model()
     {
-        return Role::class;
+        return ArrivingReport::class;
     }
 
 
