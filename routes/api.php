@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ImageFaceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
@@ -20,9 +21,16 @@ use Illuminate\Support\Facades\Route;
 //Role
 Route::get('/role',[RoleController::class, 'index']);
 
-//User
+//Auth
+//User Start
+//    Route::get('user/export',[UserController::class, 'export']);
 Route::apiResource('user', UserController::class);
+//User End
 
-//ImageFace
-Route::get('/image_face', [ImageFaceController::class, 'index']);
-Route::post('/image_face/{id}', [ImageFaceController::class, 'create']);
+//ImageFace Start
+Route::group(['prefix' => 'image_face'],function (){
+  Route::get('', [ImageFaceController::class, 'index']);
+  Route::post('', [ImageFaceController::class, 'create']);
+  Route::delete('{id}', [ImageFaceController::class, 'destroy']);
+});
+//ImageFace End

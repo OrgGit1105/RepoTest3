@@ -35,6 +35,8 @@ class ImageFaceRequest extends FormRequest
                     return $this->getCustomRule();
                 case 'create':
                     return $this->getCustomRule();
+                case 'index':
+                  return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -54,6 +56,11 @@ class ImageFaceRequest extends FormRequest
               'type' => 'required|in:WITH_MASK,WITHOUT_MASK',
             ];
         }
+       if(Route::getCurrentRoute()->getActionMethod() == 'index'){
+         return  [
+           'user_id'     => 'required|numeric',
+         ];
+       }
      }
 
     public function messages()

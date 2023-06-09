@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Role extends Model
 {
-  use HasFactory, SoftDeletes;
+  use HasFactory;
 //    use SoftDeletes;
 
     protected $table = 'roles';
@@ -23,7 +23,10 @@ class Role extends Model
       'name'
     ];
 
-//    protected $dates = ['deleted_at'];
+    const ROLE_MANAGER = "manager";
+    const ROLE_STAFF = "staff";
+
+    protected $dates = ['deleted_at'];
 
     protected $casts = [
         'data' => 'array'

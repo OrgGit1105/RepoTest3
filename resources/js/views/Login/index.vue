@@ -243,7 +243,7 @@ export default {
           }
           break;
         case 'password':
-          if (newValue.length > 7 && newValue.length < 17) {
+          if (newValue.length > 1 && newValue.length < 17) {
             this.error.password = true;
           } else {
             this.error.password = false;

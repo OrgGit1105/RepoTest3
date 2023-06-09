@@ -79,7 +79,16 @@ class AuthController extends BaseController
      */
     public function login(Request $request)
     {
-
+      $params = $request->all();
+      $loginResult = $this->authRepository->doLogin($params);
+      if ($loginResult['attempt']) {
+        $user = $loginResult['user'];
+        return $this->responseJson(Response::HTTP_OK, [
+          'access_token' => "Bearer " . $loginResult['attempt'],
+          'profile' => new UserResource($user)
+        ]);
+      }
+      return $this->responseJsonError(Response::HTTP_UNAUTHORIZED, isset($loginResult['msg']) ? $loginResult['msg'] : '', __('api.login.false'));
     }
 
     /**

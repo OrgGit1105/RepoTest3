@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('email');
             $table->string('password');
             $table->integer('role_id');
-            $table->string('jwt_active')->nullable();
+            $table->text('jwt_active')->nullable();
             $table->timestamp('retirement_date')->nullable();
             $table->integer('status');
             $table->timestamps();

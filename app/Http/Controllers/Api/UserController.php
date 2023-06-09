@@ -7,6 +7,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\UserExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -72,7 +73,7 @@ class UserController extends Controller
      */
     public function index(UserRequest $request)
     {
-        $data = $this->repository->paginate($request->per_page);
+        $data = $this->repository->pagination($request);
         return $this->responseJson(200, BaseResource::collection($data));
     }
 
