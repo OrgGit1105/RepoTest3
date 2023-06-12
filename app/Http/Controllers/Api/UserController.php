@@ -243,4 +243,28 @@ class UserController extends Controller
         $this->repository->delete($id);
         return $this->responseJson(200, null, trans('messages.mes.delete_success'));
     }
+  /**
+   * @OA\Post(
+   *   path="/api/user/import",
+   *   tags={"User"},
+   *   summary="Import ..............",
+   *   operationId="user_import",
+   *   @OA\Response(
+   *     response=200,
+   *     description="Send request success",
+   *     @OA\MediaType(
+   *      mediaType="application/json",
+   *      example={"code":200,"data":"Send request success"}
+   *     )
+   *   ),
+   *   security={{"auth": {}}},
+   * )
+   * @param int $id
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Exception
+   */
+  public function import()
+  {
+
+  }
 }

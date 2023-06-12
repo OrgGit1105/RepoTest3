@@ -37,23 +37,27 @@ class AuthController extends BaseController
      *   tags={"Auth"},
      *   summary="User Login",
      *   operationId="user_login",
-     *   @OA\Parameter(
-     *     name="user_name",
-     *     in="query",
-     *     description="Số điện thoại hoặc Email",
-     *     required=true,
-     *     @OA\Schema(
-     *      type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="password",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *      type="string",
-     *     ),
-     *   ),
+     *     	@OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(
+     *                  @OA\Property(
+     *                      property="file",
+     *                      description="file",
+     *                      type="file",
+     *                   ),
+     *                  @OA\Property(
+     *                      property="email",
+     *                      type = "string"
+     *                  ),
+     *                  @OA\Property(
+     *                      property="password",
+     *                      type = "string"
+     *                  ),
+     *               ),
+     *           ),
+     *       ),
      *   @OA\Response(
      *     response=200,
      *     description="Gửi yêu cầu thành công",
@@ -77,10 +81,18 @@ class AuthController extends BaseController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
-    {
-
+  public function login(LoginRequest $request)
+  {
+    $loginResult= $this->authRepository->doLogin($request);
+    if ($loginResult['attempt']) {
+      $user = $loginResult['user'];
+      return $this->responseJson(Response::HTTP_OK, [
+        'access_token' => "Bearer " . $loginResult['attempt'],
+        'profile' => new UserResource($user)
+      ]);
     }
+    return $this->responseJsonError(Response::HTTP_UNAUTHORIZED, isset($loginResult['msg']) ? $loginResult['msg'] : '', __('api.login.false'));
+  }
 
     /**
      * @OA\Get(

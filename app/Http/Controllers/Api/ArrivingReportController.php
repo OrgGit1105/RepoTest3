@@ -42,6 +42,29 @@ class ArrivingReportController extends Controller
      *     )
      *   ),
      *   @OA\Parameter(
+     *     name="start_date",
+     *     in="query",
+     *   description="y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="end_date",
+     *     in="query",
+     *   description="y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="key_search",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
      *     name="page",
      *     in="query",
      *     @OA\Schema(
@@ -71,7 +94,7 @@ class ArrivingReportController extends Controller
      */
     public function index(ArrivingReportRequest $request)
     {
-        $data = $this->repository->paginate($request->per_page);
+        $data = $this->repository->getList($request);
         return $this->responseJson(200, BaseResource::collection($data));
     }
 
@@ -147,8 +170,8 @@ class ArrivingReportController extends Controller
     public function show($id)
     {
         try {
-            $department = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($department));
+            $data = $this->repository->detail($id);
+            return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -243,4 +266,28 @@ class ArrivingReportController extends Controller
         $this->repository->delete($id);
         return $this->responseJson(200, null, trans('messages.mes.delete_success'));
     }
+  /**
+   * @OA\Post(
+   *   path="/api/arriving_report/download",
+   *   tags={"ArrivingReport"},
+   *   summary="Download ..............",
+   *   operationId="arriving_report_download",
+   *   @OA\Response(
+   *     response=200,
+   *     description="Send request success",
+   *     @OA\MediaType(
+   *      mediaType="application/json",
+   *      example={"code":200,"data":"Send request success"}
+   *     )
+   *   ),
+   *   security={{"auth": {}}},
+   * )
+   * @param int $id
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Exception
+   */
+  public function download()
+  {
+
+  }
 }
