@@ -257,7 +257,8 @@
         "TEXT_NUMBER_ENGINE_ROTATION_OVERS": "Number Of Engine Rotation Overs",
         "TEXT_ENGINE_ROTATION_OVER_TIME": "Engine Rotation Over Time (Seconds)",
         "TEXT_12_MONTH_2020_YEAR": "12 month 2020 year",
-        "TEXT_SCORE_ABOVE": "Retirement Prediction Score Above Threshold"
+        "TEXT_SCORE_ABOVE": "Retirement Prediction Score Above Threshold",
+        "TEXT_EMPLOYEE_MANAGER": "Employee Manager"
     },
 
 

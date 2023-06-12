@@ -6,12 +6,40 @@
           <div class="card-body p-5">
             <div class="d-flex justify-content-between">
               <div class="basic">
-                <h1 class="pl-3 title-info">{{ $t('LANGUAGES.TEXT_USER_MANAGEMENT') }}</h1>
+                <h1 class="pl-3 title-info">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGER') }}</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="use-management-title">
+          <div class="card-body p-5">
+            <div class="d-flex justify-content-sm-between">
+              <div class="basic">
+                <div>
+                  <h2>
+                    <b-icon-plus-circle-fill style="font-size: 10rem; color: rgb(0, 0, 255); opacity: 1;" />
+                  </h2>
+                </div>
               </div>
               <div>
-                <button class="btn btn-sign text-uppercase" @click="toCreatePage">
+                <span>
+                  <b-icon-search />
+                </span>
+                <span>
+                  <b-form-select
+                    v-model="role_id_selected"
+                    :options="roles_select"
+                    value-field="id"
+                    text-field="name"
+                    class="col-6"
+                  />
+                </span>
+                <span>
+                  <button class="btn btn-warning">
                   {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}
                 </button>
+                </span>
               </div>
             </div>
           </div>
@@ -96,6 +124,7 @@
 import { getAllUser, deleteOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
+import { getAllRole } from '../../api/role';
 export default {
   name: 'UserManagement',
   data() {
@@ -109,8 +138,10 @@ export default {
       },
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
+      role_id_selected: null,
+      roles_select: [],
       fields: [
-        { key: 'username', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
+        { key: 'name', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
         { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
         { key: 'roles.name', label: this.$t('LANGUAGES.TEXT_AUTHORITY') },
         { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
@@ -118,7 +149,7 @@ export default {
         { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
       ],
       fields2: [
-        { key: 'username', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
+        { key: 'name', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
         { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
         { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
         { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
@@ -159,6 +190,23 @@ export default {
         per_page: this.pagination.per_page,
       };
       this.openLoading();
+      await getAllRole().then((response) => {
+        if (response.code === 200){
+          console.log('data role la ' + response.data);
+          this.roles_select = response.data;
+          // response.data.forEach((element) => {
+          //   element.roles_select.value = element.id;
+          //   element.roles_select.text = element.name;
+          // });
+        }
+      }).catch((error) => {
+        this.closeLoading();
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: error.message,
+        });
+      });
       await getAllUser(PARAMS)
         .then((response) => {
           if (response.code === 200) {
@@ -169,10 +217,10 @@ export default {
             response.data.pagination.total_records;
             this.pagination.current_page = response.data.pagination.current_page;
             this.pagination.isDisable = false;
-            listUser.forEach((element) => {
-              element.roles.name = this.convertRoles(
-                element.roles.name);
-            });
+            // listUser.forEach((element) => {
+            //   element.roles.name = this.convertRoles(
+            //     element.roles.name);
+            // });
           }
           this.closeLoading();
         })
