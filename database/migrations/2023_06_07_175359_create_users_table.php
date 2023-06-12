@@ -15,7 +15,15 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('email');
+            $table->string('password');
+            $table->integer('role_id');
+            $table->text('jwt_active')->nullable();
+            $table->timestamp('retirement_date')->nullable();
+            $table->integer('status');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -71,7 +71,7 @@ class RoleController extends Controller
      */
     public function index(RoleRequest $request)
     {
-        $data = $this->repository->paginate($request->per_page);
+        $data = $this->repository->all();
         return $this->responseJson(200, BaseResource::collection($data));
     }
 }
