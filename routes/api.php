@@ -17,20 +17,20 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-//Role
-Route::get('/role',[RoleController::class, 'index']);
-
-//Auth
-//User Start
-//    Route::get('user/export',[UserController::class, 'export']);
-Route::apiResource('user', UserController::class);
-//User End
-
-//ImageFace Start
-Route::group(['prefix' => 'image_face'],function (){
-  Route::get('', [ImageFaceController::class, 'index']);
-  Route::post('', [ImageFaceController::class, 'create']);
-  Route::delete('{id}', [ImageFaceController::class, 'destroy']);
+Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors']], function () {
+  Route::group(['prefix' => 'auth'], function () {
+    Route::post('login', 'AuthController@login')->name('user.login');
+    Route::post('logout', 'AuthController@logout');
+  });
+  Route::group(['middleware' => 'auth:user'], function () {
+    Route::apiResource('arriving_report', 'ArrivingReportController');
+    Route::get('/role',[RoleController::class, 'index']);
+    Route::apiResource('user', UserController::class);
+    Route::group(['prefix' => 'image_face'],function (){
+      Route::get('', [ImageFaceController::class, 'index']);
+      Route::post('', [ImageFaceController::class, 'create']);
+      Route::delete('{id}', [ImageFaceController::class, 'destroy']);
+    });
+  });
 });
-//ImageFace End
+

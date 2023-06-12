@@ -7,6 +7,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
+use App\Rules\CheckIDRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -29,14 +31,16 @@ class ArrivingReportRequest extends FormRequest
      */
     public function rules()
     {
-          switch (Route::getCurrentRoute()->getActionMethod()){
-                case 'update':
-                    return $this->getCustomRule();
-                case 'store':
-                    return $this->getCustomRule();
-                default:
-                    return [];
-          }
+      switch (Route::getCurrentRoute()->getActionMethod()) {
+        case 'update':
+          return $this->getCustomRule();
+        case 'store':
+          return $this->getCustomRule();
+        case 'index':
+          return $this->getCustomRule();
+        default:
+          return [];
+      }
     }
 
      public function getCustomRule(){
@@ -46,10 +50,18 @@ class ArrivingReportRequest extends FormRequest
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
-            return  [
-
-            ];
+          return [
+            'in_time' => 'required|date_format:Y-m-d',
+            'out_time' => 'required|date_format:Y-m-d',
+            'user_id' => ['required',new CheckIDRule(new User())],
+          ];
         }
+       if(Route::getCurrentRoute()->getActionMethod() == 'index'){
+         return [
+           'start_date' => 'nullable|date_format:Y-m-d',
+           'end_date' => 'nullable|date_format:Y-m-d',
+         ];
+       }
      }
 
     public function messages()

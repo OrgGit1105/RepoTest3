@@ -1,19 +1,17 @@
 <?php
 namespace App\Repositories\Contracts;
 
-use App\Http\Requests\LoginRequest;
-
 interface AuthRepositoryInterface {
 
     /**
      *
      * Handle action login of user.
      *
-     * @param LoginRequest $r
+     * @param $r
      * @param object
      * @return boolean
      */
-    public function doLogin(LoginRequest $r, $guard = null);
+    public function doLogin($r, $guard = null);
 
     /**
      *

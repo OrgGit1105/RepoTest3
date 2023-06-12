@@ -26,27 +26,33 @@ class AuthRepository  implements AuthRepositoryInterface
      * @param null $guard
      * @return array
      */
-    public function doLogin(LoginRequest $request, $guard = null): array
+    public function doLogin($request, $guard = null): array
     {
-        $credentials = $request->only('password');
-        if (Str::contains($request->user_name, "@")) {
-            $credentials['email'] = $request->user_name;
-        } else {
-            $credentials['phone'] = $request->user_name;
+      if (request()->has('email') && $request->email){
+        $user=User::where('email',$request->email)->first();
+        if (!$user){
+          return [
+            'attempt' => false,
+            'msg' => trans('api.user.login.false')
+          ];
         }
-
+        $credentials['password'] = $request->password;
+        $credentials['email'] = $request->email;
         $attempt = JWTAuth::attempt($credentials);
-        if ($attempt) {
-            $user = User::where('phone', $request->user_name)
-                ->orWhere('email', $request->user_name)->firstOrFail();
-            return [
-                'user' => $user,
-                'attempt' => $attempt
-            ];
+        if ($attempt){
+          $user = User::where('email', $request->email)
+            ->firstOrFail();
+          $this->update(['jwt_active'=>$attempt],$user->id);
+          return [
+            'user' => $user,
+            'attempt' => $attempt
+          ];
         }
-        return [
-            'attempt' => false
-        ];
+      }
+      return [
+        'attempt' => false,
+        'msg' => trans('api.login.false')
+      ];
     }
 
     /**
@@ -77,4 +83,14 @@ class AuthRepository  implements AuthRepositoryInterface
          }
          return [];
     }
+
+  public function logout()
+  {
+    $user = auth()->user();
+    if (!empty($user)) {
+      $this->update(['jwt_active' => null], $user->id);
+    }
+    auth()->logout();
+    return [];
+  }
 }
