@@ -244,8 +244,8 @@ class UserController extends Controller
           $request->validate(['password' => 'required|min:3|confirmed']);
         }
         $attributes = $request->except([]);
-        $data = $this->repository->update($attributes, $id);
-        return $this->responseJson(200, new BaseResource($data));
+//        $data = $this->repository->update($attributes, $id);
+        return $this->repository->update($attributes, $id);
     }
 
     /**
