@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::apiResource('user', UserController::class);
-Route::get('/role',[RoleController::class, 'index']);
 Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors']], function () {
   Route::group(['prefix' => 'auth'], function () {
     Route::post('login', 'AuthController@login')->name('user.login');
@@ -26,8 +24,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
   });
   Route::group(['middleware' => 'auth:user'], function () {
     Route::apiResource('arriving_report', 'ArrivingReportController');
+    Route::get('/role',[RoleController::class, 'index']);
 //    Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
-//    Route::apiResource('user', 'UserController');
+    Route::apiResource('user', 'UserController');
     Route::group(['prefix' => 'image_face'],function (){
       Route::get('', [ImageFaceController::class, 'index']);
       Route::post('', [ImageFaceController::class, 'create']);
