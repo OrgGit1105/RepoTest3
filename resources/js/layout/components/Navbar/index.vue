@@ -1,16 +1,16 @@
 /* eslint-disable vue/max-attributes-per-line */
 <template>
   <div>
-    <b-navbar toggleable="lg" class="py-0 px-3">
+    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-0 px-3">
       <b-navbar-brand href="#" class="logo">
         <Logo />
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
+      <b-collapse id="nav-collapse" style="display: none;margin: 14px 23px 0px;" is-nav>
+        <b-navbar-nav style="font-size: 34px; gap: 1rem">
           <b-nav-item href="#">Working time</b-nav-item>
-          <b-nav-item href="#">Employee</b-nav-item>
+          <b-nav-item href="/user/index">Employee</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->

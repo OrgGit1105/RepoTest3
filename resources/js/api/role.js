@@ -7,3 +7,4 @@ const urlAPI = {
 export function getAllRole() {
   return request.getRequest(urlAPI.urlGETRole());
 }
+

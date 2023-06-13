@@ -88,6 +88,7 @@
         "TEXT_SELECT_FILE": "Select File",
         "TEXT_PERFORM_AN_IMPORT": "Perform An Form",
         "TEXT_USER_MANAGEMENT": "User Management",
+        "TEXT_EMPLOYEE_MANAGEMENT": "Employee Management",
         "TEXT_BUTTON_SIGN_UP": "Sign Up",
         "TEXT_USER_NAME": "User Name",
         "TEXT_AUTHORITY": "Authority",
@@ -257,8 +258,7 @@
         "TEXT_NUMBER_ENGINE_ROTATION_OVERS": "Number Of Engine Rotation Overs",
         "TEXT_ENGINE_ROTATION_OVER_TIME": "Engine Rotation Over Time (Seconds)",
         "TEXT_12_MONTH_2020_YEAR": "12 month 2020 year",
-        "TEXT_SCORE_ABOVE": "Retirement Prediction Score Above Threshold",
-        "TEXT_EMPLOYEE_MANAGER": "Employee Manager"
+        "TEXT_SCORE_ABOVE": "Retirement Prediction Score Above Threshold"
     },
 
 

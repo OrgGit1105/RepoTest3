@@ -43,7 +43,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
   {
       $limit = is_null(request('per_page')) ? 15 : request('per_page');
 
-      $data = $this->model->query()
+      $data = $this->model->query()->with('role')
         ->whereNull('deleted_at')
       ->FindByName($request)
       ->FindByRole($request);

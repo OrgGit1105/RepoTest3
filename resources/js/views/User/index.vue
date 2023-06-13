@@ -3,55 +3,51 @@
     <div class="container-fluid w-90">
       <div class="container-fluid-body mt-5 mb-5">
         <div class="use-management-title">
-          <div class="card-body p-5">
-            <div class="d-flex justify-content-between">
+          <div class="card-body p-8">
+            <div class="d-flex justify-content-between mb-0" style="border-bottom: 1px solid rgba(0, 0, 0, 0.25);">
               <div class="basic">
-                <h1 class="pl-3 title-info">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGER') }}</h1>
+                <h1 class="font-weight-bold display-4">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
               </div>
-            </div>
-          </div>
-        </div>
-        <hr>
-        <div class="use-management-title">
-          <div class="card-body p-5">
-            <div class="d-flex justify-content-sm-between">
-              <div class="basic">
-                <div>
-                  <h2>
-                    <b-icon-plus-circle-fill style="font-size: 10rem; color: rgb(0, 0, 255); opacity: 1;" />
-                  </h2>
-                </div>
-              </div>
-              <div>
-                <span>
-                  <b-icon-search />
-                </span>
-                <span>
-                  <b-form-select
-                    v-model="role_id_selected"
-                    :options="roles_select"
-                    value-field="id"
-                    text-field="name"
-                    class="col-6"
-                  />
-                </span>
-                <span>
-                  <button class="btn btn-warning">
-                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}
-                </button>
-                </span>
-              </div>
+              <!--              <div>-->
+              <!--                <button class="btn btn-sign text-uppercase" @click="toCreatePage">-->
+              <!--                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}-->
+              <!--                </button>-->
+              <!--              </div>-->
             </div>
           </div>
         </div>
 
-        <div class="use-management-title-table mt-5 px-3">
+        <div class="use-management-title-table">
           <div class="card-body">
+            <div class="d-flex mb-2 justify-content-between">
+              <div class="basic">
+                <b-icon-plus-circle
+                  class="display-4 text-primary"
+                  style="height: 39px;"
+                  @click="createForm()"/>
+              </div>
+              <div class="d-flex" style="gap: 1rem">
+                <b-icon-search
+                  class="display-4 text-primary"
+                  style="height: 39px;" />
+                <b-form-select
+                  v-model="role_id_selected"
+                  :options="roles_select"
+                  value-field="id"
+                  text-field="name"
+                  class="custom-select"
+                  @change="getListAllUser()"
+                />
+                <button class="btn btn-sign text-uppercase" style="width: 277px; height: 39px;">
+                  csv import
+                </button>
+              </div>
+            </div>
             <b-table
               id="my-table"
-              class="text-center w-100  mb-0"
+              class="text-center w-100 mb-0"
               :items="listUser ? listUser : []"
-              :fields="role_id === headQuarter ? fields : fields2"
+              :fields="fields"
               responsive="sm"
               :current-page="pagination.current_page"
               show-empty
@@ -89,6 +85,45 @@
             />
           </div>
         </div>
+
+        <!-- Modal create -->
+        <b-modal id="bv-modal-create" hide-footer hide-header>
+          <div>
+            <h4 class="mb-0 font-weight-normal">
+              <header class="">
+                <h4>Add Employee</h4>
+              </header>
+              <div>
+                <label for="nameEmployee" style="font-size: 16px;">Name:</label>
+                <b-input-group>
+                  <b-form-input
+                    id="nameEmployee"
+                  />
+                </b-input-group>
+              </div>
+              <div>
+                <label for="emailEmployee" style="font-size: 16px;">Email:</label>
+                <b-input-group>
+                  <b-form-input
+                    id="emailEmployee"
+                  />
+                </b-input-group>
+              </div>
+            </h4>
+          </div>
+          <div class="justify-content-end d-flex p-3">
+            <b-button
+              class="mt-3 w-25 fs-12 btn btn-accept"
+              squared
+              @click="submitCreate(infoModel.id)"
+            >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
+            <b-button
+              class="mt-3 ml-3 w-25 fs-12 btn btn-close"
+              squared
+              @click="hideCreateModal()"
+            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>
+          </div>
+        </b-modal>
         <!-- Modal delete -->
         <b-modal id="bv-modal-delete" hide-footer hide-header>
           <header class="style-title-modal p-3 text-white">
@@ -138,22 +173,22 @@ export default {
       },
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
-      role_id_selected: null,
-      roles_select: [],
       fields: [
         { key: 'name', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
         { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
-        { key: 'roles.name', label: this.$t('LANGUAGES.TEXT_AUTHORITY') },
-        { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
-        { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
-        { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
+        { key: 'role.name', label: 'Role' },
+        // { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
+        // { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
+        // { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
       ],
-      fields2: [
-        { key: 'name', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
-        { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
-        { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
-        { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
+      roles_select: [
+        {
+          id: null,
+          name: '',
+        },
       ],
+      role_id_selected: null,
+      name_search: null,
     };
   },
 
@@ -174,6 +209,7 @@ export default {
     },
   },
   created() {
+    this.getListRole();
     this.getListAllUser();
   },
   methods: {
@@ -183,21 +219,18 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListAllUser() {
-      this.pagination.isDisable = true;
-      const PARAMS = {
-        page: this.pagination.current_page,
-        per_page: this.pagination.per_page,
-      };
+    async getListRole(){
       this.openLoading();
       await getAllRole().then((response) => {
         if (response.code === 200){
-          console.log('data role la ' + response.data);
-          this.roles_select = response.data;
-          // response.data.forEach((element) => {
-          //   element.roles_select.value = element.id;
-          //   element.roles_select.text = element.name;
-          // });
+          response.data.forEach((element) => {
+            const selectListOption = {
+              id: element.id,
+              name: element.name,
+            };
+            this.roles_select.push(selectListOption);
+          });
+          this.closeLoading();
         }
       }).catch((error) => {
         this.closeLoading();
@@ -207,6 +240,15 @@ export default {
           content: error.message,
         });
       });
+    },
+    async getListAllUser() {
+      this.pagination.isDisable = true;
+      const PARAMS = {
+        page: this.pagination.current_page,
+        per_page: this.pagination.per_page,
+        role_id: this.role_id_selected,
+        name: this.name_search,
+      };
       await getAllUser(PARAMS)
         .then((response) => {
           if (response.code === 200) {
@@ -239,9 +281,15 @@ export default {
     toCreatePage() {
       this.$router.push('/user/create');
     },
+    createForm(){
+      this.$bvModal.show('bv-modal-create');
+    },
     confirmationForm(item) {
       this.infoModel = item;
       this.$bvModal.show('bv-modal-delete');
+    },
+    hideCreateModal(){
+      this.$bvModal.hide('bv-modal-create');
     },
     hideModal() {
       this.$bvModal.hide('bv-modal-delete');
@@ -296,7 +344,7 @@ export default {
   border: 1px solid #fb9a09;
   font-size: 17px;
   color: white;
-  padding: 13px 100px;
+  /*padding: 13px 100px;*/
 }
 .btn-sign:hover {
   background-color: #d57700;
@@ -305,9 +353,6 @@ export default {
 ::v-deep table .b-table {
   width: 100% !important;
 }
-::v-deep .table {
-  width: 100%;
-}
 table#__BVID__46 {
   width: 100% !important;
 }
@@ -315,17 +360,23 @@ table#__BVID__46 {
   width: 100% !important;
   border-left: 0.9px solid #888888;
 }
+::v-deep .table {
+  width: 100%;
+}
+::v-deep .table thead {
+  background: none;
+}
 ::v-deep .table tbody {
-  border: 0.9px solid #888888;
+  /*border: 0.9px solid #888888;*/
 }
 ::v-deep .table thead th {
-  border: 0.9px solid #888888;
+  /*border: 0.9px solid #888888;*/
 }
 ::v-deep .table td {
-  background: #ffffff !important;
-  border-top: 0 !important;
-  border-right: 0.9px solid #888888;
-  border-bottom: 0.9px solid #888888;
+  /*background: #ffffff !important;*/
+  /*border-top: 0 !important;*/
+  /*border-right: 0.9px solid #888888;*/
+  /*border-top: 0.9px solid #888888;*/
   line-height: 30px;
 }
 .btn {
@@ -380,12 +431,12 @@ table#__BVID__46 {
 }
 
 .btn-close {
+  background: #0f68b1;
+}
+::v-deep .btn-accept {
   background-color: transparent !important;
   color: #0f68b1;
   border: 1px solid #0f68b1 !important;
-}
-::v-deep .btn-accept {
-    background: #0f68b1;
 }
 .btn-accept:hover {
   box-shadow: 0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%);
