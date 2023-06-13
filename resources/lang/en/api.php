@@ -10,7 +10,13 @@ return [
   ],
   'user'=>[
     'login.false'=> 'user login false',
-    'not.permission' =>'User does not have the right roles',
+    'not' => [
+      'found' => 'User not found',
+      'permission'=>'User does not have the right roles',
+    ],
+    'email' => [
+      'exist'=> 'User email exist'
+    ],
   ],
   'token' => [
       'false'=> 'Token not provided',
