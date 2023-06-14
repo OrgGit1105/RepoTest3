@@ -50,6 +50,7 @@
         "babel-eslint": "^10.1.0",
         "bootstrap-vue": "^2.21.2",
         "composer": "^4.1.0",
+        "element-ui": "^2.15.13",
         "encoding-japanese": "^1.0.30",
         "eslint": "^7.19.0",
         "eslint-loader": "^4.0.2",
