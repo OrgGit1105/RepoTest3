@@ -20,6 +20,7 @@ const state = {
   employeeDetailInfo: {},
   listRetirement: {},
   monthYear: {},
+  listRoles: [],
 };
 
 const mutations = {
@@ -73,6 +74,9 @@ const mutations = {
   SET_MONTH_YEAR: (state, monthYear) => {
     state.monthYear = monthYear;
   },
+  SET_LIST_ROLES: (state, listRoles) => {
+    state.listRoles = listRoles;
+  },
 };
 
 const actions = {
@@ -124,6 +128,9 @@ const actions = {
   },
   saveMonthYear({ commit }, monthYear) {
     commit('SET_MONTH_YEAR', monthYear);
+  },
+  saveListRoles({ commit }, listRoles) {
+    commit('SET_LIST_ROLES', listRoles);
   },
 };
 

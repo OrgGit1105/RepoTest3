@@ -14,6 +14,7 @@ const getters = {
   username: state => state.user.userInfo.username,
   loading: state => state.loading.stateLoading,
   listUser: state => state.app.listUser,
+  listRoles: state => state.app.listRoles,
   listEnrollment: state => state.app.listEnrollment,
   dataManagement: state => state.app.dataManagement,
   listEmployee: state => state.app.listEmployee,

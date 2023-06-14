@@ -24,20 +24,24 @@
                 <b-icon-plus-circle
                   class="display-4 text-primary"
                   style="height: 39px;"
-                  @click="createForm()"/>
+                  @click="createForm()"
+                />
               </div>
               <div class="d-flex" style="gap: 1rem">
                 <b-icon-search
                   class="display-4 text-primary"
-                  style="height: 39px;" />
+                  style="height: 39px;"
+                />
                 <b-form-select
                   v-model="role_id_selected"
-                  :options="roles_select"
-                  value-field="id"
-                  text-field="name"
                   class="custom-select"
                   @change="getListAllUser()"
-                />
+                >
+                  <b-form-select-option value="" />
+                  <b-form-select-option v-for="role in listRoles ?? [] " :key="role.id" :value="role.id">
+                    {{ role.name }}
+                  </b-form-select-option>
+                </b-form-select>
                 <button class="btn btn-sign text-uppercase" style="width: 277px; height: 39px;">
                   csv import
                 </button>
@@ -52,6 +56,14 @@
               :current-page="pagination.current_page"
               show-empty
             >
+              <template #cell(retirement_date)="row">
+                <span v-if="row.item.retirement_date" style="color: red;">
+                  Retirement
+                </span>
+              </template>
+              <template #cell(email)="row">
+                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>
+              </template>
               <template #cell(edit)="edit">
                 <b-button
                   :id="'btn-edit-'+ edit.item.id"
@@ -87,35 +99,141 @@
         </div>
 
         <!-- Modal create -->
-        <b-modal id="bv-modal-create" hide-footer hide-header>
+        <b-modal id="bv-modal-create" @hidden="hideCreateModal()" hide-footer hide-header>
           <div>
-            <h4 class="mb-0 font-weight-normal">
-              <header class="">
-                <h4>Add Employee</h4>
-              </header>
-              <div>
-                <label for="nameEmployee" style="font-size: 16px;">Name:</label>
-                <b-input-group>
-                  <b-form-input
-                    id="nameEmployee"
-                  />
-                </b-input-group>
-              </div>
-              <div>
-                <label for="emailEmployee" style="font-size: 16px;">Email:</label>
-                <b-input-group>
-                  <b-form-input
-                    id="emailEmployee"
-                  />
-                </b-input-group>
-              </div>
-            </h4>
+            <ValidationObserver
+              ref="obsAddEmployee"
+              tag="div"
+            >
+              <h4 class="mb-0 font-weight-normal" style="border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <header>
+                  <h4>Add Employee</h4>
+                </header>
+                <div>
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="name"
+                    rules="required"
+                  >
+                    <label for="nameEmployee" style="font-size: 16px;">Name:</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="nameEmployee"
+                        v-model="formCreate.name"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="email"
+                    rules="required|email"
+                  >
+                    <label for="emailEmployee" style="font-size: 16px;">Email:</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="emailEmployee"
+                        v-model="formCreate.email"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <header>
+                  <h4>Face Data</h4>
+                </header>
+                <div style="margin-bottom: 15px;">
+                  <label for="linkFace" style="font-size: 16px;">Link:</label>
+                  <b-input-group>
+                    <b-form-input
+                      id="linkFace"
+                    />
+                  </b-input-group>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <header>
+                  <h4>Role</h4>
+                </header>
+                <div style="margin-bottom: 15px;">
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="role"
+                    rules="required"
+                  >
+                    <label for="role_id_create" style="font-size: 16px;">Role:</label>
+                    <b-form-checkbox-group
+                      id="role_id_create"
+                      v-model="formCreate.role_id"
+                      :options="listRoles ?? []"
+                      value-field="id"
+                      text-field="name"
+                    />
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <header>
+                  <h4>Password</h4>
+                </header>
+                <div>
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="password"
+                    vid="password"
+                    rules="required"
+                  >
+                    <label for="password" style="font-size: 16px;">Password:</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="password"
+                        v-model="formCreate.password"
+                        type="password"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="password_confirm"
+                    rules="required|confirmed:password"
+                  >
+                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="password_confirm"
+                        v-model="formCreate.password_confirmation"
+                        type="password"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
+            </ValidationObserver>
           </div>
           <div class="justify-content-end d-flex p-3">
             <b-button
               class="mt-3 w-25 fs-12 btn btn-accept"
               squared
-              @click="submitCreate(infoModel.id)"
+              @click="submitCreate()"
             >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
             <b-button
               class="mt-3 ml-3 w-25 fs-12 btn btn-close"
@@ -156,12 +274,18 @@
 </template>
 
 <script>
-import { getAllUser, deleteOneUser } from '../../api/user';
+import {deleteOneUser, getAllUser, postOneUser} from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { getAllRole } from '../../api/role';
+import { ValidationObserver, ValidationProvider } from 'vee-validate';
+
 export default {
   name: 'UserManagement',
+  components: {
+    ValidationObserver,
+    ValidationProvider,
+  },
   data() {
     return {
       // userList: [],
@@ -175,26 +299,32 @@ export default {
       infoModel: {},
       fields: [
         { key: 'name', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
+        { key: 'retirement_date', label: '', class: 'col-1' },
         { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
         { key: 'role.name', label: 'Role' },
         // { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
         // { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
         // { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
       ],
-      roles_select: [
-        {
-          id: null,
-          name: '',
-        },
-      ],
       role_id_selected: null,
       name_search: null,
+      formCreate: {
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+        role_id: '',
+        status: 1,
+      },
     };
   },
 
   computed: {
     role_id() {
       return this.$store.getters.role_id;
+    },
+    listRoles() {
+      return this.$store.getters.listRoles;
     },
     listUser() {
       return this.$store.getters.listUser;
@@ -223,13 +353,7 @@ export default {
       this.openLoading();
       await getAllRole().then((response) => {
         if (response.code === 200){
-          response.data.forEach((element) => {
-            const selectListOption = {
-              id: element.id,
-              name: element.name,
-            };
-            this.roles_select.push(selectListOption);
-          });
+          this.$store.dispatch('app/saveListRoles', response.data);
           this.closeLoading();
         }
       }).catch((error) => {
@@ -289,6 +413,14 @@ export default {
       this.$bvModal.show('bv-modal-delete');
     },
     hideCreateModal(){
+      this.formCreate = {
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+        role_id: '',
+        status: 1,
+      };
       this.$bvModal.hide('bv-modal-create');
     },
     hideModal() {
@@ -317,6 +449,48 @@ export default {
         case 'Department_Role':
           return this.$t('LANGUAGES.TEXT_HEAD_DEPARTMENT_ROLE');
         default:
+      }
+    },
+    async submitCreate() {
+      const isValid = await this.$refs.obsAddEmployee.validate();
+      if (!isValid) {
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: 'Still error',
+        });
+      } else {
+        await postOneUser(this.formCreate).then((response) => {
+          if (response.code === 200){
+            this.formCreate = {
+              name: '',
+              email: '',
+              password: '',
+              password_confirmation: '',
+              role_id: '',
+              status: 1,
+            };
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Create employee success',
+            });
+            this.$bvModal.hide('bv-modal-create');
+            this.getListAllUser();
+          } else {
+            MakeToast({
+              variant: 'warning',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+              content: response.message_content,
+            });
+          }
+        }).catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
       }
     },
   },
@@ -479,5 +653,24 @@ table#__BVID__46 {
   color: red;
   font-size: 23px;
 }
+.text-error {
+  line-height: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  color: red;
+  font-size: 12px;
+}
+.email-link {
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
 
+.email-link:hover {
+  color: blue;
+}
 </style>
