@@ -3,10 +3,10 @@ import { template } from './template.js';
 import * as RequestApi from './request';
 const urlAPI = {
   urlGETUser: template`/api/user`,
-  urlPOSTOneUser: template`/user`,
-  urlGETOneUser: template`/user/${'id'}`,
-  urlPUTOneUser: template`/user/${'id'}`,
-  urlDELETEOneUser: template`/user/${'id'}`,
+  urlPOSTOneUser: template`/api/user`,
+  urlGETOneUser: template`/api/user/${'id'}`,
+  urlPUTOneUser: template`/api/user/${'id'}`,
+  urlDELETEOneUser: template`/api/user/${'id'}`,
 };
 
 export function getAllUser(params) {
