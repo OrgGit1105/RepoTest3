@@ -57,28 +57,28 @@
               show-empty
             >
               <template #cell(retirement_date)="row">
-                <span v-if="row.item.retirement_date" style="color: red;">
+                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">
                   Retirement
                 </span>
               </template>
               <template #cell(email)="row">
                 <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>
               </template>
-              <template #cell(edit)="edit">
-                <b-button
-                  :id="'btn-edit-'+ edit.item.id"
-                  class="btn btn-edit fs-14"
-                  dusk="btn-edit"
-                  @click="goToEditScreen(edit.item.id)"
-                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>
-              </template>
-              <template #cell(delete)="info">
-                <b-button
-                  :id="'btn-remove-'+ info.item.id"
-                  class="btn btn-delete fs-14"
-                  @click="confirmationForm(info.item)"
-                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>
-              </template>
+<!--              <template #cell(edit)="edit">-->
+<!--                <b-button-->
+<!--                  :id="'btn-edit-'+ edit.item.id"-->
+<!--                  class="btn btn-edit fs-14"-->
+<!--                  dusk="btn-edit"-->
+<!--                  @click="goToEditScreen(edit.item.id)"-->
+<!--                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>-->
+<!--              </template>-->
+<!--              <template #cell(delete)="info">-->
+<!--                <b-button-->
+<!--                  :id="'btn-remove-'+ info.item.id"-->
+<!--                  class="btn btn-delete fs-14"-->
+<!--                  @click="confirmationForm(info.item)"-->
+<!--                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>-->
+<!--              </template>-->
               <template #empty="">
                 {{ $t('LANGUAGES.TEXT_NO_DATA') }}
               </template>
@@ -274,7 +274,7 @@
 </template>
 
 <script>
-import {deleteOneUser, getAllUser, postOneUser} from '../../api/user';
+import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { getAllRole } from '../../api/role';
@@ -318,7 +318,6 @@ export default {
       },
     };
   },
-
   computed: {
     role_id() {
       return this.$store.getters.role_id;
@@ -492,6 +491,22 @@ export default {
           });
         });
       }
+    },
+    checkDateRetired(date){
+      if (date == null){
+        return false;
+      }
+      const dateRetired = new Date(this.formatTimeStamp(date)).getTime();
+      const dateNow = new Date().getTime();
+      return dateRetired > dateNow;
+    },
+    formatTimeStamp(date){
+      const datePart = date.split(' ')[0]; // Extract the date part from the received value
+      const parts = datePart.split('-');
+      const year = parts[0];
+      const month = parts[1];
+      const day = parts[2];
+      return `${year}-${month}-${day}`;
     },
   },
 };

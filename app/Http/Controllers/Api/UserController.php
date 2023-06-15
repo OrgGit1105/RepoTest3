@@ -240,7 +240,7 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, $id)
     {
-        if ($request->get('password')){
+        if ($request->has('password')){
           $request->validate(['password' => 'required|min:3|confirmed']);
         }
         $attributes = $request->except([]);
