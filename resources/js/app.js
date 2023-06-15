@@ -12,12 +12,14 @@ import 'element-ui/lib/theme-chalk/index.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 // import './style/index.scss';
 import 'bootstrap/dist/css/bootstrap.css';
+import VeeValidate from 'vee-validate';
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 Vue.use(VueAnime);
 Vue.use(VueApexCharts);
 Vue.use(ElementUI);
+Vue.use(VeeValidate);
 Vue.config.productionTip = false;
 Vue.component('Apexchart', VueApexCharts);
 new Vue({

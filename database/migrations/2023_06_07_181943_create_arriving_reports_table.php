@@ -19,7 +19,7 @@ class CreateArrivingReportsTable extends Migration
             $table->timestamp('in_time');
             $table->timestamp('out_time')->nullable();
             $table->text('remark')->nullable();
-            $table->string('registration_type');
+            $table->string('registration_type')->nullable();
             $table->string('link_face_in')->nullable();
             $table->string('link_face_out')->nullable();
             $table->integer('status');

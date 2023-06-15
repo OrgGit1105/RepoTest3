@@ -13,6 +13,7 @@ use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\ArrivingReportResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ArrivingReportController extends Controller
 {
@@ -230,6 +231,9 @@ class ArrivingReportController extends Controller
     {
         $attributes = $request->except([]);
         $data = $this->repository->update($attributes, $id);
+        if (!$data){
+          return $this->responseJsonError(Response::HTTP_NOT_FOUND, "report not found", "report not found");
+        }
         return $this->responseJson(200, new BaseResource($data));
     }
 
