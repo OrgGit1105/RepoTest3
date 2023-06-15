@@ -46,13 +46,14 @@ class ArrivingReportRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-
+              'in_time' => 'required|date_format:Y-m-d H:i:s',
+              'out_time' => 'required|date_format:Y-m-d H:i:s',
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
           return [
-            'in_time' => 'required|date_format:Y-m-d',
-            'out_time' => 'required|date_format:Y-m-d',
+            'in_time' => 'required|date_format:Y-m-d H:i:s',
+            'out_time' => 'required|date_format:Y-m-d H:i:s',
             'user_id' => ['required',new CheckIDRule(new User())],
           ];
         }
