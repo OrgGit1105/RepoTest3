@@ -4,50 +4,103 @@
       <div class="container-fluid-body mt-5 mb-5">
         <div class="use-management-title">
           <div class="card-body p-5">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
-                <h1 class="pl-3 title-info">Working time Management</h1>
+                <h1 class="title">Working time Management</h1>
               </div>
-              <div>
-                <button class="btn btn-sign text-uppercase" @click="toCreatePage">
-                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}
+              <div class="basic">
+                <button class="btn btn-date d-flex align-items-center" @click="toCreatePage">
+                  <b-icon class="text-btn" icon="chevron-left" />
+                  <span class="text-btn">3月20日 -  4月18日</span>
+                  <b-icon class="text-btn" icon="chevron-right" />
                 </button>
               </div>
             </div>
           </div>
         </div>
+        <hr class="line-bottom">
+        <div class="use-management-title-table mt-5">
+          <div class="fill">
+            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createNew"></i>
+            <div class="box-search align-items-center" :class="display">
+              <el-input
+                placeholder="検索"
+                prefix-icon="el-icon-search"
+                v-model="input2">
+              </el-input>
+              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
+            </div>
+            <div class="d-flex justify-content-end align-items-center">
+              <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
 
-        <div class="use-management-title-table mt-5 px-3">
-          <div class="card-body">
-            <b-table
-              id="my-table"
-              class="text-center w-100  mb-0"
-              :items="listUser ? listUser : []"
-              :fields="role_id === headQuarter ? fields : fields2"
-              responsive="sm"
-              :current-page="pagination.current_page"
-              show-empty
-            >
-              <template #cell(edit)="edit">
-                <b-button
-                  :id="'btn-edit-'+ edit.item.id"
-                  class="btn btn-edit fs-14"
-                  dusk="btn-edit"
-                  @click="goToEditScreen(edit.item.id)"
-                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>
+              <template class="select-custom">
+                <el-select v-model="value" placeholder="Select" class="el-select-custom">
+                  <el-option
+                    class="el-option-custom"
+                    :label="'All Employee'">
+                  </el-option>
+                  <el-option
+                    v-for="item in selectEmployee"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                    divided>
+                  </el-option>
+                </el-select>
               </template>
-              <template #cell(delete)="info">
-                <b-button
-                  :id="'btn-remove-'+ info.item.id"
-                  class="btn btn-delete fs-14"
-                  @click="confirmationForm(info.item)"
-                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>
-              </template>
-              <template #empty="">
-                {{ $t('LANGUAGES.TEXT_NO_DATA') }}
-              </template>
-            </b-table>
+
+              <!-- <el-dropdown>
+                <span class="el-dropdown-link">
+                  All Employee<i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>All Employee</el-dropdown-item>
+                  <el-dropdown-item divided>Action 1</el-dropdown-item>
+                  <el-dropdown-item >Action 2</el-dropdown-item>
+                  <el-dropdown-item>Action 3</el-dropdown-item>
+                  <el-dropdown-item>Action 4</el-dropdown-item>
+                  <el-dropdown-item >Action 5</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown> -->
+
+            <i class="el-icon-download custom-icon-down cursor-pointer"></i>
+            </div>
           </div>
+          <hr class="line">
+          <template class="">
+            <el-table
+              :data="listUser"
+              style="width: 100%"
+              :row-style="rowWorkingStyle">
+              <el-table-column
+                prop="no"
+                label="No"
+                width="350"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="employee"
+                label="Employee name"
+                width="250"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="in"
+                label="IN"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="out"
+                label="OUT"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="type"
+                label="Input type"
+                align="center">
+              </el-table-column>
+            </el-table>
+          </template>
         </div>
 
         <div class="use-management-pagianation">
@@ -61,32 +114,15 @@
             />
           </div>
         </div>
-        <!-- Modal delete -->
-        <b-modal id="bv-modal-delete" hide-footer hide-header>
-          <header class="style-title-modal p-3 text-white">
-            <h4>{{ $t('LANGUAGES.TEXT_MODAL_DELETE_USER') }}</h4>
-          </header>
-          <div>
-            <div class="d-block text-center p-4 style-modal">
-              <h4 class="text-center mb-0 font-weight-normal">
-                {{ $t('LANGUAGES.TEXT_DO_YOU_WANT_TO_DELETE_USER_NAME') }}
-              </h4>
-              <h2>{{ infoModel.username }}</h2>
-            </div>
-          </div>
-          <div class="justify-content-end d-flex p-3">
-            <b-button
-              class="mt-3 w-25 fs-12 btn btn-accept"
-              squared
-              @click="submitDelete(infoModel.id)"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
-            <b-button
-              class="mt-3 ml-3 w-25 fs-12 btn btn-close"
-              squared
-              @click="hideModal()"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>
-          </div>
-        </b-modal>
+
+        <!-- Modal add new -->
+        <el-dialog title="Shipping address" :visible.sync="openModalAdd">
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">Cancel</el-button>
+            <el-button type="primary" @click="dialogFormVisible = false">Confirm</el-button>
+          </span>
+        </el-dialog>
+
       </div>
     </div>
   </div>
@@ -110,22 +146,49 @@ export default {
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
       fields: [
-        { key: 'username', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
-        { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
-        { key: 'roles.name', label: this.$t('LANGUAGES.TEXT_AUTHORITY') },
-        { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
-        { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
-        { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
+        { key: 'username', label: 'No' },
+        { key: 'email', label: 'Employee name' },
+        { key: 'roles.name', label: 'IN' },
+        { key: 'company_branchs.name', label: 'OUT' },
+        { key: 'edit', label: 'Input type' },
       ],
-      fields2: [
-        { key: 'username', label: this.$t('LANGUAGES.TEXT_USER_NAME') },
-        { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
-        { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
-        { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
+      listUser: [
+        { no: '1', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
+        { no: '2', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
+        { no: '3', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
+        { no: '4', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
+        { no: '5', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
+        { no: '6', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
       ],
+      selectEmployee: [
+        { value: '1', text: 'All Employee' },
+        { value: '1', text: 'IKeda Kohei' },
+        { value: '1', text: 'IKeda Kohei' },
+        { value: '1', text: 'IKeda Kohei' },
+        { value: '1', text: 'IKeda Kohei' },
+        { value: '1', text: 'IKeda Kohei' },
+        { value: '1', text: 'IKeda Kohei' },
+      ],
+      display: 'd-none',
+      displaySearch: 'd-block',
+      openModalAdd: false,
     };
   },
   methods: {
+    openInputSearch() {
+      this.display = 'd-flex';
+      this.displaySearch = 'd-none';
+    },
+    closeInputSearch() {
+      this.display = 'd-none';
+      this.displaySearch = 'd-block';
+    },
+    rowWorkingStyle({ row, rowIndex }) {
+      return { 'cursor': 'pointer' };
+    },
+    createNew: function() {
+      this.openModalAdd = true;
+    },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
     },
@@ -208,31 +271,109 @@ export default {
 </script>
 
 <style scoped>
-#screen-title {
-  position: flex;
+@import '../../../sass/config.scss';
+.title {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 40px;
+  color: #000000;
+  margin: 0;
+}
+.btn-date {
+  background: #0070C9;
+  border-radius: 20px;
   text-align: center;
-  margin-top: 50px;
 }
-
-.title-info {
-  border-left: 9px solid #fb9a09;
-  text-transform: uppercase;
-  color: #3189bb;
+.text-btn {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 21px;
+  color: #FFFFFF;
+}
+.line-bottom {
+  width: 95%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 0 auto;
+}
+.fill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+}
+.icon-d {
+  width: 15px;
+  height: 10px;
+}
+/*  */
+.el-select-custom {
+  width: 175px;
+  margin: 0 20px;
+}
+::v-deep .el-select-custom .el-input__inner {
+  border: unset;
+  border-radius: unset;
+  color: #0070C9;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+}
+::v-deep .el-select-custom .el-input .el-select__caret {
+  color: #0070C9;
+  font-weight: bolder;
+  font-size: 20px;
+  margin-top: 3px;
+}
+/*  */
+::v-deep .box-search .el-input__inner {
+  border: 1px solid rgba(63, 63, 63, 0.4);
+  border-radius: 5px;
+  padding-left: 40px;
+}
+::v-deep .box-search .el-icon-search {
+  color: #3F3F3F;
+  font-weight: bolder;
+  font-size: 20px;
+}
+::v-deep .box-search ::placeholder {
+  color: #8A8A8A;
+}
+::v-deep .box-search .el-icon-close {
+  margin-left: 10px;
   font-size: 25px;
+  color: #8A8A8A;
 }
-.btn-action {
+.cursor-pointer {
+  cursor: pointer;
+}
+.custom-icon-add {
+  color: #0070C9;
+  font-size: 30px;
+  font-weight: bolder;
+}
+.custom-icon-down {
+  color: #0070C9;
+  font-size: 26px;
+  font-weight: 600;
+}
+.use-management-title-table {
+  padding: 0 45px;
+}
+.line {
+  width: 100%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 10px auto;
+}
+/* ::v-deep .table thead th {
+  color: #8A8A8A;
+  font-weight: 600;
+  text-align: center;
+} */
+/* .btn-action {
   min-width: 85px;
-}
-.btn-sign {
-  background-color: #fb9a09;
-  border: 1px solid #fb9a09;
-  font-size: 17px;
-  color: white;
-  padding: 13px 100px;
-}
-.btn-sign:hover {
-  background-color: #d57700;
-  border-color: #c87000;
 }
 ::v-deep table .b-table {
   width: 100% !important;
@@ -289,7 +430,7 @@ table#__BVID__46 {
   text-align: center;
   margin-top: 20px;
   margin-bottom: 20px;
-}
+} */
 
 .pagination {
   display: flex;
@@ -311,7 +452,7 @@ table#__BVID__46 {
   border: 1px solid #0f68b1 !important;
 }
 
-.btn-close {
+/* .btn-close {
   background-color: transparent !important;
   color: #0f68b1;
   border: 1px solid #0f68b1 !important;
@@ -345,11 +486,11 @@ table#__BVID__46 {
 }
 ::v-deep thead {
     background: #e5e5e5;
-}
+} */
 /* ::v-deep #my-table th {
   background: #e5e5e5;
 } */
-::v-deep .style-title-modal {
+/* ::v-deep .style-title-modal {
   background: #0f68b1;
 }
 .style-title-modal h4 {
@@ -359,6 +500,6 @@ table#__BVID__46 {
   margin: 25px 0px;
   color: red;
   font-size: 23px;
-}
+} */
 
 </style>
