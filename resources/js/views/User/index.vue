@@ -151,12 +151,63 @@
                   <h4>Face Data</h4>
                 </header>
                 <div style="margin-bottom: 15px;">
-                  <label for="linkFace" style="font-size: 16px;">Link:</label>
-                  <b-input-group>
-                    <b-form-input
-                      id="linkFace"
-                    />
-                  </b-input-group>
+                  <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
+                    <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
+                      <div
+                        :class="{check_with_or_without_mask: withoutMask}"
+                        style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
+                        @click="checkWithoutMask()">
+                        <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
+                        <div style="margin-right: 20px">
+                          <p>Face image</p>
+                          <p>without mask</p>
+                        </div>
+                      </div>
+                      <div
+                        :class="{check_with_or_without_mask: withMask}"
+                        style="display: flex; gap: 1rem;cursor: pointer"
+                        @click="checkWithMask()">
+                        <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
+                        <div style="margin-right: 20px">
+                          <p>Face image</p>
+                          <p>with mask</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style="overflow-x: auto;
+                      white-space: nowrap;"
+                    >
+                      <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        style="display: none;"
+                        @change="handleFileSelect"
+                      >
+                      <div class="image-preview">
+                        <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">
+                          <img :src="convertFileToUrl(file)">
+                          <b-icon-x-circle
+                            style="display: block;
+                          float: right;
+                          position: relative;
+                          top: -9px;
+                          right: 8px;
+                          height: 17px;
+                          cursor: pointer"
+                            @click="removeFile(index)"
+                          >Remove
+                          </b-icon-x-circle>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex;font-size: large; gap: 1rem">
+                      <div style="color: blue;cursor: pointer;" @click="openFilePicker">Select File</div>
+                      <div>|</div>
+                      <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
+                    </div>
+                  </div>
                 </div>
               </h4>
               <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
@@ -316,6 +367,9 @@ export default {
         role_id: '',
         status: 1,
       },
+      selectedFiles: [],
+      withoutMask: true,
+      withMask: false,
     };
   },
   computed: {
@@ -508,6 +562,51 @@ export default {
       const day = parts[2];
       return `${year}-${month}-${day}`;
     },
+    checkWithoutMask(){
+      if (!this.withoutMask){
+        this.selectedFiles.splice(0, this.selectedFiles.length);
+      }
+      this.withoutMask = true;
+      this.withMask = false;
+    },
+    checkWithMask(){
+      if (!this.withMask){
+        this.selectedFiles.splice(0, this.selectedFiles.length);
+      }
+      this.withoutMask = false;
+      this.withMask = true;
+    },
+    handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // const fileURL = URL.createObjectURL(file);
+        this.selectedFiles.push(file);
+      }
+    },
+    openFilePicker() {
+      this.$refs.fileInput.click();
+    },
+    handleFileSelect(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.selectedFiles.push(file);
+      }
+    },
+    convertFileToUrl(file){
+      return URL.createObjectURL(file);
+    },
+    removeFile(index) {
+      this.selectedFiles.splice(index, 1);
+    },
+    chooseFiles() {
+      this.$refs.fileInput.click();
+    },
+    removeFileAll(){
+      this.selectedFiles.splice(0, this.selectedFiles.length);
+    },
   },
 };
 </script>
@@ -687,5 +786,29 @@ table#__BVID__46 {
 
 .email-link:hover {
   color: blue;
+}
+
+.image-preview {
+  display: table;
+  flex-wrap: wrap;
+  height: 200px;
+  margin: 15px;
+}
+
+.preview-item {
+  display: inline-block;
+  margin: 10px;
+}
+
+.preview-item img {
+  width: 180px;
+  height: 200px;
+}
+
+.preview-item button {
+  margin-top: 5px;
+}
+.check_with_or_without_mask{
+  border-bottom: 4px solid;
 }
 </style>

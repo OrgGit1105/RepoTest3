@@ -265,7 +265,7 @@ import * as UserApi from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 import { getAllRole } from '../../api/role';
-import {deleteOneUser} from "../../api/user";
+import { deleteOneUser } from "../../api/user";
 
 export default {
   name: 'EditUser',
