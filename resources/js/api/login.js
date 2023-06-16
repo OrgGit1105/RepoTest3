@@ -3,7 +3,7 @@ import request from '../utils/request.js';
 import { template } from './template.js';
 
 const urlAPI = {
-  urlPOSTLogin: template`/auth/login`,
+  urlPOSTLogin: template`/api/auth/login`,
   urlPOSTRegister: template`/auth/register`,
   urlPOSTRemindPassword: template`/auth/remind-password`,
   urlPOSTRefreshUser: template`/auth/refresh`,
@@ -11,8 +11,8 @@ const urlAPI = {
 
 export function postLogin(data) {
   // console.log('data ==>', data);
-  return RequestApi.postOne(data);
-  // return request.postRequest(urlAPI.urlPOSTLogin(), data);
+  // return RequestApi.postOne(data);
+  return request.postRequest(urlAPI.urlPOSTLogin(), data);
 }
 
 export function postRegister(data) {

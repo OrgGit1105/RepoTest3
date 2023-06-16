@@ -15,41 +15,42 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+      $password = "12345678";
 //      DB::statement('SET FOREIGN_KEY_CHECKS = 0');
       DB::table('users')->truncate();
       DB::table('users')->insert([
         [
           'name' => 'manager',
           'email' => 'manager@gmail.com',
-          'password' => Hash::make(123),
+          'password' => Hash::make($password),
           'role_id' => 1,
           'status' => 1,
         ],
         [
           'name' => 'manager2',
           'email' => 'manager2@gmail.com',
-          'password' => Hash::make(123),
+          'password' => Hash::make($password),
           'role_id' => 1,
           'status' => 1,
         ],
         [
           'name' => 'staff',
           'email' => 'staff@gmail.com',
-          'password' => Hash::make(123),
+          'password' => Hash::make($password),
           'role_id' => 2,
           'status' => 1,
         ],
         [
           'name' => 'ngan',
           'email' => 'ngan@gmail.com',
-          'password' => Hash::make(123),
+          'password' => Hash::make($password),
           'role_id' => 2,
           'status' => 1,
         ],
         [
           'name' => 'bach',
           'email' => 'bach@gmail.com',
-          'password' => Hash::make(123),
+          'password' => Hash::make($password),
           'role_id' => 2,
           'status' => 1,
         ],
