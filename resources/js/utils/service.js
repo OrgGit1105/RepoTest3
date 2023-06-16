@@ -17,9 +17,9 @@ service.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = token;
     } else {
-      if (!this.$route.path.includes('/login')) {
-        router.push({ path: '/login' });
-      }
+      // if (!this.$route.path.includes('/login')) {
+      //   router.push({ path: '/login' });
+      // }
       // console.log(router.currentRoute.path !== '/login')
       // router.push({ path: '/login' });
     }

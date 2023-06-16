@@ -9,22 +9,22 @@
             <div class="zone-login">
               <b-form>
                 <div>
-                  <!-- User Name -->
+                  <!-- Email -->
                   <b-form-group>
                     <label class="label-name d-flex">ID</label>
                     <b-form-input
                       id="txtUserName"
-                      v-model="account.username"
-                      dusk="username"
+                      v-model="account.email"
+                      dusk="email"
                       class="mb-0 px-2 inputForm"
                       :placeholder="$t('LANGUAGES.TEXT_PLACEHOLDER_EMAIL')"
                       type="text"
                       spellcheck="false"
-                      :state="error.username"
+                      :state="error.email"
                       :formatter="formatText"
-                      @input="handleChangeForm($event, 'username')"
+                      @input="handleChangeForm($event, 'email')"
                     />
-                    <b-form-invalid-feedback :state="error.username" class="pl-1">
+                    <b-form-invalid-feedback :state="error.email" class="pl-1">
                       {{
                         $t('LANGUAGES.ERROR_YOUR_USER_NAME_NOT_NULL_AND_MUST_BE_A_EMAIL')
                       }}
@@ -88,11 +88,11 @@ export default {
     return {
       // account Login
       account: {
-        username: '',
+        email: '',
         password: '',
       },
       error: {
-        username: null,
+        email: null,
         password: null,
       },
       typePassword: 'password',
@@ -133,30 +133,23 @@ export default {
       this.checkValidate();
       if (this.checkValidate() === true) {
         const ACCOUNT = {
-          url: '/auth/login',
-          user_name: this.account.username,
+          email: this.account.email,
           password: this.account.password,
         };
         this.openLoading();
         await postLogin(ACCOUNT)
           .then((response) => {
             if (response.code === 200) {
-              // this.closeLoading();
+              this.closeLoading();
               const TOKEN = response.data.access_token;
               const PROFILE = response.data.profile;
 
               const USER = {
-                address: PROFILE.address || '',
-                avatar: PROFILE.avatar || '',
-                email: PROFILE.email || '',
-                fax: PROFILE.fax || '',
-                gender: PROFILE.gender || '',
                 id: PROFILE.id || '',
                 name: PROFILE.name || '',
-                phone: PROFILE.phone || '',
-                status: PROFILE.status || '',
+                email: PROFILE.email || '',
                 role_id: PROFILE.role_id || '',
-                username: PROFILE.username || '',
+                status: PROFILE.status || '',
               };
 
               this.$store
@@ -191,7 +184,7 @@ export default {
             }
           })
           .catch((error) => {
-            // this.closeLoading();
+            this.closeLoading();
             MakeToast({
               variant: 'danger',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
@@ -204,10 +197,10 @@ export default {
       }
     },
     checkValidate() {
-      if (!this.account.username || !this.checkEmail(this.account.username)) {
-        this.error.username = false;
+      if (!this.account.email || !this.checkEmail(this.account.email)) {
+        this.error.email = false;
         return false;
-      } else if (!this.account.password || this.account.password.length < 8) {
+      } else if (!this.account.password) {
         this.error.password = false;
         return false;
       } else {
@@ -235,11 +228,11 @@ export default {
       const newValue = e;
 
       switch (field) {
-        case 'username':
+        case 'email':
           if (newValue.length === 0 || !this.checkEmail(newValue)) {
-            this.error.username = false;
+            this.error.email = false;
           } else {
-            this.error.username = true;
+            this.error.email = true;
           }
           break;
         case 'password':
