@@ -17,7 +17,7 @@ class ArrivingReport extends Model
   use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'arriving_reports';
-
+    public $timestamps = false;
     protected $fillable = [
       'user_id',
       'in_time',

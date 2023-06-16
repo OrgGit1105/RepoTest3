@@ -105,16 +105,41 @@ class ArrivingReportController extends Controller
      *   tags={"ArrivingReport"},
      *   summary="Add new arriving_report",
      *   operationId="arriving_report_create",
-     *   @OA\Parameter(name="name", in="query", required=true,
-     *     @OA\Schema(type="string"),
+     *   @OA\RequestBody(
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          example={"user_id":"integer", "in_time": "string", "out_time": "string"},
+     *          @OA\Schema(
+     *            required={"user_id", "in_time","out_time"},
+     *            @OA\Property(
+     *              property="user_id",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="in_time",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="out_time",
+     *              format="string",
+     *            ),
+     *         )
+     *      )
      *   ),
-     *
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name": "......"}}
+     *      example={"code":200,"data":{"user_id":1,"in_time":"2023-06-16 08:30:00","out_time":"2023-06-16 18:00:00","status":1,"created_at":1686898871,"id":4}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
      *     )
      *   ),
      *   security={},
@@ -152,7 +177,7 @@ class ArrivingReportController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name":"......"}}
+     *      example={"code":200,"data":{"id":2,"user_id":2,"in_time":"2023-06-16 08:30:00","out_time":"2023-06-16 18:00:00","remark":null,"registration_type":null,"link_face_in":null,"link_face_out":null,"status":1,"created_at":1686897797,"updated_at":1686897797,"deleted_at":null,"user":{"id":2,"name":"manager2","email":"manager2@gmail.com","role_id":1,"retirement_date":null,"status":1,"created_at":null,"updated_at":null,"deleted_at":null}}}
      *     )
      *   ),
      *   @OA\Response(
@@ -196,11 +221,19 @@ class ArrivingReportController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"name":"string"},
+     *          example={"user_id":"integer", "in_time": "string", "out_time": "string"},
      *          @OA\Schema(
-     *            required={"name"},
+     *            required={"user_id", "in_time","out_time"},
      *            @OA\Property(
-     *              property="name",
+     *              property="user_id",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="in_time",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="out_time",
      *              format="string",
      *            ),
      *         )
@@ -211,7 +244,7 @@ class ArrivingReportController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name":  "............."}}
+     *      example={"code":200,"data":{"id":1,"user_id":3,"in_time":"2023-06-16 08:30:00","out_time":"2023-06-16 18:00:00","remark":null,"registration_type":null,"link_face_in":null,"link_face_out":null,"status":1,"created_at":1686889020,"updated_at":1686897974,"deleted_at":null}}
      *     ),
      *   ),
      *   @OA\Response(
