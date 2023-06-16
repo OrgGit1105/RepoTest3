@@ -1,161 +1,298 @@
 <template>
   <div>
-    <div class="main-page">
-      <div class="justify-content-start p-5"><div class="basic"> <h1 class="pl-3 title-info">{{ $t('LANGUAGES.TEXT_USER_EDIT') }}</h1></div></div>
-      <b-col lg="6" md="8" sm="12" style="margin:auto;">
-        <b-form class="py-5 px-4" @submit="onSubmit($event)">
-          <div>
-            <!-- 1 -->
-            <b-form-group>
-              <b-row>
-                <b-col lg="3">
-                  <label class="label-name">{{ $t('LANGUAGES.TEXT_USER_NAME') }}</label>
-                </b-col>
-                <b-col lg="9">
-                  <b-form-input
-                    id="txtUserName"
-                    v-model="form.username"
-                    dusk="username"
-                    :placeholder="$t('LANGUAGES.TEXT_PLACEHOLDER_ENTER_USER_NAME')"
-                    :state="error.username"
-                    :formatter="formatText"
-                    @input="handleChangeForm($event,'username')"
-                  />
-                  <b-form-invalid-feedback :state="error.username">
-                    {{ $t('LANGUAGES.ERROR_PLEASE_ENTER_INPUT_USER_NAME') }}
-                  </b-form-invalid-feedback>
-                </b-col>
-              </b-row>
-            </b-form-group>
-            <!-- 2 -->
-            <b-form-group id="input-group-4" class="prediction-item">
-              <b-row>
-                <b-col lg="3">
-                  <label class="label-name">{{ $t('LANGUAGES.TEXT_EMAIL') }}</label>
-                </b-col>
-                <b-col lg="9">
-                  <b-form-input
-                    id="txtEmail"
-                    v-model="form.email"
-                    dusk="email"
-                    type="text"
-                    :placeholder="$t('LANGUAGES.TEXT_PLACEHOLDER_ENTER_EMAIL')"
-                    :state="error.email"
-                    :formatter="formatText"
-                    @input="handleChangeForm($event,'email')"
-                  />
-                  <b-form-invalid-feedback :state="error.email">
-                    {{ $t('LANGUAGES.ERROR_EMAIL_MUST_BE_AN_EMAIL_AND_NOT_NULL') }}
-                  </b-form-invalid-feedback>
-                </b-col>
-              </b-row>
-            </b-form-group>
-            <!-- 3 -->
-            <b-form-group id="input-group-5">
-              <b-row>
-                <b-col lg="3">
-                  <label class="label-name">{{ $t('LANGUAGES.TEXT_PASSWORD') }}</label>
-                </b-col>
-                <b-col lg="9">
-                  <b-form-input
-                    id="txtPassword"
-                    v-model="form.password"
-                    dusk="password"
-                    :placeholder="$t('LANGUAGES.TEXT_PLACEHOLDER_ENTER_PASSWORD')"
-                    :state="error.password"
-                    :formatter="formatText"
-                    @input="handleChangeForm($event,'password')"
-                  />
-                  <b-form-invalid-feedback :state="error.password">
-                    {{ $t('LANGUAGES.ERROR_YOUR_PASSWORD_MUST_BE_GREATER_THAN_8_CHARACTERS_AND_LESS_THAN_16') }}
-                  </b-form-invalid-feedback>
-                </b-col>
-              </b-row>
-            </b-form-group>
-            <!-- 4 -->
-            <b-form-group v-if="roleId === headQuarter">
-              <b-row>
-                <b-col lg="3">
-                  <label class="label-name">{{ $t('LANGUAGES.TEXT_AUTHORITY') }}</label>
-                </b-col>
-                <b-col lg="9">
-                  <b-form-select
-                    id="slAuthority"
-                    v-model="form.role_id"
-                    dusk="role_id"
-                    placeholder="Please Select Authority"
-                    :options="authorityOption"
-                    :state="error.role_id"
-                    @change="handleChangeForm($event,'role_id')"
-                  />
-                  <b-form-invalid-feedback :state="error.role_id">
-                    Please Select Authority
-                  </b-form-invalid-feedback>
-                </b-col>
-              </b-row>
-            </b-form-group>
-            <!-- 5 -->
-            <b-form-group v-if="roleId === headQuarter">
-              <b-row>
-                <b-col lg="3">
-                  <label class="label-name">{{ $t('LANGUAGES.TEXT_DEPARTMENT') }}</label>
-                </b-col>
-                <b-col lg="9">
-                  <b-form-select
-                    id="slDepartment"
-                    v-model="form.department_id"
-                    :options="branchList"
-                    dusk="department_id"
-                    placeholder="Please Select Department"
-                    :state="error.department_id"
-                    :disabled="author"
-                    @change="handleChangeForm($event,'department_id')"
-                  />
-                  <b-form-invalid-feedback :state="error.department_id">
-                    {{ $t('LANGUAGES.ERROR_PLEASE_SELECT_DEPARTMENT') }}
-                  </b-form-invalid-feedback>
-                </b-col>
-              </b-row>
-            </b-form-group>
+    <div class="container-fluid w-90">
+      <div class="container-fluid-body mt-5 mb-5">
+        <div class="use-management-title">
+          <div class="card-body p-8">
+            <div class="d-flex justify-content-between mb-0" style="border-bottom: 1px solid rgba(0, 0, 0, 0.25);">
+              <div class="basic">
+                <h1 class="font-weight-bold display-4">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
+              </div>
+              <!--              <div>-->
+              <!--                <button class="btn btn-sign text-uppercase" @click="toCreatePage">-->
+              <!--                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}-->
+              <!--                </button>-->
+              <!--              </div>-->
+            </div>
           </div>
-          <div class="d-flex btn-submit py-5 px-5"> <b-button variant="warning" class="fs-15 px-5" @click="returnToIndex()">{{ $t('LANGUAGES.TEXT_BUTTON_RETURN') }}</b-button> <b-button variant="warning" class="fs-15 px-5" type="submit" dusk="submit">{{ $t('LANGUAGES.TEXT_BUTTON_SUBMIT') }}</b-button>  </div>
-        </b-form>
-      </b-col>
+        </div>
+        <div class="use-management-title-table">
+          <div class="card-body">
+            <ValidationObserver
+              ref="obsEditEmployee"
+              tag="div"
+            >
+              <h4 class="mb-0 font-weight-normal">
+                <div>
+                  <a href="/user/index" style="display: flex;width: 12%;"><b-icon-chevron-left /><h4>All Employee</h4></a>
+                </div>
+                <div>
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="name"
+                    rules="required"
+                  >
+                    <b-input-group>
+                      <b-form-input
+                        id="nameEmployee"
+                        v-model="formEdit.name"
+                        class="border-0 border-bottom-important"
+                        style="font-size: 40px"
+                      />
+                      <span class="col-1">
+                        <b-button @click="onSubmit($event)" variant="primary" class="submit_button" style="width: 110px">Save</b-button>
+                      </span>
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="email"
+                    rules="required|email"
+                  >
+                    <label for="emailEmployee" style="font-size: 16px;">Email:</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="emailEmployee"
+                        v-model="formEdit.email"
+                        class="border-0 border-bottom-important col-11"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px;">
+                <header class="line-form">
+                  <h4>Face Data</h4>
+                </header>
+<!--                <div style="margin-bottom: 15px;">-->
+<!--                  <label for="linkFace" style="font-size: 16px;">Link:</label>-->
+<!--                  <b-input-group>-->
+<!--                    <b-form-input-->
+<!--                      id="linkFace"-->
+<!--                      class="border-0 border-bottom-important"-->
+<!--                    />-->
+<!--                  </b-input-group>-->
+<!--                </div>-->
+                <div>
+                  <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
+                    <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
+                      <div
+                        :class="{check_with_or_without_mask: withoutMask}"
+                        style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
+                        @click="checkWithoutMask()">
+                        <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
+                        <div style="margin-right: 20px">
+                          <p>Face image</p>
+                          <p>without mask</p>
+                        </div>
+                      </div>
+                      <div
+                        :class="{check_with_or_without_mask: withMask}"
+                        style="display: flex; gap: 1rem;cursor: pointer"
+                        @click="checkWithMask()">
+                        <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
+                        <div style="margin-right: 20px">
+                          <p>Face image</p>
+                          <p>with mask</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style="overflow-x: auto;
+                      white-space: nowrap;"
+                    >
+                      <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        style="display: none;"
+                        @change="handleFileSelect"
+                      >
+                      <div class="image-preview">
+                        <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">
+                          <img :src="convertFileToUrl(file)">
+                          <b-icon-x-circle
+                            style="display: block;
+                          float: right;
+                          position: relative;
+                          top: -9px;
+                          right: 8px;
+                          height: 17px;
+                          cursor: pointer"
+                            @click="removeFile(index)"
+                          >Remove
+                          </b-icon-x-circle>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex;font-size: large; gap: 1rem">
+                      <div style="color: blue;cursor: pointer;" @click="openFilePicker">Select File</div>
+                      <div>|</div>
+                      <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 15px;margin-bottom: 15px;">
+                  <header class="line-form">
+                    <h4>Role</h4>
+                  </header>
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="role"
+                    rules="required"
+                  >
+                    <b-form-checkbox-group
+                      id="role_id_create"
+                      v-model="formEdit.role_id"
+                      :options="listRoles ?? []"
+                      value-field="id"
+                      text-field="name"
+                    />
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px;">
+                <header class="line-form">
+                  <h4>Retirement</h4>
+                </header>
+                <div style="margin-bottom: 15px;">
+                  <b-input-group>
+                    <b-form-input
+                      v-model="formEdit.retirement_date"
+                      type="date"
+                    />
+                  </b-input-group>
+                </div>
+              </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 35px;">
+                <header>
+                  <h4 @click="showModalDelete()" class="text-error" style="font-size: 20px; cursor: pointer">Delete Employee</h4>
+                </header>
+              </h4>
+              <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
+              <!--                <header>-->
+              <!--                  <h4>Password</h4>-->
+              <!--                </header>-->
+              <!--                <div>-->
+              <!--                  <ValidationProvider-->
+              <!--                    v-slot="{ errors }"-->
+              <!--                    name="password"-->
+              <!--                    vid="password"-->
+              <!--                    rules="required"-->
+              <!--                  >-->
+              <!--                    <label for="password" style="font-size: 16px;">Password:</label>-->
+              <!--                    <b-input-group>-->
+              <!--                      <b-form-input-->
+              <!--                        id="password"-->
+              <!--                        v-model="formEdit.password"-->
+              <!--                        type="password"-->
+              <!--                      />-->
+              <!--                    </b-input-group>-->
+              <!--                    <div class="text-error">-->
+              <!--                      {{ errors[0] }}-->
+              <!--                    </div>-->
+              <!--                  </ValidationProvider>-->
+              <!--                </div>-->
+              <!--                <div style="margin-bottom: 15px;">-->
+              <!--                  <ValidationProvider-->
+              <!--                    v-slot="{ errors }"-->
+              <!--                    name="password_confirm"-->
+              <!--                    rules="required|confirmed:password"-->
+              <!--                  >-->
+              <!--                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>-->
+              <!--                    <b-input-group>-->
+              <!--                      <b-form-input-->
+              <!--                        id="password_confirm"-->
+              <!--                        v-model="formEdit.password_confirmation"-->
+              <!--                        type="password"-->
+              <!--                      />-->
+              <!--                    </b-input-group>-->
+              <!--                    <div class="text-error">-->
+              <!--                      {{ errors[0] }}-->
+              <!--                    </div>-->
+              <!--                  </ValidationProvider>-->
+              <!--                </div>-->
+              <!--              </h4>-->
+            </ValidationObserver>
+          </div>
+        </div>
+      </div>
     </div>
+    <!-- Modal delete -->
+    <b-modal id="bv-modal-delete" hide-footer hide-header>
+      <header class="style-title-modal p-3 text-white">
+        <h4>{{ $t('LANGUAGES.TEXT_MODAL_DELETE_USER') }}</h4>
+      </header>
+      <div>
+        <div class="d-block text-center p-4 style-modal">
+          <h4 class="text-center mb-0 font-weight-normal">
+            {{ $t('LANGUAGES.TEXT_DO_YOU_WANT_TO_DELETE_USER_NAME') }}
+          </h4>
+          <h2>{{ nameEmployee }}</h2>
+        </div>
+      </div>
+      <div class="justify-content-end d-flex p-3">
+        <b-button
+          class="mt-3 w-25 fs-12 btn btn-accept"
+          squared
+          @click="submitDelete()"
+        >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
+        <b-button
+          class="mt-3 ml-3 w-25 fs-12 btn btn-close"
+          squared
+          @click="hideModalDelete()"
+        >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>
+      </div>
+    </b-modal>
   </div>
 </template>
 
 <script>
 import * as CONFIGS from '../../configs/index';
-import { regEmail } from '../../utils/regexr';
 import * as UserApi from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
-import * as CompanyBranchApi from '../../api/company_branch';
+import { ValidationObserver, ValidationProvider } from 'vee-validate';
+import { getAllRole } from '../../api/role';
+import { deleteOneUser } from "../../api/user";
+
 export default {
   name: 'EditUser',
-
+  components: {
+    ValidationObserver,
+    ValidationProvider,
+  },
   data() {
     return {
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       authorityOption: CONFIGS.AuthorityList,
       branchList: [],
-      form: {
-        role_id: '',
-        department_id: '',
-        username: '',
+      formEdit: {
+        name: '',
         email: '',
-        password: '',
-      },
-      error: {
-        role_id: null,
-        department_id: null,
-        username: null,
-        email: null,
-        password: null,
+        // password: '',
+        // password_confirmation: '',
+        role_id: '',
+        retirement_date: '',
       },
       id: this.$route.params.id,
       userInfo: {},
       author: true,
+      selectedFiles: [],
+      withoutMask: true,
+      withMask: false,
+      nameEmployee: '',
     };
   },
   computed: {
@@ -165,13 +302,16 @@ export default {
     companyBranch() {
       return this.$store.getters.listBranch;
     },
+    listRoles() {
+      return this.$store.getters.listRoles;
+    },
   },
   watch: {
     companyBranch() {
     },
   },
   created() {
-    this.getAllCompanyBranch();
+    this.getListRole();
     this.getUserInfo();
   },
 
@@ -182,6 +322,22 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
+    async getListRole(){
+      this.openLoading();
+      await getAllRole().then((response) => {
+        if (response.code === 200){
+          this.$store.dispatch('app/saveListRoles', response.data);
+          this.closeLoading();
+        }
+      }).catch((error) => {
+        this.closeLoading();
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: error.message,
+        });
+      });
+    },
     async getUserInfo() {
       this.openLoading();
       await UserApi.getOneUser(this.id)
@@ -191,25 +347,15 @@ export default {
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
             content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_GET_USER_INFO_SUCCESSFULLY'),
           });
-          if (this.roleId === this.headQuarter) {
-            this.getAllCompanyBranch();
-          }
-          // console.log('Data return', response.data);
-          this.form = response.data;
-          // const listValue = [1, 2, 3];
-          const departmentList = [];
-          // console.log('Manh', response.data.company_branchs);
-          if (response.data.role_id === 2){
-            this.author = false;
-            const departmentByRole = this.companyBranch.filter(x => x.role_id === response.data.role_id);
-            departmentByRole.length > 0 && departmentByRole.map(item => {
-              departmentList.push({ value: item.id, text: item.name });
-            });
-            // console.log('departmentByRole ==>', departmentByRole);
-            this.branchList = departmentList;
-            // console.log('branchList ==>', this.branchList);
-            this.form.department_id = response.data.company_branchs.id;
-          }
+          this.nameEmployee = response.data.name;
+          this.formEdit = {
+            name: response.data.name,
+            email: response.data.email,
+            // password: '',
+            // password_confirmation: '',
+            role_id: response.data.role_id,
+            retirement_date: this.formatTimeStamp(response.data.retirement_date),
+          };
           this.closeLoading();
         })
         .catch((error) => {
@@ -221,151 +367,126 @@ export default {
           });
         });
     },
-
-    returnToIndex() {
-      this.$router.push('/user/index');
+    formatTimeStamp(date){
+      const datePart = date.split(' ')[0]; // Extract the date part from the received value
+      const parts = datePart.split('-');
+      const year = parts[0];
+      const month = parts[1];
+      const day = parts[2];
+      return `${year}-${month}-${day}`;
     },
-    checkValidate() {
-      if (this.form.role_id === '' && this.roleId === this.headQuarter) {
-        this.error.role_id = false;
-      } else if (this.form.department_id === '' && this.roleId === this.headQuarter && this.form.role_id === 2) {
-        this.error.department_id = false;
-      } else if (this.form.department_id === null && this.roleId === this.headQuarter && this.form.role_id === 2) {
-        this.error.department_id = false;
-      } else if (this.form.username === '') {
-        this.error.username = false;
-      } else if (!this.form.email || !this.checkEmail(this.form.email)) {
-        this.error.email = false;
-      } else if (this.form.password && this.form.password.length < 8) {
-        this.error.password = false;
-      } else {
-        return true;
-      }
-    },
-    checkEmail(email) {
-      return regEmail.test(email);
-    },
-    handleChangeForm(event, field) {
-      const newValue = event;
-      // const listValue = [1, 2, 3];
-      const departmentList = [];
-      switch (field) {
-        case 'role_id':
-          if (newValue) {
-            this.error.role_id = true;
-            this.branchList = [];
-            if (newValue === 2){
-              // for (let i = 0; i < listValue.length; i++) {
-              //   departmentList.push({ value: this.companyBranch[listValue[i]].id, text: this.companyBranch[listValue[i]].name });
-              // }
-              const departmentByRole = this.companyBranch.filter(x => x.role_id === newValue);
-              departmentByRole.length > 0 && departmentByRole.map(item => {
-                departmentList.push({ value: item.id, text: item.name });
-              });
-              this.branchList = departmentList;
-              this.author = false;
-            } else {
-              this.author = true;
-              this.form.department_id = '';
-              this.branchList = [];
-              this.error.department_id = null;
-              // delete this.error['department_id'];
-            }
-          } else {
-            this.branchList = [];
-            this.author = true;
-            this.form.department_id = '';
-          }
-          break;
-        case 'department_id':
-          if (newValue) {
-            this.error.department_id = true;
-          } else {
-            this.error.department_id = false;
-          }
-          break;
-        case 'username':
-          if (newValue.length > 0) {
-            this.error.username = true;
-          } else {
-            this.error.username = false;
-          }
-          break;
-        case 'email':
-          if (newValue.length === 0 || !this.checkEmail(newValue)) {
-            this.error.email = false;
-          } else {
-            this.error.email = true;
-          }
-          break;
-        case 'password':
-          if (newValue.length > 7 && newValue.length < 17) {
-            this.error.password = true;
-          } else {
-            this.error.password = false;
-          }
-          break;
-        default:
-          break;
-      }
-    },
-    async getAllCompanyBranch() {
-      await CompanyBranchApi.getAllCompanyBranch()
-        .then((response) => {
-          if (response.code === 200) {
-            // console.log('listCompany===>', response);
-            const listBranch = response.data.result;
-            this.$store.dispatch('app/saveListBranch', listBranch);
-          }
-        })
-        .catch((error) => {
-          MakeToast({
-            variant: 'warning',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: error.message,
-          });
-        });
-    },
-    onSubmit(e) {
+    async onSubmit(e) {
       e.preventDefault();
-      this.checkValidate();
-      if (this.checkValidate() === true){
-        const EDIT_DATA = {
-          role_id: this.form.role_id,
-          department_id: this.form.department_id,
-          username: this.form.username,
-          email: this.form.email,
-        };
-        if (this.form.password) {
-          EDIT_DATA.password = this.form.password;
-          // console.log('Co chay vao day');
-        }
-        // console.log('Form edit gui di', EDIT_DATA);
-        this.openLoading();
-        UserApi.putOneUser(this.id, EDIT_DATA)
+      const isValid = await this.$refs.obsEditEmployee.validate();
+      if (isValid === true) {
+        // const EDIT_DATA = {
+        //   role_id: this.form.role_id,
+        //   department_id: this.form.department_id,
+        //   username: this.form.username,
+        //   email: this.form.email,
+        // };
+        // if (this.form.password) {
+        //   EDIT_DATA.password = this.form.password;
+        //   // console.log('Co chay vao day');
+        // }
+        // // console.log('Form edit gui di', EDIT_DATA);
+        // this.openLoading();
+        await UserApi.putOneUser(this.id, this.formEdit)
           .then((response) => {
             if (response.code === 200) {
-              this.closeLoading();
+              // this.closeLoading();
               MakeToast({
                 variant: 'success',
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_EDIT_USER_SUCCESSFULLY'),
+                content: 'Edit employee success',
               });
-              this.returnToIndex();
+              this.$router.push('/user/index');
+            } else {
+              // this.closeLoading();
+              MakeToast({
+                variant: 'warning',
+                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                content: response.message_content,
+              });
             }
           })
           .catch((error) => {
-            this.closeLoading();
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
               content: error.message,
             });
           });
+      } else {
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: 'Still error',
+        });
       }
     },
-    formatText(e) {
-      return String(e).substring(0, 255);
+    checkWithoutMask(){
+      if (!this.withoutMask){
+        this.selectedFiles.splice(0, this.selectedFiles.length);
+      }
+      this.withoutMask = true;
+      this.withMask = false;
+    },
+    checkWithMask(){
+      if (!this.withMask){
+        this.selectedFiles.splice(0, this.selectedFiles.length);
+      }
+      this.withoutMask = false;
+      this.withMask = true;
+    },
+    handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // const fileURL = URL.createObjectURL(file);
+        this.selectedFiles.push(file);
+      }
+    },
+    openFilePicker() {
+      this.$refs.fileInput.click();
+    },
+    handleFileSelect(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.selectedFiles.push(file);
+      }
+    },
+    convertFileToUrl(file){
+      return URL.createObjectURL(file);
+    },
+    removeFile(index) {
+      this.selectedFiles.splice(index, 1);
+    },
+    chooseFiles() {
+      this.$refs.fileInput.click();
+    },
+    removeFileAll(){
+      this.selectedFiles.splice(0, this.selectedFiles.length);
+    },
+    showModalDelete(){
+      this.$bvModal.show('bv-modal-delete');
+    },
+    hideModalDelete() {
+      this.$bvModal.hide('bv-modal-delete');
+    },
+    async submitDelete() {
+      if (this.id) {
+        await deleteOneUser(this.id).then(() => {
+          MakeToast({
+            variant: 'success',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+            content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
+          });
+          this.$router.push('/user/index');
+        });
+      }
     },
   },
 };
@@ -418,5 +539,62 @@ export default {
   color: #6f737c;
 }
 select:required:invalid { color: #6f737c; }
+.text-error {
+  line-height: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  color: red;
+  font-size: 12px;
+}
+.border-bottom-important{
+  border-bottom: 1px solid rgba(0, 0, 0, 1) !important;
+  border-radius: unset;
+}
+.image-dropzone {
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  background: rgb(245 246 247);
+  width: 800px;
+}
+
+.image-dropzone p {
+  margin: 0;
+}
+
+.image-preview {
+  display: table;
+  flex-wrap: wrap;
+  height: 200px;
+  margin: 15px;
+}
+
+.preview-item {
+  display: inline-block;
+  margin: 10px;
+}
+
+.preview-item img {
+  width: 180px;
+  height: 200px;
+}
+
+.preview-item button {
+  margin-top: 5px;
+}
+.check_with_or_without_mask{
+  border-bottom: 4px solid;
+}
+.line-form{
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+}
+.submit_button:hover{
+  background: #0f68b1 !important;
+}
 </style>
 
