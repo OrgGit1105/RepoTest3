@@ -66,6 +66,13 @@ class ArrivingReportController extends Controller
      *     ),
      *   ),
      *   @OA\Parameter(
+     *     name="user_id",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
      *     name="page",
      *     in="query",
      *     @OA\Schema(
