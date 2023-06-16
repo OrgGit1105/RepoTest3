@@ -265,7 +265,7 @@ import * as UserApi from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 import { getAllRole } from '../../api/role';
-import { deleteOneUser } from "../../api/user";
+import { deleteOneUser } from '../../api/user';
 
 export default {
   name: 'EditUser',
@@ -354,7 +354,7 @@ export default {
             // password: '',
             // password_confirmation: '',
             role_id: response.data.role_id,
-            retirement_date: this.formatTimeStamp(response.data.retirement_date),
+            retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
           };
           this.closeLoading();
         })
