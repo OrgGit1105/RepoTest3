@@ -20,5 +20,11 @@ return [
   ],
   'token' => [
       'false'=> 'Token not provided',
+  ],
+  'arriving_report' => [
+    'time_in_more_than_time_out'=> 'Time in not more than time out',
+    'time_in_is_check'=> 'Employee time in is check',
+    'time_out_is_check'=> 'Employee time out is check',
+    'time_must_today'=> 'Please time_in must today',
   ]
 ];
