@@ -42,7 +42,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
   public function getList($request)
   {
-    $data = $this->model->with('user');
+    $data = $this->model->select('arriving_reports.*');
     $start_of_week=Carbon::now()->startOfWeek()->format('Y-m-d');
     $end_of_week=Carbon::now()->startOfWeek()->copy()->addDay(6)->format('Y-m-d');
     if (request()->has('start_date') && $request->start_date && request()->has('end_date') && $request->end_date) {
@@ -52,9 +52,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
       $data = $data->whereBetween("in_time", [$start_of_week, $end_of_week]);
     }
     if (request()->has('key_search') && $request->key_search) {
-      $data = $data->where('in_time', 'like', "%" . $request->key_search . "%")
-        ->orWhere('out_time', 'like', "%" . $request->key_search . "%")
-        ->orWhere('registration_type', 'like', "%" . $request->key_search . "%")
+      $data = $data
+        ->join('users', 'users.id', '=', 'arriving_reports.user_id')
+        ->where('users.name', 'like', "%" . $request->key_search . "%")
       ;
     }
     return $data->paginate($request->per_page);

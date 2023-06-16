@@ -161,7 +161,7 @@ export default {
                     content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
                   });
 
-                  this.$router.push('/');
+                  this.$router.push('/user/index');
                   // this.closeLoading();
                 })
                 .catch(() => {
@@ -200,7 +200,7 @@ export default {
       if (!this.account.email || !this.checkEmail(this.account.email)) {
         this.error.email = false;
         return false;
-      } else if (!this.account.password) {
+      } else if (!this.account.password || this.account.password.length < 8) {
         this.error.password = false;
         return false;
       } else {
