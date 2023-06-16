@@ -788,6 +788,18 @@ table#__BVID__46 {
   color: blue;
 }
 
+.image-dropzone {
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  background: rgb(245 246 247);
+  /*width: 800px;*/
+}
+
+.image-dropzone p {
+  margin: 0;
+}
+
 .image-preview {
   display: table;
   flex-wrap: wrap;
