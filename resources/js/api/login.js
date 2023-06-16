@@ -3,7 +3,7 @@ import request from '../utils/request.js';
 import { template } from './template.js';
 
 const urlAPI = {
-  urlPOSTLogin: template`/api/auth/login`,
+  urlPOSTLogin: template`/auth/login`,
   urlPOSTRegister: template`/auth/register`,
   urlPOSTRemindPassword: template`/auth/remind-password`,
   urlPOSTRefreshUser: template`/auth/refresh`,

@@ -125,8 +125,9 @@ class ArrivingReportController extends Controller
     public function store(ArrivingReportRequest $request)
     {
         try {
-            $data = $this->repository->create($request->all());
-            return $this->responseJson(200, new ArrivingReportResource($data));
+//            $data = $this->repository->create($request->all());
+//            return $this->responseJson(200, new ArrivingReportResource($data));
+            return $this->repository->create($request->all());
         } catch (\Exception $e) {
             throw $e;
         }
@@ -230,11 +231,12 @@ class ArrivingReportController extends Controller
     public function update(ArrivingReportRequest $request, $id)
     {
         $attributes = $request->except([]);
-        $data = $this->repository->update($attributes, $id);
-        if (!$data){
-          return $this->responseJsonError(Response::HTTP_NOT_FOUND, "report not found", "report not found");
-        }
-        return $this->responseJson(200, new BaseResource($data));
+//        $data = $this->repository->update($attributes, $id);
+//        if (!$data){
+//          return $this->responseJsonError(Response::HTTP_NOT_FOUND, "report not found", "report not found");
+//        }
+//        return $this->responseJson(200, new BaseResource($data));
+        return $this->repository->update($attributes, $id);
     }
 
     /**

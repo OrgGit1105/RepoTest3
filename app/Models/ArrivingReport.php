@@ -27,6 +27,8 @@ class ArrivingReport extends Model
       'link_face_in',
       'link_face_out',
       'status',
+      'created_at',
+      'updated_at',
     ];
 
     protected $dates = ['deleted_at'];
