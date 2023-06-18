@@ -789,6 +789,22 @@ table#__BVID__46 {
 .email-link:hover {
   color: blue;
 }
+<<<<<<< HEAD
+=======
+
+.image-dropzone {
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  background: rgb(245 246 247);
+  /*width: 800px;*/
+}
+
+.image-dropzone p {
+  margin: 0;
+}
+
+>>>>>>> develop
 .image-preview {
   display: table;
   flex-wrap: wrap;

@@ -14,7 +14,7 @@ class AddColumnToImageFacesTable extends Migration
     public function up()
     {
         Schema::table('image_faces', function (Blueprint $table) {
-            $table->string('face_rekognition_id');
+            $table->text('face_rekognition_id');
         });
     }
 
