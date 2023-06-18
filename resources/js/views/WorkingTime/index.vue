@@ -9,7 +9,7 @@
                 <h1 class="title">Working time Management</h1>
               </div>
               <div class="basic">
-                <button class="btn btn-date d-flex align-items-center" @click="toCreatePage">
+                <button class="btn btn-date d-flex align-items-center">
                   <b-icon class="text-btn" icon="chevron-left" />
                   <span class="text-btn">3月20日 -  4月18日</span>
                   <b-icon class="text-btn" icon="chevron-right" />
@@ -21,30 +21,32 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill">
-            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createNew"></i>
+            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="showModalAdd()"></i>
             <div class="box-search align-items-center" :class="display">
               <el-input
                 placeholder="検索"
                 prefix-icon="el-icon-search"
-                v-model="search">
+                v-model="formSearch.search"
+                @keyup.enter.native="handleSearch()">
               </el-input>
               <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
             </div>
             <div class="d-flex justify-content-end align-items-center">
               <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
               <template class="select-custom">
-                <el-select v-model="value" placeholder="Select" class="el-select-custom">
-                  <el-option
-                    class="el-option-custom"
-                    :label="'All Employee'">
-                  </el-option>
-                  <el-option
-                    v-for="item in selectEmployee"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                    divided>
-                  </el-option>
+                <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom">
+                    <el-option
+                      class="el-option-custom"
+                      label="All Employee"
+                      value="">
+                    </el-option>
+                    <el-option
+                      v-for="item in listEmployee"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id"
+                      >
+                    </el-option>
                 </el-select>
               </template>
             <i class="el-icon-download custom-icon-down cursor-pointer"></i>
@@ -53,34 +55,34 @@
           <hr class="line">
           <template class="">
             <el-table
-              :data="listUser"
+              :data="listWorkingTimes"
               style="width: 100%"
               :row-style="rowWorkingStyle"
               @row-click="showDetail">
               <el-table-column
-                prop="no"
+                prop="id"
                 label="No"
                 width="350"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="employee"
+                prop="user.name"
                 label="Employee name"
                 width="250"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="in"
+                prop="in_time"
                 label="IN"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="out"
+                prop="out_time"
                 label="OUT"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="type"
+                prop="out_time"
                 label="Input type"
                 align="center">
               </el-table-column>
@@ -103,38 +105,66 @@
         <!-- Modal add new -->
         <el-dialog class="title-add-working" title="Add Working time" :visible.sync="openModalAdd" width="35%">
           <el-form :model="form" label-width="120px" label-position="top">
-            <el-form-item label="Activity zone">
-              <el-select v-model="form.region" placeholder="please select your zone">
-                <el-option label="Zone one" value="shanghai"></el-option>
-                <el-option label="Zone two" value="beijing"></el-option>
+            <el-form-item label="Employee Name" required>
+              <el-select v-model="form.userId" placeholder="Please select employee name">
+                  <el-option
+                    v-for="item in listEmployee"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                    >
+                  </el-option>
               </el-select>
             </el-form-item>
           </el-form>
           <hr class="line">
           <p class="title-working m-0">Working Time</p>
-          <el-form :model="form" label-width="120px" label-position="top">
-            <el-form-item custom-class="label-cusom" label="In Time">
+          <el-form :model="form" :rules="rules" ref="form" label-width="120px" label-position="top">
+            <el-form-item custom-class="label-cusom" label="In Time" required>
               <el-col :span="7" class="mr-3">
-                <el-date-picker type="date" v-model="form.date1" style="width: 100%;"></el-date-picker>
+                <el-date-picker
+                  v-model="form.inDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;">
+                </el-date-picker>
               </el-col>
-              <el-col :span="5">
-                <el-time-picker v-model="form.date2" style="width: 100%;"></el-time-picker>
+                <span>{{ errors.first('indate') }}</span>
+              <el-col :span="6">
+                <el-time-picker
+                  v-model="form.inHour"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;">
+                </el-time-picker>
               </el-col>
             </el-form-item>
 
-            <el-form-item label="Out Time">
+            <el-form-item label="Out Time" required>
               <el-col :span="7" class="mr-3">
-                <el-date-picker type="date" v-model="form.date1" style="width: 100%;"></el-date-picker>
+                <el-date-picker
+                  v-model="form.outDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;">
+                </el-date-picker>
               </el-col>
-              <el-col :span="5">
-                <el-time-picker v-model="form.date2" style="width: 100%;"></el-time-picker>
+              <el-col :span="6">
+                <el-time-picker
+                  v-model="form.outHour"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;">
+                </el-time-picker>
               </el-col>
             </el-form-item>
           </el-form>
 
           <span slot="footer" class="dialog-footer">
             <el-button class="btn-cancle-custom" @click="openModalAdd = false">Cancel</el-button>
-            <el-button class="btn-add-custom" type="primary" @click="openModalAdd = false">Add</el-button>
+            <el-button class="btn-add-custom" type="primary" @click="createNew()">Add</el-button>
           </span>
         </el-dialog>
 
@@ -144,51 +174,60 @@
 </template>
 
 <script>
-import { getArrving } from '../../api/working_time';
-// import { MakeToast } from '../../utils/toast_message';
+import { getArrving, createNewWorkingTime } from '../../api/working_time';
+import { getAllUser } from '../../api/user';
+import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      search: '',
+      formSearch: {
+        search: '',
+        startDate: '',
+        endDate: ''
+      },
       pagination: {
         current_page: 1,
         per_page: 20,
         total_records: 0,
         isDisable: false,
       },
-      headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
-      infoModel: {},
-      listUser: [
-        { no: '1', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '1' },
-        { no: '2', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '2' },
-        { no: '3', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '3' },
-        { no: '4', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '4' },
-        { no: '5', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '5' },
-        { no: '6', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10', id: '6' },
-      ],
-      selectEmployee: [
-        { value: '1', text: 'All Employee' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-      ],
+      listWorkingTimes: [],
+      listEmployee: [],
+      employeeValue: '',
       form: {
-        region: '',
-        date1: '',
-        date2: '',
+        userId: '',
+        inDate: '',
+        inHour: '',
+        outDate: '',
+        outHour: '',
       },
       display: 'd-none',
       displaySearch: 'd-block',
       openModalAdd: false,
+      rules: {
+        userId: [
+          { required: true, message: 'Please input Activity name', trigger: 'blur' },
+        ],
+        inDate: [
+          { type: 'date', required: true, message: 'Please select Activity zone', trigger: 'change' }
+        ],
+        inHour: [
+          { type: 'time', required: true, message: 'Please pick a date', trigger: 'change' }
+        ],
+        outDate: [
+          { type: 'date', required: true, message: 'Please pick a time', trigger: 'change' }
+        ],
+        outHour: [
+          { type: 'time', required: true, message: 'Please select at least one activity type', trigger: 'change' }
+        ]
+      }
     };
   },
   created() {
     this.getWorkingTime();
+    this.getListEmployee();
   },
   methods: {
     openInputSearch() {
@@ -202,7 +241,7 @@ export default {
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
     },
-    createNew: function() {
+    showModalAdd: function() {
       this.openModalAdd = true;
     },
     showDetail: function(row, column, event) {
@@ -215,19 +254,75 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-
     async getWorkingTime() {
       let PARAMS = {};
       if(this.search !== ''){
         PARAMS = {
-          key_search: this.search,
+          key_search: this.formSearch.search,
+          start_date: this.formSearch.startDate,
+          end_date: this.formSearch.endDate,
         }
       }
-      console.log('hy',PARAMS);
       await getArrving(PARAMS)
         .then((response) => {
-          console.log('hy rs', response);
+          if (response.code === 200) {
+            this.listWorkingTimes = response.data.result;
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
+            });
+          }
         })
+        .catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
+    },
+    handleSearch() {
+      this.getWorkingTime();
+    },
+    async getListEmployee() {
+      const PARAMS = {};
+      await getAllUser(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.listEmployee = response.data.result;
+          }
+        })
+        .catch((error) => {
+          this.listEmployee = [];
+        });
+    },
+    async createNew() {
+      const PARAMS = {
+        user_id: this.form.userId,
+        in_time: this.form.inDate + ' ' + this.form.inHour,
+        out_time: this.form.outDate + ' ' + this.form.outHour,
+        registration_type: 'ipad'
+      };
+      console.log('PARAMS ADD', PARAMS)
+      await createNewWorkingTime(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_IMPORT_DATA_SUCCESSFULLY'),
+            });
+            this.getListEmployee();
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
     }
   },
 };

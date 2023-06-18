@@ -161,7 +161,7 @@ export default {
                     content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
                   });
 
-                  this.$router.push('/user/index');
+                  this.$router.push({ name: 'WorkingTimeManagement' });
                   // this.closeLoading();
                 })
                 .catch(() => {
