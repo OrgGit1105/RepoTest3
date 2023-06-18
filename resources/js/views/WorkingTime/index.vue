@@ -119,7 +119,7 @@
           </el-form>
           <hr class="line">
           <p class="title-working m-0">Working Time</p>
-          <el-form :model="form" :rules="rules" ref="form" label-width="120px" label-position="top">
+          <el-form :model="form" ref="form" label-width="120px" label-position="top">
             <el-form-item custom-class="label-cusom" label="In Time" required>
               <el-col :span="7" class="mr-3">
                 <el-date-picker
@@ -133,7 +133,7 @@
                 <span>{{ errors.first('indate') }}</span>
               <el-col :span="6">
                 <el-time-picker
-                  v-model="form.inHour"
+                  v-model="form.inTime"
                   format="HH:mm:ss"
                   value-format="HH:mm:ss"
                   style="width: 100%;">
@@ -153,7 +153,7 @@
               </el-col>
               <el-col :span="6">
                 <el-time-picker
-                  v-model="form.outHour"
+                  v-model="form.outTime"
                   format="HH:mm:ss"
                   value-format="HH:mm:ss"
                   style="width: 100%;">
@@ -199,30 +199,13 @@ export default {
       form: {
         userId: '',
         inDate: '',
-        inHour: '',
+        inTime: '',
         outDate: '',
-        outHour: '',
+        outTime: '',
       },
       display: 'd-none',
       displaySearch: 'd-block',
       openModalAdd: false,
-      rules: {
-        userId: [
-          { required: true, message: 'Please input Activity name', trigger: 'blur' },
-        ],
-        inDate: [
-          { type: 'date', required: true, message: 'Please select Activity zone', trigger: 'change' }
-        ],
-        inHour: [
-          { type: 'time', required: true, message: 'Please pick a date', trigger: 'change' }
-        ],
-        outDate: [
-          { type: 'date', required: true, message: 'Please pick a time', trigger: 'change' }
-        ],
-        outHour: [
-          { type: 'time', required: true, message: 'Please select at least one activity type', trigger: 'change' }
-        ]
-      }
     };
   },
   created() {
@@ -245,8 +228,7 @@ export default {
       this.openModalAdd = true;
     },
     showDetail: function(row, column, event) {
-      console.log(row.id);
-      this.$router.push({ name: 'WorkingTimeManagementDetail', id: row.id });
+      this.$router.push({ path: `/working-time/detail/${row.id}` });
     },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
@@ -300,8 +282,8 @@ export default {
     async createNew() {
       const PARAMS = {
         user_id: this.form.userId,
-        in_time: this.form.inDate + ' ' + this.form.inHour,
-        out_time: this.form.outDate + ' ' + this.form.outHour,
+        in_time: this.form.inDate + ' ' + this.form.inTime,
+        out_time: this.form.outDate + ' ' + this.form.outTime,
         registration_type: 'ipad'
       };
       console.log('PARAMS ADD', PARAMS)

@@ -19,7 +19,10 @@ Vue.use(IconsPlugin);
 Vue.use(VueAnime);
 Vue.use(VueApexCharts);
 Vue.use(ElementUI);
-Vue.use(VeeValidate);
+Vue.use(VeeValidate, {
+  inject: true,
+  fieldsBagName: 'veeFields'
+});
 Vue.config.productionTip = false;
 Vue.component('Apexchart', VueApexCharts);
 new Vue({
