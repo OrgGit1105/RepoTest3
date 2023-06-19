@@ -13,6 +13,7 @@ use App\Repositories\Contracts\ImageFaceRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\ImageFaceResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ImageFaceController extends Controller
 {
@@ -24,6 +25,7 @@ class ImageFaceController extends Controller
 
     public function __construct(ImageFaceRepositoryInterface $repository)
     {
+//        $this->middleware('auth:user')->except('compareFace');
         $this->repository = $repository;
     }
 
@@ -98,6 +100,7 @@ class ImageFaceController extends Controller
      *            @OA\Property(
      *              property="type",
      *              format="string",
+     *              description="in WITH_MASK, WITHOUT_MASK"
      *            ),
      *            @OA\Property(
      *              property="user_id",
@@ -111,7 +114,7 @@ class ImageFaceController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *      example={"code":200,"data":{{"type":"WithoutMask","user_id":"1","file":"WithoutMask\/1687149746BachImage.jpg","created_at":"2023-06-19T04:42:24.695193Z","face_rekognition_id":"6fb9401c-677b-47c5-8bf6-f80a3c092047"}}}
      *     )
      *   ),
      *   security={},
@@ -205,7 +208,22 @@ class ImageFaceController extends Controller
      */
     public function destroy($id)
     {
-      $this->repository->deleteImageFace($id);
-      return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+      return $this->repository->deleteImageFace($id);
     }
+
+    public function compareFace(Request $request){
+      return $this->repository->compareFace($request->all());
+    }
+
+//    public function getAllImageAWS(Request $request){
+//      $images = [];
+//      $files = Storage::disk('s3')->files($request->type);
+//      foreach ($files as $file) {
+//        $images[] = [
+//          'name' => str_replace('images/', '', $file),
+//          'src' => config('services.aws.urlImage'). $file
+//        ];
+//      }
+//      return $images;
+//    }
 }

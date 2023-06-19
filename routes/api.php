@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::post('image_face/compareFace', [ImageFaceController::class, 'compareFace']);
 Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors']], function () {
   Route::group(['prefix' => 'auth'], function () {
     Route::post('login', 'AuthController@login')->name('user.login');
@@ -34,4 +35,3 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
     });
   });
 });
-
