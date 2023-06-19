@@ -100,7 +100,7 @@ class ImageFaceController extends Controller
      *            @OA\Property(
      *              property="type",
      *              format="string",
-     *              description="in WITH_MASK, WITHOUT_MASK"
+     *              description="in WithoutMask, WithMask"
      *            ),
      *            @OA\Property(
      *              property="user_id",
@@ -211,6 +211,43 @@ class ImageFaceController extends Controller
       return $this->repository->deleteImageFace($id);
     }
 
+  /**
+   * @OA\Post(
+   *   path="/api/image_face/compareFace",
+   *   tags={"ImageFace"},
+   *   summary="Compare image_face",
+   *   operationId="image_face_compare",
+   *   @OA\RequestBody(
+   *       @OA\MediaType(
+   *          mediaType="application/json",
+   *          example={"file":"file", "type": "string"},
+   *          @OA\Schema(
+   *            required={"file","type"},
+   *            @OA\Property(
+   *              property="file",
+   *              format="file",
+   *            ),
+   *            @OA\Property(
+   *              property="type",
+   *              format="string",
+   *              description="in WithoutMask, WithMask",
+   *            ),
+   *         )
+   *      )
+   *   ),
+   *   @OA\Response(
+   *     response=200,
+   *     description="Send request success",
+   *     @OA\MediaType(
+   *      mediaType="application/json",
+   *      example={"code":200,"data":{"id":7,"file":"WithoutMask\/1687151741BachImage.jpg","user_id":1,"type":"WithoutMask","created_at":"2023-06-19 12:15:38","updated_at":null,"deleted_at":null,"face_rekognition_id":"2ad7c68b-68cb-4c55-a0d4-b2ca39b3c65b"}}
+   *     )
+   *   ),
+   * )
+   * @param int $id
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Exception
+   */
     public function compareFace(Request $request){
       return $this->repository->compareFace($request->all());
     }
