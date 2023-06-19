@@ -53,7 +53,11 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     }
     if (request()->has('key_search') && $request->key_search) {
       $data = $data
-        ->where('users.name', 'like', "%" . $request->key_search . "%");
+        ->where('users.name', 'like', "%" . $request->key_search . "%")
+        ->orWhere('in_time', 'like', "%" . $request->key_search . "%")
+        ->orWhere('out_time', 'like', "%" . $request->key_search . "%")
+        ->orWhere('registration_type', 'like', "%" . $request->key_search . "%")
+      ;
     }
     if (request()->has('user_id') && $request->user_id) {
       $data = $data
@@ -64,14 +68,14 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
   public function create(array $attributes)
   {
-    $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time'],new DateTimeZone('Asia/Ho_Chi_Minh'));
-    $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time'],new DateTimeZone('Asia/Ho_Chi_Minh'));
+    $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
+    $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
     if ($in_time->getTimestamp() > $out_time->getTimestamp()){
       return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
     }
 
     // Kiểm tra xem hôm nay có đúng ngày hôm nay khôn đã check in chưa?
-    $dateTimeNow = new DateTime('now',new DateTimeZone('Asia/Ho_Chi_Minh'));
+    $dateTimeNow = new DateTime('now');
     if ($dateTimeNow->format('Y-m-d') != $in_time->format('Y-m-d')){
       return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_must_today'), trans('api.arriving_report.time_must_today'));
     }
@@ -107,8 +111,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
   }
    public function update(array $attributes, $id)
    {
-     $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time'],new DateTimeZone('Asia/Ho_Chi_Minh'));
-     $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time'],new DateTimeZone('Asia/Ho_Chi_Minh'));
+     $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
+     $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
      if ($in_time->getTimestamp() > $out_time->getTimestamp()){
        return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
      }

@@ -205,7 +205,8 @@ class ArrivingReportController extends Controller
     {
         try {
             $data = $this->repository->detail($id);
-            return $this->responseJson(200, new BaseResource($data));
+            $addFormatResult['result'] = $data;
+            return $this->responseJson(200, new BaseResource($addFormatResult));
         } catch (\Exception $e) {
             throw $e;
         }
