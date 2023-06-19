@@ -25,7 +25,8 @@
         "sentry/sentry-laravel": "^2.5",
         "symfony/dom-crawler": "^5.3",
         "tymon/jwt-auth": "^1.0",
-        "zbateson/mail-mime-parser": "^2.0"
+        "zbateson/mail-mime-parser": "^2.0",
+        "league/flysystem-aws-s3-v3": "~1.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.5",

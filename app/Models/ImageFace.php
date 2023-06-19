@@ -22,14 +22,15 @@ class ImageFace extends Model
       'file',
       'user_id',
       'type',
+      'face_rekognition_id',
       'created_at',
       'updated_at',
     ];
 
     public $timestamps = false;
 
-    const WITH_MASK = "WITH_MASK";
-    const WITHOUT_MASK = "WITHOUT_MASK";
+    const WITH_MASK = "WithMask";
+    const WITHOUT_MASK = "WithoutMask";
 
     protected $dates = ['deleted_at'];
 
