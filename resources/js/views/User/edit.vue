@@ -81,7 +81,7 @@
                 <!--                    />-->
                 <!--                  </b-input-group>-->
                 <!--                </div>-->
-                <div>
+                <div class="input-group">
                   <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
                     <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
                       <div
