@@ -23,7 +23,7 @@
               <div class="basic">
                 <b-icon-plus-circle
                   class="display-4 text-primary"
-                  style="height: 39px;"
+                  style="height: 39px;cursor: pointer"
                   @click="createForm()"
                 />
               </div>
