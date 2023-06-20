@@ -42,9 +42,9 @@
                     {{ role.name }}
                   </b-form-select-option>
                 </b-form-select>
-                <button class="btn btn-sign text-uppercase" style="width: 277px; height: 39px;">
-                  csv import
-                </button>
+<!--                <button class="btn btn-sign text-uppercase" style="width: 277px; height: 39px;">-->
+<!--                  csv import-->
+<!--                </button>-->
               </div>
             </div>
             <b-table
