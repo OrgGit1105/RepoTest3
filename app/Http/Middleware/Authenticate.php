@@ -30,7 +30,7 @@ class Authenticate extends BaseMiddleware
         }
 
         if (!$user) {
-            return ResponseService::responseJson(CODE_NOT_FOUND, '', 'user not found');
+            return ResponseService::responseJson(CODE_NOT_FOUND, '', 'this token user not found');
         }
         return $next($request);
 
