@@ -99,7 +99,7 @@
         </div>
 
         <!-- Modal create -->
-        <b-modal id="bv-modal-create" @hidden="hideCreateModal()" hide-footer hide-header>
+        <b-modal size="lg" id="bv-modal-create" @hidden="hideCreateModal()" hide-footer hide-header>
           <div>
             <ValidationObserver
               ref="obsAddEmployee"
