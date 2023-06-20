@@ -642,10 +642,16 @@ export default {
       const files = event.target.files;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        this.selectedFiles.push(file);
+        if (this.isImageFile(file)) {
+          this.selectedFiles.push(file);
+        }
       }
       this.validateFile = false;
       this.checkNumImage();
+    },
+    isImageFile(file) {
+      const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+      return allowedExtensions.test(file.name);
     },
     convertFileToUrl(file){
       return URL.createObjectURL(file);
