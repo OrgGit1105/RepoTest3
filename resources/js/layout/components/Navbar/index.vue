@@ -9,7 +9,7 @@
       <b-navbar-toggle target="nav-collapse" />
       <b-collapse id="nav-collapse" style="display: none;margin: 14px 23px 0px;" is-nav>
         <b-navbar-nav style="font-size: 34px; gap: 1rem">
-          <b-nav-item href="#">Working time</b-nav-item>
+          <b-nav-item href="/working-time/index">Working time</b-nav-item>
           <b-nav-item href="/user/index">Employee</b-nav-item>
         </b-navbar-nav>
 

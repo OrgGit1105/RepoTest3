@@ -40,7 +40,7 @@
                         style="font-size: 40px"
                       />
                       <span class="col-1">
-                        <b-button @click="onSubmit($event)" variant="primary" class="submit_button" style="width: 110px">Save</b-button>
+                        <b-button variant="primary" class="submit_button" style="width: 110px" @click="onSubmit($event)">Save</b-button>
                       </span>
                     </b-input-group>
                     <div class="text-error">
@@ -72,22 +72,23 @@
                 <header class="line-form">
                   <h4>Face Data</h4>
                 </header>
-<!--                <div style="margin-bottom: 15px;">-->
-<!--                  <label for="linkFace" style="font-size: 16px;">Link:</label>-->
-<!--                  <b-input-group>-->
-<!--                    <b-form-input-->
-<!--                      id="linkFace"-->
-<!--                      class="border-0 border-bottom-important"-->
-<!--                    />-->
-<!--                  </b-input-group>-->
-<!--                </div>-->
+                <!--                <div style="margin-bottom: 15px;">-->
+                <!--                  <label for="linkFace" style="font-size: 16px;">Link:</label>-->
+                <!--                  <b-input-group>-->
+                <!--                    <b-form-input-->
+                <!--                      id="linkFace"-->
+                <!--                      class="border-0 border-bottom-important"-->
+                <!--                    />-->
+                <!--                  </b-input-group>-->
+                <!--                </div>-->
                 <div>
                   <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
                     <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
                       <div
                         :class="{check_with_or_without_mask: withoutMask}"
                         style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
-                        @click="checkWithoutMask()">
+                        @click="checkWithoutMask()"
+                      >
                         <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
                         <div style="margin-right: 20px">
                           <p>Face image</p>
@@ -97,7 +98,8 @@
                       <div
                         :class="{check_with_or_without_mask: withMask}"
                         style="display: flex; gap: 1rem;cursor: pointer"
-                        @click="checkWithMask()">
+                        @click="checkWithMask()"
+                      >
                         <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
                         <div style="margin-right: 20px">
                           <p>Face image</p>
@@ -117,6 +119,38 @@
                         @change="handleFileSelect"
                       >
                       <div class="image-preview">
+                        <span v-if="linkFilesWithoutMask !== [] && withoutMask">
+                          <div v-for="(file, index) in linkFilesWithoutMask" :key="index" class="preview-item">
+                            <img :src="file.file">
+                            <b-icon-x-circle
+                              style="display: block;
+                          float: right;
+                          position: relative;
+                          top: -9px;
+                          right: 8px;
+                          height: 17px;
+                          cursor: pointer"
+                              @click="removeLinkFile(file,index)"
+                            >Remove
+                            </b-icon-x-circle>
+                          </div>
+                        </span>
+                        <span v-if="linkFilesWithMask !== [] && withMask">
+                          <div v-for="(file, index) in linkFilesWithMask" :key="index" class="preview-item">
+                            <img :src="file.file">
+                            <b-icon-x-circle
+                              style="display: block;
+                          float: right;
+                          position: relative;
+                          top: -9px;
+                          right: 8px;
+                          height: 17px;
+                          cursor: pointer"
+                              @click="removeLinkFile(file,index)"
+                            >Remove
+                            </b-icon-x-circle>
+                          </div>
+                        </span>
                         <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">
                           <img :src="convertFileToUrl(file)">
                           <b-icon-x-circle
@@ -138,6 +172,9 @@
                       <div>|</div>
                       <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
                     </div>
+                  </div>
+                  <div v-if="validateFile" class="text-error">
+                    {{ messageErrorFile }}
                   </div>
                 </div>
 
@@ -178,7 +215,7 @@
               </h4>
               <h4 class="mb-0 font-weight-normal" style="margin-top: 35px;">
                 <header>
-                  <h4 @click="showModalDelete()" class="text-error" style="font-size: 20px; cursor: pointer">Delete Employee</h4>
+                  <h4 class="text-error" style="font-size: 20px; cursor: pointer" @click="showModalDelete()">Delete Employee</h4>
                 </header>
               </h4>
               <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
@@ -262,10 +299,12 @@
 <script>
 import * as CONFIGS from '../../configs/index';
 import * as UserApi from '../../api/user';
+import * as ImageApi from '../../api/image_face';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 import { getAllRole } from '../../api/role';
 import { deleteOneUser } from '../../api/user';
+import { getImageByUserId } from '../../api/image_face';
 
 export default {
   name: 'EditUser',
@@ -293,6 +332,11 @@ export default {
       withoutMask: true,
       withMask: false,
       nameEmployee: '',
+      linkFilesWithoutMask: [],
+      linkFilesWithMask: [],
+      linkFileDelete: [],
+      validateFile: false,
+      messageErrorFile: [],
     };
   },
   computed: {
@@ -313,6 +357,7 @@ export default {
   created() {
     this.getListRole();
     this.getUserInfo();
+    this.getImageByUserId();
   },
 
   methods: {
@@ -367,6 +412,38 @@ export default {
           });
         });
     },
+    async getImageByUserId(){
+      this.openLoading();
+      await getImageByUserId(this.id)
+        .then((response) => {
+          response.data.forEach((element) => {
+            if (element.type === 'WithoutMask'){
+              this.linkFilesWithoutMask.push({
+                id: element.id,
+                file: element.file,
+                type: element.type,
+                face_rekognition_id: element.face_rekognition_id,
+              });
+            }
+            if (element.type === 'WithMask'){
+              this.linkFilesWithMask.push({
+                id: element.id,
+                file: element.file,
+                type: element.type,
+                face_rekognition_id: element.face_rekognition_id,
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          this.closeLoading();
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
+    },
     formatTimeStamp(date){
       const datePart = date.split(' ')[0]; // Extract the date part from the received value
       const parts = datePart.split('-');
@@ -377,8 +454,9 @@ export default {
     },
     async onSubmit(e) {
       e.preventDefault();
+      this.checkNumImage();
       const isValid = await this.$refs.obsEditEmployee.validate();
-      if (isValid === true) {
+      if (isValid === true && !this.validateFile) {
         // const EDIT_DATA = {
         //   role_id: this.form.role_id,
         //   department_id: this.form.department_id,
@@ -392,7 +470,7 @@ export default {
         // // console.log('Form edit gui di', EDIT_DATA);
         // this.openLoading();
         await UserApi.putOneUser(this.id, this.formEdit)
-          .then((response) => {
+          .then(async(response) => {
             if (response.code === 200) {
               // this.closeLoading();
               MakeToast({
@@ -400,7 +478,80 @@ export default {
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
                 content: 'Edit employee success',
               });
-              this.$router.push('/user/index');
+              if (this.linkFileDelete.length !== 0){
+                for (const element of this.linkFileDelete) {
+                  await ImageApi.deleteImageByUserId(element.id)
+                    .then((response) => {
+                      if (response.code === 200){
+                        MakeToast({
+                          variant: 'success',
+                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                          content: `Delete image employee with link ${element.file} success`,
+                        });
+                      } else {
+                        MakeToast({
+                          variant: 'warning',
+                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                          content: response.message_content,
+                        });
+                      }
+                    })
+                    .catch((error) => {
+                      MakeToast({
+                        variant: 'warning',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                        content: error.message,
+                      });
+                    });
+                }
+              }
+
+              if (this.selectedFiles.length !== 0){
+                let typeImage = '';
+                if (this.withoutMask){
+                  typeImage = 'WithoutMask';
+                }
+                if (this.withMask){
+                  typeImage = 'WithMask';
+                }
+
+                const image = new FormData();
+
+                // Lặp qua danh sách các file đã chọn để upload
+                for (let i = 0; i < this.selectedFiles.length; i++) {
+                  const file = this.selectedFiles[i];
+                  image.append('file[]', file);
+                }
+
+                // Thêm các trường dữ liệu khác vào FormData
+                image.append('type', typeImage);
+                image.append('user_id', this.id);
+
+                await ImageApi.createImage(image)
+                  .then((response) => {
+                    if (response.code === 200){
+                      MakeToast({
+                        variant: 'success',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                        content: 'Add image employee success',
+                      });
+                    } else {
+                      MakeToast({
+                        variant: 'warning',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                        content: response.message_content,
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    MakeToast({
+                      variant: 'warning',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                      content: error.message,
+                    });
+                  });
+              }
+              await this.$router.push('/user/index');
             } else {
               // this.closeLoading();
               MakeToast({
@@ -423,6 +574,28 @@ export default {
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: 'Still error',
         });
+      }
+    },
+    removeLinkFile(file, index){
+      if (file.type === 'WithoutMask'){
+        this.linkFileDelete.push(file);
+        this.linkFilesWithoutMask.splice(index, 1);
+      }
+      if (file.type === 'WithMask'){
+        this.linkFileDelete.push(file);
+        this.linkFilesWithMask.splice(index, 1);
+      }
+      this.checkNumImage();
+    },
+    checkNumImage(){
+      if (this.linkFilesWithoutMask.length === 0 && this.selectedFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Image with mask must one image');
+      }
+
+      if (this.linkFilesWithMask.length === 0 && this.linkFilesWithoutMask.length === 0 && this.selectedFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Pleas choose image');
       }
     },
     checkWithoutMask(){
@@ -457,18 +630,34 @@ export default {
         const file = files[i];
         this.selectedFiles.push(file);
       }
+      this.validateFile = false;
+      this.checkNumImage();
     },
     convertFileToUrl(file){
       return URL.createObjectURL(file);
     },
     removeFile(index) {
       this.selectedFiles.splice(index, 1);
+      this.checkNumImage();
     },
     chooseFiles() {
       this.$refs.fileInput.click();
     },
     removeFileAll(){
       this.selectedFiles.splice(0, this.selectedFiles.length);
+      if (this.linkFilesWithoutMask !== []){
+        this.linkFilesWithoutMask.forEach((element) => {
+          this.linkFileDelete.push(element);
+        });
+        this.linkFilesWithoutMask.splice(0, this.linkFilesWithoutMask.length);
+      }
+      if (this.linkFilesWithMask !== []){
+        this.linkFilesWithMask.forEach((element) => {
+          this.linkFileDelete.push(element);
+        });
+        this.linkFilesWithMask.splice(0, this.linkFilesWithMask.length);
+      }
+      this.checkNumImage();
     },
     showModalDelete(){
       this.$bvModal.show('bv-modal-delete');

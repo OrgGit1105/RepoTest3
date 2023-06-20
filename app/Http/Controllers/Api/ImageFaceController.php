@@ -25,7 +25,6 @@ class ImageFaceController extends Controller
 
     public function __construct(ImageFaceRepositoryInterface $repository)
     {
-//        $this->middleware('auth:user')->except('compareFace');
         $this->repository = $repository;
     }
 

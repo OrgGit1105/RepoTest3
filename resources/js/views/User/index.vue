@@ -208,6 +208,9 @@
                       <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
                     </div>
                   </div>
+                  <div v-if="validateFile" class="text-error">
+                    {{ messageErrorFile }}
+                  </div>
                 </div>
               </h4>
               <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
@@ -329,6 +332,7 @@ import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { getAllRole } from '../../api/role';
+import * as ImageApi from '../../api/image_face';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
 export default {
@@ -370,6 +374,8 @@ export default {
       selectedFiles: [],
       withoutMask: true,
       withMask: false,
+      validateFile: false,
+      messageErrorFile: [],
     };
   },
   computed: {
@@ -505,16 +511,65 @@ export default {
       }
     },
     async submitCreate() {
+      this.checkNumImage();
       const isValid = await this.$refs.obsAddEmployee.validate();
-      if (!isValid) {
+      if (!isValid && this.validateFile) {
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: 'Still error',
         });
       } else {
-        await postOneUser(this.formCreate).then((response) => {
-          if (response.code === 200){
+        await postOneUser(this.formCreate).then(async(response) => {
+          if (response.code === 200) {
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Create employee success',
+            });
+            if (this.selectedFiles.length !== 0){
+              let typeImage = '';
+              if (this.withoutMask){
+                typeImage = 'WithoutMask';
+              }
+              if (this.withMask){
+                typeImage = 'WithMask';
+              }
+              const image = new FormData();
+
+              // Lặp qua danh sách các file đã chọn để upload
+              for (let i = 0; i < this.selectedFiles.length; i++) {
+                const file = this.selectedFiles[i];
+                image.append('file[]', file);
+              }
+
+              // Thêm các trường dữ liệu khác vào FormData
+              image.append('type', typeImage);
+              image.append('user_id', response.data.id);
+              await ImageApi.createImage(image)
+                .then((response) => {
+                  if (response.code === 200){
+                    MakeToast({
+                      variant: 'success',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                      content: 'Add image employee success',
+                    });
+                  } else {
+                    MakeToast({
+                      variant: 'warning',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                      content: response.message_content,
+                    });
+                  }
+                })
+                .catch((error) => {
+                  MakeToast({
+                    variant: 'warning',
+                    title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                    content: error.message,
+                  });
+                });
+            }
             this.formCreate = {
               name: '',
               email: '',
@@ -523,13 +578,8 @@ export default {
               role_id: '',
               status: 1,
             };
-            MakeToast({
-              variant: 'success',
-              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-              content: 'Create employee success',
-            });
             this.$bvModal.hide('bv-modal-create');
-            this.getListAllUser();
+            await this.getListAllUser();
           } else {
             MakeToast({
               variant: 'warning',
@@ -594,18 +644,28 @@ export default {
         const file = files[i];
         this.selectedFiles.push(file);
       }
+      this.validateFile = false;
+      this.checkNumImage();
     },
     convertFileToUrl(file){
       return URL.createObjectURL(file);
     },
     removeFile(index) {
       this.selectedFiles.splice(index, 1);
+      this.checkNumImage();
     },
     chooseFiles() {
       this.$refs.fileInput.click();
     },
     removeFileAll(){
       this.selectedFiles.splice(0, this.selectedFiles.length);
+      this.checkNumImage();
+    },
+    checkNumImage(){
+      if (this.selectedFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Pleas choose image');
+      }
     },
   },
 };
