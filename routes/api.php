@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors']], function () {
   Route::group(['prefix' => 'auth'], function () {
     Route::post('login', 'AuthController@login')->name('user.login');
+//    Route::post('loginTest', 'AuthController@loginTest')->name('user.loginTest');
     Route::post('logout', 'AuthController@logout');
   });
   Route::group(['middleware' => 'auth:user'], function () {

@@ -93,4 +93,31 @@ class AuthRepository  implements AuthRepositoryInterface
     auth()->logout();
     return [];
   }
+
+//  public function doLoginTest($request, $guard = null): array
+//  {
+//    if (request()->has('id')){
+//      $user=User::find(request()->get('id'));
+//      if (!$user){
+//        return [
+//          'attempt' => false,
+//          'msg' => trans('api.user.login.false')
+//        ];
+//      }
+//      $attempt = JWTAuth::fromUser($user);
+//      if ($attempt){
+////        $user = User::where('email', $request->email)
+////          ->firstOrFail();
+////        $this->update(['jwt_active'=>$attempt],$user->id);
+//        return [
+//          'user' => $user,
+//          'attempt' => $attempt
+//        ];
+//      }
+//    }
+//    return [
+//      'attempt' => false,
+//      'msg' => trans('api.login.false')
+//    ];
+//  }
 }
