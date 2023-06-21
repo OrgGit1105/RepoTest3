@@ -38,7 +38,7 @@
                         id="txtPassWord"
                         v-model="account.password"
                         dusk="password"
-                        class="mb-0 px-2 inputForm"
+                        class="mb-0 px-2 inputForm custom-is-valid"
                         :type="typePassword"
                         :state="error.password"
                         :placeholder="$t('LANGUAGES.TEXT_PLACEHOLDER_PASSWORD')"
@@ -265,6 +265,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.custom-is-valid.is-valid {
+  background-image: unset!important;
+}
 .login-page {
   position: relative;
   .bg-page {
