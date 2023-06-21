@@ -10,6 +10,7 @@
       <b-collapse id="nav-collapse" style="display: none;" is-nav>
         <b-navbar-nav style="font-size: 23px; gap: 2rem; margin-left: 100px">
           <b-nav-item class="custom-item-nav" href="/working-time/index">Working time</b-nav-item>
+          <b-nav-item class="custom-item-nav" href="/analytics/index">Analytics</b-nav-item>
           <b-nav-item class="custom-item-nav" href="/user/index">Employee</b-nav-item>
         </b-navbar-nav>
 

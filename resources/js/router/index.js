@@ -239,7 +239,7 @@ export const constantRoutes = [
         component: () => import('../views/WorkingTime/index'),
         name: 'WorkingTimeManagement',
         meta: {
-          title: 'routes.user',
+          // title: 'routes.user',
           icon: 'icofont-ui-user',
         },
       },
@@ -249,7 +249,27 @@ export const constantRoutes = [
         name: 'WorkingTimeManagementDetail',
         hidden: true,
         meta: {
-          title: 'routes.user',
+          // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
+  },
+  {
+    path: '/analytics',
+    redirect: '/analytics/index',
+    component: Layout,
+    meta: {
+      title: 'routes.user',
+      icon: 'icofont-ui-user',
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/Analytics/index'),
+        name: 'Analytics',
+        meta: {
+          // title: 'routes.user',
           icon: 'icofont-ui-user',
         },
       },
