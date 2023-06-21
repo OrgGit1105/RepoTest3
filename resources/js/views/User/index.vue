@@ -73,8 +73,8 @@
                 width="90"
               >
                 <template slot-scope="scope">
-                  <span v-if="checkDateRetired(scope.retirement_date)" style="color: red;">
-                    Retirement
+                  <span v-if="scope.retirement_date !== null" style="color: red;">
+                    Retired
                   </span>
                 </template>
               </el-table-column>
@@ -130,15 +130,28 @@
 
         <div class="use-management-pagianation">
           <div class="card-body pagianation">
-            <b-pagination
-              v-model="pagination.current_page"
-              :per-page="pagination.per_page"
-              :total-rows="pagination.total_records"
-              aria-controls="my-table"
-              :disabled="pagination.isDisable"
-            />
+            <el-pagination
+              background
+              layout="prev, pager, next"
+              class="d-flex justify-content-center"
+              :page-size="pagination.per_page"
+              :total="pagination.total_records"
+              :current-page.sync="pagination.current_page"
+              >
+            </el-pagination>
           </div>
         </div>
+<!--        <div class="use-management-pagianation">-->
+<!--          <div class="card-body pagianation">-->
+<!--            <b-pagination-->
+<!--              v-model="pagination.current_page"-->
+<!--              :per-page="pagination.per_page"-->
+<!--              :total-rows="pagination.total_records"-->
+<!--              aria-controls="my-table"-->
+<!--              :disabled="pagination.isDisable"-->
+<!--            />-->
+<!--          </div>-->
+<!--        </div>-->
 
         <!-- Modal create -->
         <b-modal id="bv-modal-create" size="lg" hide-footer hide-header @hidden="hideCreateModal()">
