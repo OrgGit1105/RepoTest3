@@ -4,6 +4,8 @@
         "enrollment": "在籍予",
         "csv": "XLSXインポート",
         "user": "ユーザ",
+        "employee": "Employee",
+        "working-time": "Working-time",
         "setting":"設定",
         "data": "データ管理",
         "roles":"役割管理"

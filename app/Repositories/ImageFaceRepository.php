@@ -7,6 +7,7 @@
 
 namespace Repository;
 
+use App\Http\Resources\UserResource;
 use App\Models\ImageFace;
 use App\Models\User;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryInterface
 {
@@ -175,18 +177,75 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
       try {
 
-        $result = $rekognitionClient->searchFacesByImage(
-          [
-            'CollectionId' => $attributes['type'],
-            'Image' => [
-              'Bytes' => file_get_contents($attributes['file']),
+        if (request()->hasFile('file')){
+          // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+          $checkImageMustOne = $rekognitionClient->detectFaces(
+            [
+              'Image' => [
+                'Bytes' => file_get_contents($attributes['file']),
+              ],
             ],
-          ]
-        );
+          );
+          // Ảnh chỉ được phép một người
+          if (count($checkImageMustOne['FaceDetails']) != 1 ){
+            ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+          }
 
+          $result = $rekognitionClient->searchFacesByImage(
+            [
+              'CollectionId' => $attributes['type'],
+              'Image' => [
+                'Bytes' => file_get_contents($attributes['file']),
+              ],
+            ]
+          );
+        } else {
+          // Chuyển đổi dữ liệu Base64 thành định dạng binary
+          $imageData = $attributes['file'];
+
+          // Loại bỏ phần khai báo định dạng ảnh
+          $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+
+          // Giải mã chuỗi base64 thành dữ liệu binary
+          $imageData = base64_decode($imageData);
+
+          // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+          $checkImageMustOne = $rekognitionClient->detectFaces(
+            [
+              'Image' => [
+                'Bytes' => $imageData,
+              ],
+            ],
+          );
+          // Ảnh chỉ được phép một người
+          if (count($checkImageMustOne['FaceDetails']) != 1 ){
+            ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+          }
+
+          $result = $rekognitionClient->searchFacesByImage(
+            [
+              'CollectionId' => $attributes['type'],
+              'Image' => [
+                'Bytes' => $imageData,
+              ],
+            ]
+          );
+        }
         $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
         $image = $this->model->where("face_rekognition_id",$faceId)->first();
-        return ResponseService::responseJson(200, $image);
+        $user = User::find($image->user_id);
+
+        if ($user == null){
+          return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.user.login.false'));
+        }
+        $token = JWTAuth::fromUser($user);
+        $user->jwt_active = $token;
+        $user->save();
+
+        return ResponseService::responseJson(200, [
+          'access_token' => "Bearer " . $token,
+          'profile' => new UserResource($user)
+        ]);
       } catch (Exception $ex){
         return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,$ex->getMessage());
       }

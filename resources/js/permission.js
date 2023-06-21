@@ -2,7 +2,7 @@ import router from './router';
 import { getToken } from './utils/getToken';
 import getPageTitle from './utils/getPageTitle';
 
-const whiteList = ['/login', '/register', '/remind-password', '/working-time'];
+const whiteList = ['/login', '/register', '/remind-password', '/working-time', '/compare-face'];
 
 router.beforeEach(async(to, from, next) => {
   document.title = getPageTitle(to.meta.title);

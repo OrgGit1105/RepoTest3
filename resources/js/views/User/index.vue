@@ -3,87 +3,128 @@
     <div class="container-fluid w-90">
       <div class="container-fluid-body mt-5 mb-5">
         <div class="use-management-title">
-          <div class="card-body p-8">
-            <div class="d-flex justify-content-between mb-0" style="border-bottom: 1px solid rgba(0, 0, 0, 0.25);">
+          <div class="card-body p-5">
+            <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
-                <h1 class="font-weight-bold display-4">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
+                <h1 class="title">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
               </div>
-              <!--              <div>-->
-              <!--                <button class="btn btn-sign text-uppercase" @click="toCreatePage">-->
-              <!--                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}-->
-              <!--                </button>-->
-              <!--              </div>-->
+              <div class="basic">
+                <!--                <button class="btn btn-date d-flex align-items-center" @click="toCreatePage">-->
+                <!--                  <b-icon class="text-btn" icon="chevron-left" />-->
+                <!--                  <span class="text-btn">3月20日 -  4月18日</span>-->
+                <!--                  <b-icon class="text-btn" icon="chevron-right" />-->
+                <!--                </button>-->
+              </div>
             </div>
           </div>
         </div>
-
-        <div class="use-management-title-table">
-          <div class="card-body">
-            <div class="d-flex mb-2 justify-content-between">
-              <div class="basic">
-                <b-icon-plus-circle
-                  class="display-4 text-primary"
-                  style="height: 39px;cursor: pointer"
-                  @click="createForm()"
-                />
-              </div>
-              <div class="d-flex" style="gap: 1rem">
-                <b-icon-search
-                  class="display-4 text-primary"
-                  style="height: 39px;"
-                />
-                <b-form-select
-                  v-model="role_id_selected"
-                  class="custom-select"
-                  @change="getListAllUser()"
-                >
-                  <b-form-select-option value="" />
-                  <b-form-select-option v-for="role in listRoles ?? [] " :key="role.id" :value="role.id">
-                    {{ role.name }}
-                  </b-form-select-option>
-                </b-form-select>
-<!--                <button class="btn btn-sign text-uppercase" style="width: 277px; height: 39px;">-->
-<!--                  csv import-->
-<!--                </button>-->
-              </div>
+        <hr class="line-bottom">
+        <div class="use-management-title-table mt-5">
+          <div class="fill">
+            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createForm()" />
+            <div class="box-search align-items-center" :class="display">
+              <!--              <el-input-->
+              <!--                placeholder="検索"-->
+              <!--                prefix-icon="el-icon-search"-->
+              <!--                v-model="input2">-->
+              <!--              </el-input>-->
+              <!--              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>-->
             </div>
-            <b-table
-              id="my-table"
-              class="text-center w-100 mb-0"
-              :items="listUser ? listUser : []"
-              :fields="fields"
-              responsive="sm"
-              :current-page="pagination.current_page"
-              show-empty
-            >
-              <template #cell(retirement_date)="row">
-                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">
-                  Retirement
-                </span>
+            <div class="d-flex justify-content-end align-items-center">
+              <img class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)">
 
+              <template class="select-custom">
+                <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" @change="getListAllUser()">
+                  <el-option
+                    class="el-option-custom"
+                  />
+                  <el-option
+                    v-for="role in listRoles ?? [] "
+                    :key="role.id"
+                    :label="role.name"
+                    :value="role.id"
+                    divided
+                  />
+                </el-select>
               </template>
-              <template #cell(email)="row">
-                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>
-              </template>
-<!--              <template #cell(edit)="edit">-->
-<!--                <b-button-->
-<!--                  :id="'btn-edit-'+ edit.item.id"-->
-<!--                  class="btn btn-edit fs-14"-->
-<!--                  dusk="btn-edit"-->
-<!--                  @click="goToEditScreen(edit.item.id)"-->
-<!--                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>-->
+            </div>
+          </div>
+          <div class="card-body">
+            <el-table
+              :data="listUser ? listUser : []"
+              style="width: 100%"
+              :row-style="rowWorkingStyle"
+              @current-change="goToEditScreen"
+            >
+              <el-table-column
+                label="Name"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  <span>
+                    {{ scope.row.name }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="retirement_date"
+                label=""
+                align="center"
+                width="90"
+              >
+                <template slot-scope="scope">
+                  <span v-if="checkDateRetired(scope.retirement_date)" style="color: red;">
+                    Retirement
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="email"
+                label="Email"
+                align="center"
+              />
+              <el-table-column
+                prop="role.name"
+                label="Role"
+                align="center"
+              />
+            </el-table>
+<!--            <b-table-->
+<!--              id="my-table"-->
+<!--              class="text-center w-100 mb-0"-->
+<!--              :items="listUser ? listUser : []"-->
+<!--              :fields="fields"-->
+<!--              responsive="sm"-->
+<!--              :current-page="pagination.current_page"-->
+<!--              show-empty-->
+<!--            >-->
+<!--              <template #cell(retirement_date)="row">-->
+<!--                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">-->
+<!--                  Retirement-->
+<!--                </span>-->
 <!--              </template>-->
-<!--              <template #cell(delete)="info">-->
-<!--                <b-button-->
-<!--                  :id="'btn-remove-'+ info.item.id"-->
-<!--                  class="btn btn-delete fs-14"-->
-<!--                  @click="confirmationForm(info.item)"-->
-<!--                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>-->
+<!--              <template #cell(email)="row">-->
+<!--                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>-->
 <!--              </template>-->
-              <template #empty="">
-                {{ $t('LANGUAGES.TEXT_NO_DATA') }}
-              </template>
-            </b-table>
+<!--              &lt;!&ndash;              <template #cell(edit)="edit">&ndash;&gt;-->
+<!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
+<!--              &lt;!&ndash;                  :id="'btn-edit-'+ edit.item.id"&ndash;&gt;-->
+<!--              &lt;!&ndash;                  class="btn btn-edit fs-14"&ndash;&gt;-->
+<!--              &lt;!&ndash;                  dusk="btn-edit"&ndash;&gt;-->
+<!--              &lt;!&ndash;                  @click="goToEditScreen(edit.item.id)"&ndash;&gt;-->
+<!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>&ndash;&gt;-->
+<!--              &lt;!&ndash;              </template>&ndash;&gt;-->
+<!--              &lt;!&ndash;              <template #cell(delete)="info">&ndash;&gt;-->
+<!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
+<!--              &lt;!&ndash;                  :id="'btn-remove-'+ info.item.id"&ndash;&gt;-->
+<!--              &lt;!&ndash;                  class="btn btn-delete fs-14"&ndash;&gt;-->
+<!--              &lt;!&ndash;                  @click="confirmationForm(info.item)"&ndash;&gt;-->
+<!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>&ndash;&gt;-->
+<!--              &lt;!&ndash;              </template>&ndash;&gt;-->
+<!--              <template #empty="">-->
+<!--                {{ $t('LANGUAGES.TEXT_NO_DATA') }}-->
+<!--              </template>-->
+<!--            </b-table>-->
           </div>
         </div>
 
@@ -100,7 +141,7 @@
         </div>
 
         <!-- Modal create -->
-        <b-modal size="lg" id="bv-modal-create" @hidden="hideCreateModal()" hide-footer hide-header>
+        <b-modal id="bv-modal-create" size="lg" hide-footer hide-header @hidden="hideCreateModal()">
           <div>
             <ValidationObserver
               ref="obsAddEmployee"
@@ -157,7 +198,8 @@
                       <div
                         :class="{check_with_or_without_mask: withoutMask}"
                         style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
-                        @click="checkWithoutMask()">
+                        @click="checkWithoutMask()"
+                      >
                         <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
                         <div style="margin-right: 20px">
                           <p>Face image</p>
@@ -167,7 +209,8 @@
                       <div
                         :class="{check_with_or_without_mask: withMask}"
                         style="display: flex; gap: 1rem;cursor: pointer"
-                        @click="checkWithMask()">
+                        @click="checkWithMask()"
+                      >
                         <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
                         <div style="margin-right: 20px">
                           <p>Face image</p>
@@ -329,7 +372,7 @@
 </template>
 
 <script>
-import {deleteOneUser, getAllUser, postOneUser} from '../../api/user';
+import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { getAllRole } from '../../api/role';
@@ -459,8 +502,8 @@ export default {
           });
         });
     },
-    goToEditScreen(id) {
-      this.$router.push({ path: `/user/edit/${id}` }, (onAbort) => {});
+    goToEditScreen(val) {
+      this.$router.push({ path: `/user/edit/${val.id}` }, (onAbort) => {});
     },
     toCreatePage() {
       this.$router.push('/user/create');
@@ -673,6 +716,10 @@ export default {
         this.validateFile = true;
         this.messageErrorFile.push('Pleas choose image');
       }
+    },
+    // copy cua Yen
+    rowWorkingStyle({ row, rowIndex }) {
+      return { 'cursor': 'pointer' };
     },
   },
 };
@@ -890,5 +937,61 @@ table#__BVID__46 {
 }
 .check_with_or_without_mask{
   border-bottom: 4px solid;
+}
+
+/*copy tu Yen*/
+.title {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 40px;
+  color: #000000;
+  margin: 0;
+}
+.line-bottom {
+  width: 95%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 0 auto;
+}
+.fill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+}
+.custom-icon-down {
+  color: #0070C9;
+  font-size: 26px;
+  font-weight: 600;
+}
+.use-management-title-table {
+  padding: 0 45px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.custom-icon-add {
+  color: #0070C9;
+  font-size: 30px;
+  font-weight: bolder;
+}
+.el-select-custom {
+  width: 175px;
+  margin: 0 20px;
+}
+::v-deep .el-select-custom .el-input__inner {
+  border: unset;
+  border-radius: unset;
+  color: #0070C9;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+}
+::v-deep .el-select-custom .b-form-select .el-select__caret {
+  color: #0070C9;
+  font-weight: bolder;
+  font-size: 20px;
+  margin-top: 3px;
 }
 </style>
