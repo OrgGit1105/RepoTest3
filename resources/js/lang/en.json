@@ -206,6 +206,10 @@
         "TEXT_TOAST_CONTENT_IMPORT_FALSE_PLEASE_SELECT_FILE_CSV_TO_IMPORT": "Import False ! Please Select File XLSX To Import",
         "TEXT_TOAST_CONTENT_IMPORT_FALSE_PLEASE_SELECT_FILE_LESS_THAN_5MB": "Import False ! Please Select File Less Than 5MB",
         "TEXT_TOAST_CONTENT_IMPORT_DATA_SUCCESSFULLY": "Import Data Successfully !",
+        "TEXT_TOAST_CONTENT_LIST_SUCCESSFULLY": "List Successfully !",
+        "TEXT_TOAST_CONTENT_CREATE_SUCCESSFULLY": "Create Successfully !",
+        "TEXT_TOAST_CONTENT_EDIT_SUCCESSFULLY": "Edit Successfully !",
+        "TEXT_TOAST_CONTENT_DELETE_SUCCESSFULLY": "Delete Successfully !",
 
 
         "TEXT_DEPARTURE": "Departure",

@@ -252,6 +252,36 @@ export const constantRoutes = [
           icon: 'icofont-ui-user',
         },
       },
+      {
+        path: 'detail/:id',
+        component: () => import('../views/WorkingTime/detail'),
+        name: 'WorkingTimeManagementDetail',
+        hidden: true,
+        meta: {
+          title: 'routes.working-time',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
+  },
+  {
+    path: '/analytics',
+    redirect: '/analytics/index',
+    component: Layout,
+    meta: {
+      title: 'routes.user',
+      icon: 'icofont-ui-user',
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/Analytics/index'),
+        name: 'Analytics',
+        meta: {
+          // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
     ],
   },
 ];

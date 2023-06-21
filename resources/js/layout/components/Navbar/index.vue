@@ -1,24 +1,25 @@
 /* eslint-disable vue/max-attributes-per-line */
 <template>
   <div>
-    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-0 px-3">
+    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-2 px-5">
       <b-navbar-brand href="#" class="logo">
-        <Logo />
+        <Logo :href="'#'" />
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" style="display: none;margin: 14px 23px 0px;" is-nav>
-        <b-navbar-nav style="font-size: 34px; gap: 1rem">
-          <b-nav-item href="/working-time/index">Working time</b-nav-item>
-          <b-nav-item href="/user/index">Employee</b-nav-item>
+      <b-collapse id="nav-collapse" style="display: none;" is-nav>
+        <b-navbar-nav style="font-size: 23px; gap: 2rem; margin-left: 100px">
+          <b-nav-item class="custom-item-nav" href="/working-time/index">Working time</b-nav-item>
+          <b-nav-item class="custom-item-nav" href="/analytics/index">Analytics</b-nav-item>
+          <b-nav-item class="custom-item-nav" href="/user/index">Employee</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right>
+          <b-nav-item-dropdown right class="custom-icon">
             <!-- Using 'button-content' slot -->
             <template #button-content>
-              <em>User</em>
+              <span class="user-login-custom">{{ auth ? auth.name : '' }}</span>
             </template>
             <b-dropdown-item href="#">Profile</b-dropdown-item>
             <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
@@ -45,6 +46,9 @@ export default {
     };
   },
   computed: {
+    auth() {
+      return this.$store.state.user.userInfo;
+    },
     email() {
       // console.log('Thong tin cua b', this.$store.getters.role_id);
       return this.$store.getters.email;
@@ -245,6 +249,25 @@ button.navbar-toggler > svg {
 
 button.navbar-toggler:focus {
   outline: none;
+}
+li.nav-item.custom-item-nav a {
+  padding-top: unset;
+  padding-bottom: unset;
+}
+.user-login-custom {
+  font-size: 20px;
+  color: #0070C9;
+  margin-right: 10px;
+}
+::v-deep .custom-icon .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid #0070C9;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
 }
 .navbar-brand {padding: 0 !important;}
 @media only screen and (max-width: 1365px) and (min-width: 1023px) {
