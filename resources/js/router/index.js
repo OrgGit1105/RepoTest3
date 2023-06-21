@@ -243,6 +243,16 @@ export const constantRoutes = [
           icon: 'icofont-ui-user',
         },
       },
+      {
+        path: 'detail/:id',
+        component: () => import('../views/WorkingTime/detail'),
+        name: 'WorkingTimeManagementDetail',
+        hidden: true,
+        meta: {
+          title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
     ],
   },
 ];

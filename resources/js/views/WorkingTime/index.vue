@@ -9,11 +9,20 @@
                 <h1 class="title">Working time Management</h1>
               </div>
               <div class="basic">
-                <button class="btn btn-date d-flex align-items-center" @click="toCreatePage">
-                  <b-icon class="text-btn" icon="chevron-left" />
-                  <span class="text-btn">3月20日 -  4月18日</span>
-                  <b-icon class="text-btn" icon="chevron-right" />
-                </button>
+                <template>
+                  <el-date-picker
+                    v-model="formSearch.date"
+                    type="daterange"
+                    align="right"
+                    start-placeholder="Start Date"
+                    end-placeholder="End Date"
+                    value-format="yyyy-MM-dd"
+                    firstDayOfWeek="1"
+                    @blur="fillDate()"
+                    >
+                  </el-date-picker>
+                </template>
+
               </div>
             </div>
           </div>
@@ -21,81 +30,68 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill">
-            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createNew"></i>
+            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="showModalAdd()"></i>
             <div class="box-search align-items-center" :class="display">
               <el-input
                 placeholder="検索"
                 prefix-icon="el-icon-search"
-                v-model="input2">
+                v-model="formSearch.search"
+                @keyup.enter.native="handleSearch()">
               </el-input>
               <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
             </div>
             <div class="d-flex justify-content-end align-items-center">
               <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
-
               <template class="select-custom">
-                <el-select v-model="value" placeholder="Select" class="el-select-custom">
-                  <el-option
-                    class="el-option-custom"
-                    :label="'All Employee'">
-                  </el-option>
-                  <el-option
-                    v-for="item in selectEmployee"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                    divided>
-                  </el-option>
+                <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom" @change="fillSearch(employeeValue)">
+                    <el-option
+                      class="el-option-custom"
+                      label="All Employee"
+                      value="">
+                    </el-option>
+                    <el-option
+                      v-for="item in listEmployee"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id"
+                      >
+                    </el-option>
                 </el-select>
               </template>
-
-              <!-- <el-dropdown>
-                <span class="el-dropdown-link">
-                  All Employee<i class="el-icon-arrow-down el-icon--right"></i>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>All Employee</el-dropdown-item>
-                  <el-dropdown-item divided>Action 1</el-dropdown-item>
-                  <el-dropdown-item >Action 2</el-dropdown-item>
-                  <el-dropdown-item>Action 3</el-dropdown-item>
-                  <el-dropdown-item>Action 4</el-dropdown-item>
-                  <el-dropdown-item >Action 5</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown> -->
-
             <i class="el-icon-download custom-icon-down cursor-pointer"></i>
             </div>
           </div>
           <hr class="line">
           <template class="">
             <el-table
-              :data="listUser"
+              :data="listWorkingTimes"
               style="width: 100%"
-              :row-style="rowWorkingStyle">
+              :row-style="rowWorkingStyle"
+              @row-click="showDetail">
               <el-table-column
-                prop="no"
+                prop="id"
                 label="No"
                 width="350"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="employee"
+                prop="user.name"
                 label="Employee name"
                 width="250"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="in"
+                prop="in_time"
                 label="IN"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="out"
+                prop="out_time"
                 label="OUT"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="type"
+                prop="registration_type"
                 label="Input type"
                 align="center">
               </el-table-column>
@@ -105,76 +101,159 @@
 
         <div class="use-management-pagianation">
           <div class="card-body pagianation">
-            <b-pagination
-              v-model="pagination.current_page"
-              :per-page="pagination.per_page"
-              :total-rows="pagination.total_records"
-              aria-controls="my-table"
-              :disabled="pagination.isDisable"
-            />
+            <el-pagination
+              background
+              layout="prev, pager, next"
+              class="d-flex justify-content-center"
+              :page-size="pagination.per_page"
+              :total="pagination.total_records"
+              :current-page.sync="pagination.current_page"
+              @current-change="getWorkingTime">
+            </el-pagination>
           </div>
         </div>
 
         <!-- Modal add new -->
-        <el-dialog title="Shipping address" :visible.sync="openModalAdd">
+        <el-dialog class="title-add-working" title="Add Working time" :visible.sync="openModalAdd" width="35%" @close="resetForm('ruleForm')">
+          <el-form :model="form" :rules="rules" ref="ruleForm" label-width="120px" label-position="top">
+            <el-form-item label="Employee Name" required prop="userId">
+              <el-select v-model="form.userId" placeholder="Please select employee name">
+                  <el-option
+                    v-for="item in listEmployee"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                    >
+                  </el-option>
+              </el-select>
+            </el-form-item>
+            <hr class="line">
+            <p class="title-working mb-3">Working Time</p>
+              <p class="label-custom">In Time</p>
+              <div class="date-time-custom">
+                <el-form-item prop="inDate" class="item-date">
+                  <el-date-picker
+                    v-model="form.inDate"
+                    type="date"
+                    format="yyyy/MM/dd"
+                    value-format="yyyy-MM-dd"
+                    style="width: 100%;">
+                  </el-date-picker>
+                </el-form-item>
+
+                <el-form-item prop="inTime" class="item-time">
+                  <el-time-picker
+                    v-model="form.inTime"
+                    format="HH:mm:ss"
+                    value-format="HH:mm:ss"
+                    style="width: 100%;">
+                  </el-time-picker>
+                </el-form-item>
+              </div>
+
+            <p class="label-custom">Out Time</p>
+            <div class="date-time-custom">
+              <el-form-item prop="outDate" class="item-date">
+                <el-date-picker
+                  v-model="form.outDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;">
+                </el-date-picker>
+              </el-form-item>
+              <el-form-item prop="outTime" class="item-time">
+                <el-time-picker
+                  v-model="form.outTime"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;">
+                </el-time-picker>
+              </el-form-item>
+            </div>
+          </el-form>
+
           <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogFormVisible = false">Cancel</el-button>
-            <el-button type="primary" @click="dialogFormVisible = false">Confirm</el-button>
+            <el-button class="btn-cancle-custom" @click="resetForm('ruleForm')">Cancel</el-button>
+            <el-button class="btn-add-custom" type="primary" @click="submitForm('ruleForm')">Add</el-button>
           </span>
         </el-dialog>
-
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getAllUser, deleteOneUser } from '../../api/user';
+import { getArrving, createNewWorkingTime } from '../../api/working_time';
+import { getAllUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
-import * as CONFIGS from '../../configs/index';
+import moment from 'moment';
 export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      // userList: [],
+      formSearch: {
+        search: '',
+        userId: '',
+        date: [ moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD') ],
+        // date: [ '', '' ],
+      },
       pagination: {
         current_page: 1,
-        per_page: 20,
+        per_page: 3,
         total_records: 0,
         isDisable: false,
       },
-      headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
-      infoModel: {},
-      fields: [
-        { key: 'username', label: 'No' },
-        { key: 'email', label: 'Employee name' },
-        { key: 'roles.name', label: 'IN' },
-        { key: 'company_branchs.name', label: 'OUT' },
-        { key: 'edit', label: 'Input type' },
-      ],
-      listUser: [
-        { no: '1', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-        { no: '2', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-        { no: '3', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-        { no: '4', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-        { no: '5', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-        { no: '6', employee: 'kohei', in: '2023-10-10-10:10', out: '2023-10-10-10:10', type: '2023-10-10-10:10' },
-      ],
-      selectEmployee: [
-        { value: '1', text: 'All Employee' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-        { value: '1', text: 'IKeda Kohei' },
-      ],
+      listWorkingTimes: [],
+      listEmployee: [],
+      employeeValue: '',
+      form: {
+        userId: '',
+        inDate: '',
+        inTime: '',
+        outDate: '',
+        outTime: '',
+      },
       display: 'd-none',
       displaySearch: 'd-block',
       openModalAdd: false,
+      rules: {
+          userId: [
+            { required: true, message: 'Please select Employee Name', trigger: 'change' }
+          ],
+          inDate: [
+            { required: true,  message: 'Please pick a date in', trigger: 'change' }
+          ],
+          inTime: [
+            { required: true,  message: 'Please pick a time in', trigger: 'change' }
+          ],
+          outDate: [
+            { required: true,  message: 'Please pick a date out', trigger: 'change' }
+          ],
+          outTime: [
+            { required: true,  message: 'Please pick a time out', trigger: 'change' }
+          ],
+        }
     };
   },
+  created() {
+    this.getWorkingTime();
+    this.getListEmployee();
+  },
   methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.createNew();
+        } else {
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.openModalAdd = false;
+    },
     openInputSearch() {
       this.display = 'd-flex';
       this.displaySearch = 'd-none';
@@ -186,8 +265,11 @@ export default {
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
     },
-    createNew: function() {
+    showModalAdd: function() {
       this.openModalAdd = true;
+    },
+    showDetail: function(row, column, event) {
+      this.$router.push({ path: `/working-time/detail/${row.id}` });
     },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
@@ -195,77 +277,99 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListAllUser() {
-      this.pagination.isDisable = true;
-      const PARAMS = {
-        page: this.pagination.current_page,
-        per_page: this.pagination.per_page,
-      };
-      this.openLoading();
-      await getAllUser(PARAMS)
+    closeModal(formName) {
+      this.openModalAdd = false;
+      this.form = {
+        userId: '',
+        inDate: '',
+        inTime: '',
+        outDate: '',
+        outTime: '',
+      }
+      this.$refs[formName].resetFields();
+    },
+    async getWorkingTime() {
+      let PARAMS = {};
+      if(this.search !== ''){
+        PARAMS = {
+          key_search: this.formSearch.search,
+          start_date: this.formSearch.date[0],
+          start_date: this.formSearch.date[0],
+          end_date: this.formSearch.date[1],
+          user_id: this.employeeValue,
+          per_page: this.pagination.per_page,
+          page: this.pagination.current_page,
+        }
+      }
+      await getArrving(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            const listUser = response.data.result;
-            // console.log('listUser===>', listUser);
-            this.$store.dispatch('app/saveListUSer', listUser);
-            this.pagination.total_records =
-            response.data.pagination.total_records;
-            this.pagination.current_page = response.data.pagination.current_page;
-            this.pagination.isDisable = false;
-            listUser.forEach((element) => {
-              element.roles.name = this.convertRoles(
-                element.roles.name);
-            });
+            this.listWorkingTimes = response.data.result;
+            this.pagination = response.data.pagination;
           }
-          this.closeLoading();
         })
         .catch((error) => {
-          this.closeLoading();
           MakeToast({
-            variant: 'warning',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            variant: 'danger',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
             content: error.message,
           });
         });
     },
-    goToEditScreen(id) {
-      this.$router.push({ path: `/user/edit/${id}` }, (onAbort) => {});
+    handleSearch() {
+      this.getWorkingTime();
     },
-    toCreatePage() {
-      this.$router.push('/user/create');
+    fillSearch() {
+      this.getWorkingTime();
     },
-    confirmationForm(item) {
-      this.infoModel = item;
-      this.$bvModal.show('bv-modal-delete');
+    fillDate() {
+      this.getWorkingTime();
     },
-    hideModal() {
-      this.$bvModal.hide('bv-modal-delete');
-    },
-    changePage(page){
-      // console.log('Page ban vua chon', page);
-    },
-    submitDelete(id) {
-      if (id) {
-        deleteOneUser(id).then(() => {
-          MakeToast({
-            variant: 'success',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-            content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
-          });
-          this.hideModal();
-          this.getListAllUser();
+    async getListEmployee() {
+      const PARAMS = {};
+      await getAllUser(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.listEmployee = response.data.result;
+          }
+        })
+        .catch((error) => {
+          this.listEmployee = [];
         });
-      }
     },
-    convertRoles(roles) {
-      switch (roles) {
-        case 'Headquater_Role':
-          return this.$t('LANGUAGES.TEXT_HEAD_QUARTER_ROLE');
-        case 'Department_Role':
-          return this.$t('LANGUAGES.TEXT_HEAD_DEPARTMENT_ROLE');
-        default:
-      }
-    },
+    async createNew() {
+      const PARAMS = {
+        user_id: this.form.userId,
+        in_time: this.form.inDate + ' ' + this.form.inTime,
+        out_time: this.form.outDate + ' ' + this.form.outTime,
+        registration_type: 'ipad'
+      };
+      await createNewWorkingTime(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.resetForm("ruleForm");
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_CREATE_SUCCESSFULLY'),
+            });
+            this.getWorkingTime();
+          } else {
+            MakeToast({
+              variant: 'danger',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+              content: response.message,
+            });
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'danger',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+            content: error.message,
+          });
+        });
+    }
   },
 };
 </script>
@@ -307,7 +411,6 @@ export default {
   width: 15px;
   height: 10px;
 }
-/*  */
 .el-select-custom {
   width: 175px;
   margin: 0 20px;
@@ -326,7 +429,6 @@ export default {
   font-size: 20px;
   margin-top: 3px;
 }
-/*  */
 ::v-deep .box-search .el-input__inner {
   border: 1px solid rgba(63, 63, 63, 0.4);
   border-radius: 5px;
@@ -367,83 +469,38 @@ export default {
   color: rgba(63, 63, 63, 0.4);
   margin: 10px auto;
 }
-/* ::v-deep .table thead th {
-  color: #8A8A8A;
+::v-deep .title-add-working .el-dialog__title, .title-working {
   font-weight: 600;
-  text-align: center;
-} */
-/* .btn-action {
-  min-width: 85px;
+  font-size: 32px;
+  line-height: 48px;
+  color: #000000;
 }
-::v-deep table .b-table {
-  width: 100% !important;
-}
-::v-deep .table {
-  width: 100%;
-}
-table#__BVID__46 {
-  width: 100% !important;
-}
-::v-deep table#__BVID__15 {
-  width: 100% !important;
-  border-left: 0.9px solid #888888;
-}
-::v-deep .table tbody {
-  border: 0.9px solid #888888;
-}
-::v-deep .table thead th {
-  border: 0.9px solid #888888;
-}
-::v-deep .table td {
-  background: #ffffff !important;
-  border-top: 0 !important;
-  border-right: 0.9px solid #888888;
-  border-bottom: 0.9px solid #888888;
-  line-height: 30px;
-}
-.btn {
-  border: 0 !important;
-}
-.btn:hover {
-  color: #ffffff;
-}
-.btn-secondary:hover {
-  border: none !important;
-}
-.btn-edit {
-  background: #fb8c00;
-}
-.btn-delete {
-  background: #e9240a;
-}
-.btn-edit:hover {
-  background-color: #dd7f04;
-}
-.btn-delete:hover {
-  background-color: #cc1800;
-}
-
-.style-modal {
-  border-bottom: 1px solid #dee2e6;
-}
-.buttons-control {
-  text-align: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-} */
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  vertical-align: middle;
-  margin-top: 20px;
+::v-deep label.el-form-item__label, .label-custom {
   margin-bottom: 10px;
+  padding: unset!important;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #666666;
 }
-::v-deep .page-link {
-  padding: 3px 10px;
+::v-deep .el-dialog__body {
+  padding: 20px 40px 10px 40px
 }
-::v-deep .page-item {
-  cursor: pointer;
+::v-deep .el-dialog__footer {
+  border-top: 1px solid rgba(63, 63, 63, 0.3);
+}
+::v-deep .title-add-working .el-dialog {
+  border-radius: 5px;
+}
+::v-deep .btn-cancle-custom {
+  border: 1px solid #0070C9;
+  color: #0070C9;
+  width: 100px;
+}
+::v-deep .btn-add-custom {
+  background: #0070C9;
+  border-radius: 5px;
+  width: 100px;
 }
 .btn-danger:hover {
   color: #fff !important;
@@ -451,55 +508,15 @@ table#__BVID__46 {
 ::v-deep .page-link:hover {
   border: 1px solid #0f68b1 !important;
 }
-
-/* .btn-close {
-  background-color: transparent !important;
-  color: #0f68b1;
-  border: 1px solid #0f68b1 !important;
+::v-deep .date-time-custom {
+  display: flex;
+  justify-content: space-between;
+  width: 60%;
 }
-::v-deep .btn-accept {
-    background: #0f68b1;
+::v-deep .date-time-custom .item-date {
+  width: 55%;
 }
-.btn-accept:hover {
-  box-shadow: 0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%);
-  background: #0f68b1 !important;
-  transition: all 0.2s ease-in-out;
-
+::v-deep .date-time-custom .item-time {
+  width: 40%;
 }
-.btn-close:hover {
-  box-shadow: 0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%);
-  background-color: transparent !important;
-  transition: all 0.2s ease-in-out;
-  color: #0f68b1;
-  border: 1px solid #0f68b1 !important;
-}
-::v-deep #bv-modal-delete___BV_modal_body_ {
-  padding: 0 !important;
-}
-::v-deep #bv-modal-delete___BV_modal_content_ {
-  border: 0 !important;
-  border-radius: 0 !important;
-}
-.style-modal h4 {
-  font-weight: 300 !important;
-  margin-bottom: 0px !important;
-}
-::v-deep thead {
-    background: #e5e5e5;
-} */
-/* ::v-deep #my-table th {
-  background: #e5e5e5;
-} */
-/* ::v-deep .style-title-modal {
-  background: #0f68b1;
-}
-.style-title-modal h4 {
-  font-size: 18px;
-}
-.style-modal h2 {
-  margin: 25px 0px;
-  color: red;
-  font-size: 23px;
-} */
-
 </style>

@@ -60,6 +60,7 @@
                 <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">
                   Retirement
                 </span>
+
               </template>
               <template #cell(email)="row">
                 <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>
@@ -328,7 +329,7 @@
 </template>
 
 <script>
-import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
+import {deleteOneUser, getAllUser, postOneUser} from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { getAllRole } from '../../api/role';
@@ -849,6 +850,7 @@ table#__BVID__46 {
   transition: color 0.3s ease;
   cursor: pointer;
 }
+
 
 .email-link:hover {
   color: blue;

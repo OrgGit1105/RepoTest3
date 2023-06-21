@@ -3,7 +3,7 @@
   <div>
     <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-0 px-3">
       <b-navbar-brand href="#" class="logo">
-        <Logo />
+        <Logo :href="'#'" />
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
@@ -18,7 +18,7 @@
           <b-nav-item-dropdown right>
             <!-- Using 'button-content' slot -->
             <template #button-content>
-              <em>User</em>
+              <em>{{ auth ? auth.name : '' }}</em>
             </template>
             <b-dropdown-item href="#">Profile</b-dropdown-item>
             <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
@@ -45,6 +45,9 @@ export default {
     };
   },
   computed: {
+    auth() {
+      return this.$store.state.user.userInfo;
+    },
     email() {
       // console.log('Thong tin cua b', this.$store.getters.role_id);
       return this.$store.getters.email;
