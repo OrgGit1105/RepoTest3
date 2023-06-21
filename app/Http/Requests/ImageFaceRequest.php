@@ -37,6 +37,8 @@ class ImageFaceRequest extends FormRequest
                     return $this->getCustomRule();
                 case 'index':
                   return $this->getCustomRule();
+                case 'compareFace':
+                  return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -50,10 +52,10 @@ class ImageFaceRequest extends FormRequest
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'create'){
             return  [
-              'name'     => 'required',
-              'file'     => 'required',
+              'file'     => 'required|array',
+              'file.*'     => 'required|mimes:jpg,jpeg,png',
               'user_id'     => 'required|numeric',
-              'type' => 'required|in:WITH_MASK,WITHOUT_MASK',
+              'type' => 'required|in:WithoutMask,WithMask',
             ];
         }
        if(Route::getCurrentRoute()->getActionMethod() == 'index'){
@@ -61,12 +63,19 @@ class ImageFaceRequest extends FormRequest
            'user_id'     => 'required|numeric',
          ];
        }
+       if(Route::getCurrentRoute()->getActionMethod() == 'compareFace'){
+         return [
+           'type' => 'required|in:WithoutMask,WithMask',
+           'file' => 'required|mimes:jpg,jpeg,png'
+         ];
+       }
      }
 
     public function messages()
     {
         return [
-            'required' => ':attribute not null'
+            'required' => ':attribute not null',
+            'type.in' => ':attribute must in WithoutMask or WithMask',
         ];
     }
 }

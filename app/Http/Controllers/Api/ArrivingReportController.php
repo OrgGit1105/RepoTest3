@@ -184,7 +184,7 @@ class ArrivingReportController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":2,"user_id":2,"in_time":"2023-06-16 08:30:00","out_time":"2023-06-16 18:00:00","remark":null,"registration_type":null,"link_face_in":null,"link_face_out":null,"status":1,"created_at":1686897797,"updated_at":1686897797,"deleted_at":null,"user":{"id":2,"name":"manager2","email":"manager2@gmail.com","role_id":1,"retirement_date":null,"status":1,"created_at":null,"updated_at":null,"deleted_at":null}}}
+     *      example={"code":200,"data":{"result":{"id":1,"user_id":3,"in_time":"2023-06-16 13:46:14","out_time":"2023-06-16 18:00:00","remark":null,"registration_type":null,"link_face_in":null,"link_face_out":null,"status":1,"created_at":"2023-06-16 13:17:00","updated_at":"2023-06-16 15:46:14","deleted_at":null,"user":{"id":3,"name":"staff","email":"staff@gmail.com","role_id":2,"retirement_date":null,"status":1,"created_at":null,"updated_at":null,"deleted_at":null}}}}
      *     )
      *   ),
      *   @OA\Response(
