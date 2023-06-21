@@ -5,6 +5,8 @@
         "csv": "XLSX IMPORT",
         "city": "City",
         "user": "User",
+        "employee": "Employee",
+        "working-time": "Working-time",
         "setting":"Setting",
         "data": "DATA MANAGEMENT",
         "roles":"Roles Management"

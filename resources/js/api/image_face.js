@@ -4,6 +4,7 @@ const urlAPI = {
   urlGETImageByUserId: template`/image_face?user_id=${'id'}`,
   urlDELETEImageByUserId: template`/image_face/${'id'}`,
   urlCREATEImageByUserId: template`/image_face`,
+  urlCOMPARE_FACEImage: template`/image_face/compareFace`,
 };
 
 export function getImageByUserId(id) {
@@ -16,4 +17,8 @@ export function deleteImageByUserId(id) {
 
 export function createImage(data) {
   return request.postRequest(urlAPI.urlCREATEImageByUserId(), data);
+}
+
+export function compareFaceImage(data) {
+  return request.postRequest(urlAPI.urlCOMPARE_FACEImage(), data);
 }

@@ -193,7 +193,7 @@ export const constantRoutes = [
         component: () => import('../views/User/index'),
         name: 'UserManagement',
         meta: {
-          title: 'routes.user',
+          title: 'routes.employee',
           icon: 'icofont-ui-user',
         },
       },
@@ -203,7 +203,7 @@ export const constantRoutes = [
         name: 'CreateUser',
         hidden: true,
         meta: {
-          title: 'routes.user',
+          title: 'routes.employee',
           icon: 'icofont-ui-user',
         },
       },
@@ -213,7 +213,7 @@ export const constantRoutes = [
         name: 'EditUser',
         hidden: true,
         meta: {
-          title: 'routes.user',
+          title: 'routes.employee',
           icon: 'icofont-ui-user',
         },
       },
@@ -226,11 +226,20 @@ export const constantRoutes = [
     hidden: true,
   },
   {
+    path: '/compare-face',
+    name: 'CompareFace',
+    component: () => import('../views/CompareFace/index.vue'),
+    hidden: true,
+    meta: {
+      title: 'routes.user',
+    },
+  },
+  {
     path: '/working-time',
     redirect: '/working-time/index',
     component: Layout,
     meta: {
-      title: 'routes.user',
+      title: 'routes.working-time',
       icon: 'icofont-ui-user',
     },
     children: [
@@ -239,7 +248,7 @@ export const constantRoutes = [
         component: () => import('../views/WorkingTime/index'),
         name: 'WorkingTimeManagement',
         meta: {
-          title: 'routes.user',
+          title: 'routes.working-time',
           icon: 'icofont-ui-user',
         },
       },

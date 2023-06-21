@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class AuthRepository  implements AuthRepositoryInterface
+class AuthRepository implements AuthRepositoryInterface
 {
     protected $shopRepository;
 
