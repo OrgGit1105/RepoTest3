@@ -3,6 +3,7 @@ import { template } from './template.js';
 
 const urlAPI = {
   urlData: template`/arriving_report`,
+  urlGetById: template`/arriving_report/${'id'}`,
 };
 
 export function getArrving(data) {
@@ -13,10 +14,14 @@ export function createNewWorkingTime(data) {
   return request.postRequest(urlAPI.urlData(), data);
 }
 
-// export function getAllEmployee(data) {
-//   return request.getRequest(urlAPI.urlEmployee(), data);
-// }
+export function getWokingTimeDetailById(id, data) {
+  return request.getRequest(urlAPI.urlGetById(id), data);
+}
 
-// export function getEmployeeById(data) {
-//   return request.getRequest(urlAPI.urlGetById(), data);
-// }
+export function editWorkingTimeById(id, data) {
+  return request.putRequest(urlAPI.urlGetById(id), data);
+}
+
+export function deleteWorkingTimeById(id, data) {
+  return request.deleteRequest(urlAPI.urlGetById(id), data);
+}

@@ -15,80 +15,110 @@
 				<hr class="line-bottom">
 
         <div class="use-management-title-table mt-5">
-          <p class="back-list cursor-pointer"> <i class="el-icon-arrow-left icon-back-list"></i> All Working Records </p>
+          <p class="back-list cursor-pointer" @click="listWorkingRecord()"> <i class="el-icon-arrow-left icon-back-list"></i> All Working Records </p>
 					<div class="card-body p-card-body">
-						<!-- Working Record -->
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="basic">
-                <h1 class="title-record">Working Record</h1>
+            <el-form :model="dataWorkingTimeRecord" :rules="rules" ref="ruleForm" label-width="120px" label-position="top">
+              <!-- Working Record -->
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="basic">
+                  <h1 class="title-record">Working Record</h1>
+                </div>
+                <div class="basic">
+                  <el-button class="btn-add-custom" type="primary" @click="submitForm('ruleForm')">Save</el-button>
+                </div>
               </div>
-              <div class="basic">
-                <el-button class="btn-add-custom" type="primary">Save</el-button>
+              <hr class="line">
+              <div class="cover-working-record">
+                <div class="working-record">
+                  <p class="header-working-record fw-5">No</p>
+                  <p class="header-working-record fw-5">Employee name</p>
+                  <p class="header-working-record fw-5">Registration type</p>
+                  <p class="header-working-record">{{dataWorkingTimeRecord.id}}</p>
+                  <p class="header-working-record">{{dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : ''}}</p>
+                  <p class="header-working-record">{{dataWorkingTimeRecord.registration_type}}</p>
+                </div>
               </div>
-            </div>
-            <hr class="line">
-						<template class="table-record">
-							<el-table
-								:data="listWorkingTimes"
-								style="width: 100%"
-								:row-class-name="rowWorkingStyle">
-								<el-table-column
-									prop="id"
-									label="No"
-									align="center">
-								</el-table-column>
-								<el-table-column
-									prop="name"
-									label="Employee name"
-									align="center">
-								</el-table-column>
-								<el-table-column
-									prop="type"
-									label="Registration type"
-									align="center">
-								</el-table-column>
-							</el-table>
-						</template>
 
-						<!-- Working Time -->
-						<div class="d-flex justify-content-between align-items-center mt-3">
-              <div class="basic">
-                <h1 class="title-record">Working Time</h1>
+              <!-- Working Time -->
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="basic">
+                  <h1 class="title-record">Working Time</h1>
+                </div>
+                <div class="basic"></div>
               </div>
-              <div class="basic"></div>
-            </div>
-            <hr class="line">
-						<div class="time-line">
-							<p class="title-time">In Time</p>
-							<div class="d-flex justify-content-start mb-3">
-								<el-input class="inputDate" v-model="inDate"></el-input>
-								<el-input class="inputTime" v-model="inTime"></el-input>
-							</div>
+              <hr class="line">
+              <div class="time-line">
+                <p class="title-time">In Time</p>
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                  <el-date-picker
+                    class="disable-date-custom"
+                    v-model="dataWorkingTimeRecord.convert_in_date"
+                    format="MMMM dd yyyy"
+                    value-format="yyyy-MM-dd" disabled>
+                  </el-date-picker>
 
-							<p class="title-time">Out Time</p>
-							<div class="d-flex justify-content-start mb-3">
-								<el-input class="inputDate" v-model="outDate"></el-input>
-								<el-input class="inputTime" v-model="outTime"></el-input>
-							</div>
-						</div>
+                  <el-form-item prop="convert_in_time" class="custom-time m-0">
+                    <el-time-picker
+                      v-model="dataWorkingTimeRecord.convert_in_time"
+                      format="HH:mm:ss"
+                      value-format="HH:mm:ss">
+                    </el-time-picker>
+                  </el-form-item>
+                </div>
 
-						<!-- Remark -->
-						<div class="d-flex justify-content-between align-items-center">
-              <div class="basic">
-                <h1 class="title-record">Remark</h1>
+                <p class="title-time">Out Time</p>
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                    <el-date-picker
+                      class="disable-date-custom"
+                      v-model="dataWorkingTimeRecord.convert_out_date"
+                      format="MMMM dd yyyy"
+                      value-format="yyyy-MM-dd" disabled>
+                    </el-date-picker>
+
+                  <el-form-item prop="convert_out_time" class="custom-time m-0">
+                    <el-time-picker
+                      class="custime-time-input"
+                      v-model="dataWorkingTimeRecord.convert_out_time"
+                      format="HH:mm:ss"
+                      value-format="HH:mm:ss">
+                    </el-time-picker>
+                  </el-form-item>
+                </div>
               </div>
-              <div class="basic"></div>
-            </div>
-            <hr class="line">
-						<el-input
-							type="textarea"
-							:rows="5"
-							v-model="textarea"
-							class="textarea-style">
-						</el-input>
+
+              <!-- Remark -->
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="basic">
+                  <h1 class="title-record">Remark</h1>
+                </div>
+                <div class="basic"></div>
+              </div>
+              <hr class="line">
+              <el-form-item>
+                <el-input
+                  type="textarea"
+                  :rows="5"
+                  v-model="dataWorkingTimeRecord.remark"
+                  class="textarea-style">
+                </el-input>
+              </el-form-item>
+            </el-form>
           </div>
-          <p class="delete-record cursor-pointer"> Delete Working Record </p>
+          <p class="delete-record cursor-pointer" @click="showModalDelete = true"> Delete Working Record </p>
         </div>
+
+        <!-- Modal delete -->
+        <el-dialog
+          title="DELETE"
+          :visible.sync="showModalDelete"
+          width="30%"
+          center>
+          <span class="text-align-center">Are you sure to delete this working time record?</span>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="showModalDelete = false">Cancel</el-button>
+            <el-button type="danger" @click="deleteWorkingRecord()">Confirm</el-button>
+          </span>
+        </el-dialog>
 
       </div>
     </div>
@@ -96,31 +126,135 @@
 </template>
 
 <script>
-import { getArrving, createNewWorkingTime } from '../../api/working_time';
-import { getAllUser } from '../../api/user';
+import { getWokingTimeDetailById, editWorkingTimeById, deleteWorkingTimeById } from '../../api/working_time';
 import { MakeToast } from '../../utils/toast_message';
-import * as CONFIGS from '../../configs/index';
+import moment from 'moment';
 export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      listWorkingTimes: [
-				{ id: '1', name: 'IKeda Kohei ', type: 'ipad' }
-			],
-			textarea: '',
-			inDate: 'September 20, 2023',
-			inTime: '8:30',
-			outDate: 'September 20, 2023',
-			outTime: '18:30',
+      dataWorkingTimeRecord: 
+        {
+          convert_in_date: '',
+          convert_in_time: '',
+          convert_out_date: '',
+          convert_out_time: '',
+          remark: ''
+        }
+      ,
+      showModalDelete: false,
+      dateRangeOptions1: {
+        firstDayOfWeek: 5,
+      },
+      rules: {
+          convert_in_time: [
+            { required: true,  message: 'Please pick a time in', trigger: 'change' }
+          ],
+          convert_out_time: [
+            { required: true,  message: 'Please pick a time out', trigger: 'change' }
+          ],
+        }
     };
   },
   created() {
-
+    this.getWorkingRecordById();
   },
   methods: {
-		rowWorkingStyle({ row, rowIndex }) {
-      return 'border-style-table';
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.editWorkingTime();
+        } else {
+          return false;
+        }
+      });
     },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+    },
+    listWorkingRecord() {
+      this.$router.push({ path: `/working-time/index` });
+    },
+    async getWorkingRecordById() {
+      const id = this.$route.params.id;
+      await getWokingTimeDetailById({id})
+        .then((response) => {
+          if (response.code === 200) {
+            response.data.result.convert_in_date = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
+            response.data.result.convert_in_time = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+            response.data.result.convert_out_date = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
+            response.data.result.convert_out_time = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
+
+            this.dataWorkingTimeRecord = response.data.result;
+          }
+        })
+        .catch((error) => {
+          this.dataWorkingTimeRecord = [];
+        });
+    },
+    async editWorkingTime() {
+      const id = this.$route.params.id;
+      let DATA = {
+        user_id: this.$route.params.id,
+        in_time: this.dataWorkingTimeRecord.convert_in_date + ' ' + this.dataWorkingTimeRecord.convert_in_time,
+        out_time: this.dataWorkingTimeRecord.convert_out_date + ' ' + this.dataWorkingTimeRecord.convert_out_time,
+        remark: this.dataWorkingTimeRecord.remark,
+      }
+
+      await editWorkingTimeById({id}, DATA)
+        .then((response) => {
+          if (response.code === 200) {
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_EDIT_SUCCESSFULLY'),
+            });
+            this.getWorkingRecordById();
+          }
+          else {
+            MakeToast({
+              variant: 'danger',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+              content: response.message,
+            });
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'danger',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+            content: error.message,
+          });
+        });
+    },
+    async deleteWorkingRecord() {
+      const id = this.$route.params.id;
+      await deleteWorkingTimeById({id})
+      .then((response) => {
+          if (response.code === 200) {
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_SUCCESSFULLY'),
+            });
+            this.$router.push({ path: `/working-time/index` });
+          }
+          else {
+            MakeToast({
+              variant: 'danger',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+              content: response.message,
+            });
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'danger',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+            content: error.message,
+          });
+        });
+    }
 	},
 };
 </script>
@@ -188,14 +322,6 @@ export default {
 	margin: 0px;
 	padding: 0px 10px;
 }
-::v-deep .border-style-table td{
-	box-shadow: none !important;
-	border-color:transparent !important;
-}
-::v-deep table{
-	border:1px solid #F9F9F9;
-	box-shadow: none;
-}
 ::v-deep .textarea-style textarea {
 	background-color: #F9F9F9;
 	border: 1px solid rgba(63, 63, 63, 0.4);
@@ -204,14 +330,12 @@ export default {
 	width: 15%;
 	display: block;
 }
-::v-deep .inputDate .el-input__inner {
-	padding: unset;
-	width: 100%;
-	border: unset;
+::v-deep .inputDate {
 	text-align: center;
 	font-size: 18px;
 	color: #000000;
 	font-weight: 400;
+  margin: 0;
 }
 .inputTime{
 	width: 6%;
@@ -235,5 +359,41 @@ export default {
 }
 .time-line {
 	padding: 15px 0px;
+}
+::v-deep .working-record {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-around;
+  text-align: center;
+}
+::v-deep .header-working-record {
+  width: calc(100% / 3);
+  height: 40px;
+  margin: 0;
+  font-size: 20px;
+}
+.fw-5 {
+  font-weight: 500;
+}
+::v-deep .custom-time {
+
+}
+
+::v-deep .custom-time .custime-time-input {
+
+}
+::v-deep .el-input.is-disabled .el-input__inner{
+  background-color: unset;
+  color: #000000;
+  cursor: text;
+  border: unset;
+  text-align: center;
+  font-size: 18px;
+  font-weight: unset;
+}
+::v-deep .disable-date-custom .el-input__prefix {
+  display: none;
 }
 </style>
