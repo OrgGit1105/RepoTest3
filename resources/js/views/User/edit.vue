@@ -3,29 +3,26 @@
     <div class="container-fluid w-90">
       <div class="container-fluid-body mt-5 mb-5">
         <div class="use-management-title">
-          <div class="card-body p-8">
-            <div class="d-flex justify-content-between mb-0" style="border-bottom: 1px solid rgba(0, 0, 0, 0.25);">
+          <div class="card-body p-5">
+            <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
-                <h1 class="font-weight-bold display-4">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
+                <h1 class="title">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
               </div>
-              <!--              <div>-->
-              <!--                <button class="btn btn-sign text-uppercase" @click="toCreatePage">-->
-              <!--                  {{ $t('LANGUAGES.TEXT_BUTTON_SIGN_UP') }}-->
-              <!--                </button>-->
-              <!--              </div>-->
             </div>
           </div>
         </div>
-        <div class="use-management-title-table">
+        <hr class="line-bottom">
+        <div class="use-management-title-table mt-5">
+          <p class="back-list cursor-pointer" @click="listEmployees()"> <i class="el-icon-arrow-left icon-back-list"></i> All Employees </p>
           <div class="card-body">
             <ValidationObserver
               ref="obsEditEmployee"
               tag="div"
             >
               <h4 class="mb-0 font-weight-normal">
-                <div>
-                  <a href="/user/index" style="display: flex;width: 12%;"><b-icon-chevron-left /><h4>All Employee</h4></a>
-                </div>
+<!--                <div>-->
+<!--                  <a href="/user/index" style="display: flex;width: 12%;"><b-icon-chevron-left /><h4>All Employee</h4></a>-->
+<!--                </div>-->
                 <div>
                   <ValidationProvider
                     v-slot="{ errors }"
@@ -36,7 +33,7 @@
                       <b-form-input
                         id="nameEmployee"
                         v-model="formEdit.name"
-                        class="border-0 border-bottom-important"
+                        class="border-0"
                         style="font-size: 40px"
                       />
                       <span class="col-1">
@@ -48,7 +45,8 @@
                     </div>
                   </ValidationProvider>
                 </div>
-                <div style="margin-bottom: 15px;">
+                <hr class="line">
+                <div>
                   <ValidationProvider
                     v-slot="{ errors }"
                     name="email"
@@ -59,7 +57,7 @@
                       <b-form-input
                         id="emailEmployee"
                         v-model="formEdit.email"
-                        class="border-0 border-bottom-important col-11"
+                        class="border-0 col-11"
                       />
                     </b-input-group>
                     <div class="text-error">
@@ -68,16 +66,20 @@
                   </ValidationProvider>
                 </div>
               </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px;">
-                <header class="line-form">
-                  <h4>Face Data</h4>
-                </header>
+              <h4 class="mb-0 font-weight-normal">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="basic">
+                    <h1 class="title-face">Face Data</h1>
+                  </div>
+                  <div class="basic"></div>
+                </div>
+                <hr class="line">
                 <!--                <div style="margin-bottom: 15px;">-->
                 <!--                  <label for="linkFace" style="font-size: 16px;">Link:</label>-->
                 <!--                  <b-input-group>-->
                 <!--                    <b-form-input-->
                 <!--                      id="linkFace"-->
-                <!--                      class="border-0 border-bottom-important"-->
+                <!--                      class="border-0"-->
                 <!--                    />-->
                 <!--                  </b-input-group>-->
                 <!--                </div>-->
@@ -178,10 +180,13 @@
                   </div>
                 </div>
 
-                <div style="margin-top: 15px;margin-bottom: 15px;">
-                  <header class="line-form">
-                    <h4>Role</h4>
-                  </header>
+                <div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="basic">
+                      <h1 class="title-face">Role</h1>
+                    </div>
+                  </div>
+                  <hr class="line">
                   <ValidationProvider
                     v-slot="{ errors }"
                     name="role"
@@ -200,11 +205,14 @@
                   </ValidationProvider>
                 </div>
               </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px;">
-                <header class="line-form">
-                  <h4>Retirement</h4>
-                </header>
-                <div style="margin-bottom: 15px;">
+              <h4 class="mb-0 font-weight-normal">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="basic">
+                    <h1 class="title-face">Retirement</h1>
+                  </div>
+                </div>
+                <hr class="line">
+                <div>
                   <b-input-group>
                     <b-form-input
                       v-model="formEdit.retirement_date"
@@ -213,11 +221,12 @@
                   </b-input-group>
                 </div>
               </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 35px;">
-                <header>
-                  <h4 class="text-error" style="font-size: 20px; cursor: pointer" @click="showModalDelete()">Delete Employee</h4>
-                </header>
-              </h4>
+              <p class="delete-record cursor-pointer mt-5" @click="showModalDelete = true"> Delete Working Employee </p>
+<!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 35px;">-->
+<!--                <header>-->
+<!--                  <h4 class="text-error" style="font-size: 20px; cursor: pointer" @click="showModalDelete()">Delete Employee</h4>-->
+<!--                </header>-->
+<!--              </h4>-->
               <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
               <!--                <header>-->
               <!--                  <h4>Password</h4>-->
@@ -683,6 +692,9 @@ export default {
         });
       }
     },
+    listEmployees(){
+      this.$router.push({ path: `/user/index` });
+    },
   },
 };
 </script>
@@ -745,10 +757,6 @@ select:required:invalid { color: #6f737c; }
   color: red;
   font-size: 12px;
 }
-.border-bottom-important{
-  border-bottom: 1px solid rgba(0, 0, 0, 1) !important;
-  border-radius: unset;
-}
 .image-dropzone {
   border: 2px solid #ccc;
   padding: 20px;
@@ -790,6 +798,54 @@ select:required:invalid { color: #6f737c; }
 }
 .submit_button:hover{
   background: #0f68b1 !important;
+}
+
+/*copy cua Yen*/
+.title {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 40px;
+  color: #000000;
+  margin: 0;
+}
+.line-bottom {
+  width: 95%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 0 auto;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.use-management-title-table {
+  padding: 0 45px;
+}
+.line {
+  width: 100%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 15px auto;
+}
+.back-list {
+  color: #0070C9;
+  font-weight: 400;
+  font-size: 23px;
+  margin: 0px;
+}
+.icon-back-list {
+  font-weight: 600;
+}
+::v-deep .title-face {
+  font-weight: 600;
+  font-size: 35px;
+  margin: 0px;
+  margin-top: 5rem;
+}
+::v-deep .delete-record {
+  color: #C90000;
+  font-weight: 400;
+  font-size: 23px;
+  margin: 0px;
 }
 </style>
 
