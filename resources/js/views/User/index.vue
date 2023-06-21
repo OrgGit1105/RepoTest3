@@ -137,6 +137,7 @@
               :page-size="pagination.per_page"
               :total="pagination.total_records"
               :current-page.sync="pagination.current_page"
+              @current-change="getListAllUser"
               >
             </el-pagination>
           </div>
