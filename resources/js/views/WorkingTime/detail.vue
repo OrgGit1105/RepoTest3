@@ -21,7 +21,7 @@
               <!-- Working Record -->
               <div class="d-flex justify-content-between align-items-center">
                 <div class="basic">
-                  <h1 class="title-record">Working Record</h1>
+                  <h1 class="title-record m-0">Working Record</h1>
                 </div>
                 <div class="basic">
                   <el-button class="btn-add-custom" type="primary" @click="submitForm('ruleForm')">Save</el-button>
@@ -32,7 +32,7 @@
                 <div class="working-record">
                   <p class="header-working-record fw-5">No</p>
                   <p class="header-working-record fw-5">Employee name</p>
-                  <p class="header-working-record fw-5">Registration type</p>
+                  <p class="header-working-record fw-5">Input Type</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.id}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : ''}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.registration_type}}</p>
@@ -314,6 +314,7 @@ export default {
 	font-weight: 600;
 	font-size: 35px;
 	margin: 0px;
+  margin-top: 5rem;
 }
 ::v-deep .delete-record {
 	color: #C90000;
@@ -366,7 +367,7 @@ export default {
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-around;
-  text-align: center;
+  text-align: left;
 }
 ::v-deep .header-working-record {
   width: calc(100% / 3);
@@ -376,13 +377,6 @@ export default {
 }
 .fw-5 {
   font-weight: 500;
-}
-::v-deep .custom-time {
-
-}
-
-::v-deep .custom-time .custime-time-input {
-
 }
 ::v-deep .el-input.is-disabled .el-input__inner{
   background-color: unset;
