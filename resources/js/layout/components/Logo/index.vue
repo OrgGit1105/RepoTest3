@@ -1,7 +1,7 @@
 <template>
   <div class="logo">
     <a :href="href">
-      <img :src="logo" alt="V-FACE">
+      <img class="custom-image" :src="logo" alt="V-FACE">
       <span>V-Face</span>
     </a>
   </div>
@@ -37,8 +37,16 @@ export default {
   color: #000;
 }
 .logo span {
-  font-size: 60px;
+  font-size: 35px;
   font-weight: 600;
-  margin-left: 5px;
+  margin-left: 20px;
+  text-transform: uppercase;
+}
+a:hover {
+  color: #000!important;
+  text-decoration: none!important;
+}
+.custom-image {
+  width: 55px;
 }
 </style>
