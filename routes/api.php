@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ImageFaceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AnalyticController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
   });
   Route::group(['middleware' => 'auth:user'], function () {
     Route::apiResource('arriving_report', 'ArrivingReportController');
+    Route::apiResource('analytic', 'AnalyticController');
+
 //    Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
     Route::apiResource('user', 'UserController');
     Route::get('/role',[RoleController::class, 'index']);
