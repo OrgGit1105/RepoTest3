@@ -24,6 +24,8 @@ class ArrivingReport extends Model
       'out_time',
       'remark',
       'registration_type',
+      'type_date',
+      'number_day',
       'link_face_in',
       'link_face_out',
       'status',

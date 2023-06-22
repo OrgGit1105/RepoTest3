@@ -18,8 +18,7 @@
                     end-placeholder="End Date"
                     value-format="yyyy-MM-dd"
                     firstDayOfWeek="1"
-                    @blur="fillDate()"
-                    >
+                    @blur="fillDate()">
                   </el-date-picker>
                 </template>
 
@@ -57,7 +56,7 @@
               style="width: 100%"
               :row-style="rowWorkingStyle">
               <el-table-column
-                prop="name"
+                prop="user_name"
                 label="Employee name"
                 width="400"
                 align="center">
@@ -69,12 +68,12 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="remote_work"
+                prop="remote_day"
                 label="Remote Work"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="day_off"
+                prop="off_day"
                 label="Day Off"
                 align="center">
               </el-table-column>
@@ -87,9 +86,8 @@
 </template>
 
 <script>
-import { getArrving, createNewWorkingTime } from '../../api/working_time';
+import { getAllAnalytic } from '../../api/analytic';
 import { getAllUser } from '../../api/user';
-import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
 export default {
   name: 'WorkingTimeManagement',
@@ -97,63 +95,49 @@ export default {
     return {
       formSearch: {
         userId: '',
-        date: [ moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD') ],
+        date: [ moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD') ],
       },
-      listAnalytic: [
-        { name: 'IKeda Kohei', work_day: '13', remote_work: '1', day_off: '1' },
-        { name: 'IKeda Kohei', work_day: '13', remote_work: '1', day_off: '1' },
-        { name: 'IKeda Kohei', work_day: '13', remote_work: '1', day_off: '1' },
-        { name: 'IKeda Kohei', work_day: '13', remote_work: '1', day_off: '1' },
-        { name: 'IKeda Kohei', work_day: '13', remote_work: '1', day_off: '1' },
-      ],
+      listAnalytic: [],
       listEmployee: [],
       employeeValue: '',
     };
   },
   created() {
-    this.getAnalyticList();
     this.getListEmployee();
+    this.getListAllAnalytic();
   },
   methods: {
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
     },
-    openLoading() {
-      this.$store.dispatch('loading/setLoading', true);
+    async getListAllAnalytic() {
+      let PARAMS = {};
+      if(this.search !== ''){
+        PARAMS = {
+          start_date: this.formSearch.date[0],
+          end_date: this.formSearch.date[1],
+          user_id: this.employeeValue,
+        }
+      }
+      await getAllAnalytic(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.listAnalytic = response.data;
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'danger',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
+            content: error.message,
+          });
+        });
     },
-    closeLoading() {
-      this.$store.dispatch('loading/setLoading', false);
-    },
-    async getAnalyticList() {
-      // let PARAMS = {};
-      // if(this.search !== ''){
-      //   PARAMS = {
-      //     key_search: this.formSearch.search,
-      //     start_date: this.formSearch.date[0],
-      //     start_date: this.formSearch.date[0],
-      //     end_date: this.formSearch.date[1],
-      //     user_id: this.employeeValue,
-      //     per_page: this.pagination.per_page,
-      //     page: this.pagination.current_page,
-      //   }
-      // }
-      // await getArrving(PARAMS)
-      //   .then((response) => {
-      //     if (response.code === 200) {
-      //       this.listAnalytic = response.data.result;
-      //       this.pagination = response.data.pagination;
-      //     }
-      //   })
-      //   .catch((error) => {
-      //     MakeToast({
-      //       variant: 'danger',
-      //       title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
-      //       content: error.message,
-      //     });
-      //   });
+    fillSearch() {
+      this.getListAllAnalytic();
     },
     fillDate() {
-      this.getAnalyticList();
+      this.getListAllAnalytic();
     },
     async getListEmployee() {
       const PARAMS = {};
