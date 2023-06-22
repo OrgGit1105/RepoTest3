@@ -146,7 +146,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
         $analytics = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user')->get();
         if (!empty($userId)) {
-          $analytics = $analytics->where('user_id', $userId);
+            $analytics = $analytics->where('user_id', $userId);
         }
         $arrUserId = User::get()->pluck('id')->toArray();
 
@@ -156,9 +156,18 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             if($analytic->isNotEmpty()) {
                 $analytic = $analytic->first();
 
-                $sumWorked = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.work'))->sum('number_day');
-                $sumRemoted = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.work'))->sum('number_day');
-                $sumTakeOff = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.work'))->sum('number_day');
+                $sumWorked = $analytic->where('user_id', $value)->where(function ($q1) {
+                    $q1->where('type_date', config('analytic.type.work'))
+                        ->orWhere('type_date', config('analytic.type.half_day_work'));
+                })->sum('number_day');
+                $sumRemoted = $analytic->where('user_id', $value)->where(function ($q2) {
+                    $q2->where('type_date', config('analytic.type.remote'))
+                        ->orWhere('type_date', config('analytic.type.half_day_remote'));
+                })->sum('number_day');
+                $sumTakeOff = $analytic->where('user_id', $value)->where(function ($q3) {
+                    $q3->where('type_date', config('analytic.type.off'))
+                        ->orWhere('type_date', config('analytic.type.half_day_off'));
+                })->sum('number_day');
 
                 $data[] = [
                     'user_id' => $analytic->user_id,

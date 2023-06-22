@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Requests\ArrivingReportRequest;
+use Carbon\Carbon;
 
 class AnalyticController extends Controller
 {
@@ -50,7 +51,14 @@ class AnalyticController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // dd($request->all());
+        $in_time = $request['in_time'];
+        $out_time = $request['out_time'];
+        $a = Carbon::create($out_time)->diff(Carbon::create($in_time));
+        dd('aaa', $a);
+        // logic: if type = 1|2|3 number day = out_time - in_time + 1
+        // logic: if type = 4|5|6 number day = 0.5
+
     }
 
     /**
