@@ -73,7 +73,7 @@
                 width="90"
               >
                 <template slot-scope="scope">
-                  <span v-if="scope.retirement_date !== null" style="color: red;">
+                  <span v-if="checkDateRetired(scope.retirement_date)" style="color: red;">
                     Retired
                   </span>
                 </template>
