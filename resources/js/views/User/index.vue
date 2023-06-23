@@ -22,40 +22,46 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createForm()" />
-            <div class="box-search align-items-center" :class="display">
-              <!--              <el-input-->
-              <!--                placeholder="検索"-->
-              <!--                prefix-icon="el-icon-search"-->
-              <!--                v-model="input2">-->
-              <!--              </el-input>-->
-              <!--              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>-->
-            </div>
+<!--            <div class="box-search align-items-center">-->
+<!--              &lt;!&ndash;              <el-input&ndash;&gt;-->
+<!--              &lt;!&ndash;                placeholder="検索"&ndash;&gt;-->
+<!--              &lt;!&ndash;                prefix-icon="el-icon-search"&ndash;&gt;-->
+<!--              &lt;!&ndash;                v-model="input2">&ndash;&gt;-->
+<!--              &lt;!&ndash;              </el-input>&ndash;&gt;-->
+<!--              &lt;!&ndash;              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>&ndash;&gt;-->
+<!--            </div>-->
             <div class="d-flex justify-content-end align-items-center">
               <img class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)">
-
               <template class="select-custom">
-                <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" @change="getListAllUser()">
+                <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" value="" @change="getListAllUser()">
                   <el-option
                     class="el-option-custom"
-                  />
+                    label="All Role"
+                    value="">
+                  </el-option>
                   <el-option
                     v-for="role in listRoles ?? [] "
                     :key="role.id"
                     :label="role.name"
                     :value="role.id"
-                    divided
                   />
                 </el-select>
               </template>
             </div>
           </div>
-          <div class="card-body">
+          <hr class="line">
+          <div class="">
             <el-table
               :data="listUser ? listUser : []"
               style="width: 100%"
               :row-style="rowWorkingStyle"
               @current-change="goToEditScreen"
             >
+              <el-table-column
+                prop="id"
+                label="No"
+                align="center"
+              />
               <el-table-column
                 label="Name"
                 align="center"
@@ -419,7 +425,7 @@ export default {
         // { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
         // { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
       ],
-      role_id_selected: null,
+      role_id_selected: '',
       name_search: null,
       formCreate: {
         name: '',
@@ -1002,10 +1008,22 @@ table#__BVID__46 {
   font-weight: 500;
   text-align: center;
 }
+.select-custom .el-select-custom{
+  color: #0070C9;
+}
+::v-deep .el-select-custom .el-input .el-select__caret {
+  color: #0070C9;
+  font-weight: bolder;
+  font-size: 20px;
+  margin-top: 3px;
+}
 ::v-deep .el-select-custom .b-form-select .el-select__caret {
   color: #0070C9;
   font-weight: bolder;
   font-size: 20px;
   margin-top: 3px;
+}
+el-select{
+  color: #0070C9 !important;
 }
 </style>

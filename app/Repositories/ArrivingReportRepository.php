@@ -74,7 +74,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
       return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
     }
 
-    // Kiểm tra xem hôm nay có đúng ngày hôm nay khôn đã check in chưa?
+    // Kiểm tra xem hôm nay có đúng ngày hôm nay không đã check in chưa?
     $dateTimeNow = new DateTime('now');
     if ($dateTimeNow->format('Y-m-d') != $in_time->format('Y-m-d')){
       return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_must_today'), trans('api.arriving_report.time_must_today'));

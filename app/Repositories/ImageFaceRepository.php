@@ -8,12 +8,14 @@
 namespace Repository;
 
 use App\Http\Resources\UserResource;
+use App\Models\ArrivingReport;
 use App\Models\ImageFace;
 use App\Models\User;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
 use Aws\Rekognition\Exception\RekognitionException;
 use Aws\Rekognition\RekognitionClient;
 use Carbon\Carbon;
+use DateTime;
 use Exception;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
@@ -238,6 +240,55 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         if ($user == null){
           return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.user.login.false'));
         }
+
+        // Kiểm tra ngày hôm nay in hay out đã check chưa?
+        $dateTimeNow = new DateTime('now');
+        // Kiểm tra nhân viên này hôm nay đã check in chưa?
+        $arrivingIn_time = ArrivingReport::
+        whereDate("in_time",$dateTimeNow->format('Y-m-d'))
+          ->where("user_id",$user->id)
+          ->first();
+        // Kiểm tra nhân viên này hôm nay đã check out chưa?
+        $arrivingOut_time = ArrivingReport::
+        whereDate("out_time",$dateTimeNow->format('Y-m-d'))
+          ->where("user_id",$user->id)
+          ->first();
+        switch ($attributes['time']){
+          case 'in':
+            if ($arrivingIn_time){
+              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+            } else{
+              $image = new ImageFace();
+              $image->in_time = Carbon::now();
+              $image->link_face_in = config('services.aws.urlImage').$image->file;
+              $image->status = 1;
+              $image->created_at = Carbon::now();
+              if (array_key_exists("registration_type",$attributes)){
+                $image->registration_type = $attributes['registration_type'];
+              }
+              $image->save();
+            }
+            break;
+          case 'out':
+            if ($arrivingIn_time == null){
+              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
+            }
+            if ($arrivingOut_time){
+              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+            } else{
+              $image = new ImageFace();
+              $image->in_time = Carbon::now();
+              $image->link_face_in = config('services.aws.urlImage').$image->file;
+              $image->status = 1;
+              $image->created_at = Carbon::now();
+              if (array_key_exists("registration_type",$attributes)){
+                $image->registration_type = $attributes['registration_type'];
+              }
+              $image->save();
+            }
+            break;
+        }
+
         $token = JWTAuth::fromUser($user);
         $user->jwt_active = $token;
         $user->save();
@@ -247,7 +298,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
           'profile' => new UserResource($user)
         ]);
       } catch (Exception $ex){
-        return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,$ex->getMessage());
+        return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getMessage());
       }
     }
 }

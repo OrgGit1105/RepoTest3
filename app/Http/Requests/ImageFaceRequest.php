@@ -65,6 +65,7 @@ class ImageFaceRequest extends FormRequest
        }
        if(Route::getCurrentRoute()->getActionMethod() == 'compareFace'){
          return [
+           'time' => 'required|in:in,out',
            'type' => 'required|in:WithoutMask,WithMask',
            'file' => 'required|mimes:jpg,jpeg,png'
          ];
