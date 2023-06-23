@@ -10,6 +10,7 @@ namespace Repository;
 use App\Http\Resources\BaseResource;
 use App\Models\ArrivingReport;
 use App\Models\HistoryEditReport;
+use App\Models\User;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use Carbon\Carbon;
 use DateTime;
@@ -19,6 +20,7 @@ use Illuminate\Http\Response;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Arr;
 
 class ArrivingReportRepository extends BaseRepository implements ArrivingReportRepositoryInterface
 {
@@ -131,4 +133,52 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
      HistoryEditReport::create($attribute_history);
      return ResponseService::responseJson(200, new BaseResource(parent::update($attributes, $id)));
    }
+
+    public function getListAnalytic($input = [])
+    {
+        $defaulStartDate = Carbon::now()->startOfMonth();
+        $defaulEndDate = Carbon::now()->endOfMonth();
+        $startDate = Arr::get($input, 'start_date', $defaulStartDate);
+        $endDate = Arr::get($input, 'end_date', $defaulEndDate);
+        $startDate = date("Y-m-d 00:00", strtotime($startDate));
+        $endDate = date("Y-m-d 23:59", strtotime($endDate));
+        $userId = Arr::get($input, 'user_id', []);
+
+        $analytics = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user')->get();
+        if (!empty($userId)) {
+            $analytics = $analytics->where('user_id', $userId);
+        }
+        $arrUserId = User::get()->pluck('id')->toArray();
+
+        $data = [];
+        foreach ($arrUserId as $key => $value) {
+            $analytic = $analytics->where('user_id', $value);
+            if($analytic->isNotEmpty()) {
+                $analytic = $analytic->first();
+
+                $sumWorked = $analytic->where('user_id', $value)->where(function ($q1) {
+                    $q1->where('type_date', config('analytic.type.work'))
+                        ->orWhere('type_date', config('analytic.type.half_day_work'));
+                })->sum('number_day');
+                $sumRemoted = $analytic->where('user_id', $value)->where(function ($q2) {
+                    $q2->where('type_date', config('analytic.type.remote'))
+                        ->orWhere('type_date', config('analytic.type.half_day_remote'));
+                })->sum('number_day');
+                $sumTakeOff = $analytic->where('user_id', $value)->where(function ($q3) {
+                    $q3->where('type_date', config('analytic.type.off'))
+                        ->orWhere('type_date', config('analytic.type.half_day_off'));
+                })->sum('number_day');
+
+                $data[] = [
+                    'user_id' => $analytic->user_id,
+                    'user_name' => $analytic->user ? $analytic->user->name : '',
+                    'work_day' => $sumWorked,
+                    'remote_day' => $sumRemoted,
+                    'off_day' => $sumTakeOff,
+                ];
+            }
+        }
+
+		return $data;
+    }
 }
