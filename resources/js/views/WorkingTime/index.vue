@@ -418,7 +418,7 @@ export default {
 ::v-deep .el-select-custom .el-input__inner {
   border: unset;
   border-radius: unset;
-  color: #0070C9;
+  color: #0070C9 !important;
   font-size: 16px;
   font-weight: 500;
   text-align: center;
