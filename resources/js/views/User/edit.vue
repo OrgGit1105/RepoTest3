@@ -379,13 +379,17 @@
                     name="role"
                     rules="required"
                   >
-                    <b-form-checkbox-group
-                      id="role_id_create"
-                      v-model="formEdit.role_id"
-                      :options="listRoles ?? []"
-                      value-field="id"
-                      text-field="name"
-                    />
+                    <el-radio-group id="role_id_create" v-model="formEdit.role_id">
+                      <el-radio
+                        v-for="element in listRoles"
+                        :key="element.id"
+                        :label="element.id"
+                        style="font-weight: 400"
+                      >
+                        {{ element.name }}
+                      </el-radio>
+                    </el-radio-group>
+
                     <div class="text-error">
                       {{ errors[0] }}
                     </div>
