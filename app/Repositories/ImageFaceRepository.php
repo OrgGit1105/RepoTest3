@@ -258,15 +258,15 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             if ($arrivingIn_time){
               return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
             } else{
-              $image = new ImageFace();
-              $image->in_time = Carbon::now();
-              $image->link_face_in = config('services.aws.urlImage').$image->file;
-              $image->status = 1;
-              $image->created_at = Carbon::now();
+              $arrivingIn_time = new ArrivingReport();
+              $arrivingIn_time->in_time = Carbon::now();
+              $arrivingIn_time->link_face_in = config('services.aws.urlImage').$image->file;
+              $arrivingIn_time->status = 1;
+              $arrivingIn_time->created_at = Carbon::now();
               if (array_key_exists("registration_type",$attributes)){
-                $image->registration_type = $attributes['registration_type'];
+                $arrivingIn_time->registration_type = $attributes['registration_type'];
               }
-              $image->save();
+              $arrivingIn_time->save();
             }
             break;
           case 'out':
@@ -276,15 +276,15 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             if ($arrivingOut_time){
               return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
             } else{
-              $image = new ImageFace();
-              $image->in_time = Carbon::now();
-              $image->link_face_in = config('services.aws.urlImage').$image->file;
-              $image->status = 1;
-              $image->created_at = Carbon::now();
+              $arrivingOut_time = new ArrivingReport();
+              $arrivingOut_time->in_time = Carbon::now();
+              $arrivingOut_time->link_face_in = config('services.aws.urlImage').$image->file;
+              $arrivingOut_time->status = 1;
+              $arrivingOut_time->created_at = Carbon::now();
               if (array_key_exists("registration_type",$attributes)){
-                $image->registration_type = $attributes['registration_type'];
+                $arrivingOut_time->registration_type = $attributes['registration_type'];
               }
-              $image->save();
+              $arrivingOut_time->save();
             }
             break;
         }
@@ -295,7 +295,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
         return ResponseService::responseJson(200, [
           'access_token' => "Bearer " . $token,
-          'profile' => new UserResource($user)
+          'profile' => new UserResource($user),
+          'in_time' => $arrivingIn_time,
+          'out_time' => $arrivingOut_time
         ]);
       } catch (Exception $ex){
         return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getMessage());

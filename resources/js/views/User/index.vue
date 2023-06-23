@@ -22,14 +22,14 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createForm()" />
-<!--            <div class="box-search align-items-center">-->
-<!--              &lt;!&ndash;              <el-input&ndash;&gt;-->
-<!--              &lt;!&ndash;                placeholder="検索"&ndash;&gt;-->
-<!--              &lt;!&ndash;                prefix-icon="el-icon-search"&ndash;&gt;-->
-<!--              &lt;!&ndash;                v-model="input2">&ndash;&gt;-->
-<!--              &lt;!&ndash;              </el-input>&ndash;&gt;-->
-<!--              &lt;!&ndash;              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>&ndash;&gt;-->
-<!--            </div>-->
+            <!--            <div class="box-search align-items-center">-->
+            <!--              &lt;!&ndash;              <el-input&ndash;&gt;-->
+            <!--              &lt;!&ndash;                placeholder="検索"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                prefix-icon="el-icon-search"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                v-model="input2">&ndash;&gt;-->
+            <!--              &lt;!&ndash;              </el-input>&ndash;&gt;-->
+            <!--              &lt;!&ndash;              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>&ndash;&gt;-->
+            <!--            </div>-->
             <div class="d-flex justify-content-end align-items-center">
               <img class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)">
               <template class="select-custom">
@@ -37,8 +37,8 @@
                   <el-option
                     class="el-option-custom"
                     label="All Role"
-                    value="">
-                  </el-option>
+                    value=""
+                  />
                   <el-option
                     v-for="role in listRoles ?? [] "
                     :key="role.id"
@@ -95,42 +95,42 @@
                 align="center"
               />
             </el-table>
-<!--            <b-table-->
-<!--              id="my-table"-->
-<!--              class="text-center w-100 mb-0"-->
-<!--              :items="listUser ? listUser : []"-->
-<!--              :fields="fields"-->
-<!--              responsive="sm"-->
-<!--              :current-page="pagination.current_page"-->
-<!--              show-empty-->
-<!--            >-->
-<!--              <template #cell(retirement_date)="row">-->
-<!--                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">-->
-<!--                  Retirement-->
-<!--                </span>-->
-<!--              </template>-->
-<!--              <template #cell(email)="row">-->
-<!--                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>-->
-<!--              </template>-->
-<!--              &lt;!&ndash;              <template #cell(edit)="edit">&ndash;&gt;-->
-<!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
-<!--              &lt;!&ndash;                  :id="'btn-edit-'+ edit.item.id"&ndash;&gt;-->
-<!--              &lt;!&ndash;                  class="btn btn-edit fs-14"&ndash;&gt;-->
-<!--              &lt;!&ndash;                  dusk="btn-edit"&ndash;&gt;-->
-<!--              &lt;!&ndash;                  @click="goToEditScreen(edit.item.id)"&ndash;&gt;-->
-<!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>&ndash;&gt;-->
-<!--              &lt;!&ndash;              </template>&ndash;&gt;-->
-<!--              &lt;!&ndash;              <template #cell(delete)="info">&ndash;&gt;-->
-<!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
-<!--              &lt;!&ndash;                  :id="'btn-remove-'+ info.item.id"&ndash;&gt;-->
-<!--              &lt;!&ndash;                  class="btn btn-delete fs-14"&ndash;&gt;-->
-<!--              &lt;!&ndash;                  @click="confirmationForm(info.item)"&ndash;&gt;-->
-<!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>&ndash;&gt;-->
-<!--              &lt;!&ndash;              </template>&ndash;&gt;-->
-<!--              <template #empty="">-->
-<!--                {{ $t('LANGUAGES.TEXT_NO_DATA') }}-->
-<!--              </template>-->
-<!--            </b-table>-->
+            <!--            <b-table-->
+            <!--              id="my-table"-->
+            <!--              class="text-center w-100 mb-0"-->
+            <!--              :items="listUser ? listUser : []"-->
+            <!--              :fields="fields"-->
+            <!--              responsive="sm"-->
+            <!--              :current-page="pagination.current_page"-->
+            <!--              show-empty-->
+            <!--            >-->
+            <!--              <template #cell(retirement_date)="row">-->
+            <!--                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">-->
+            <!--                  Retirement-->
+            <!--                </span>-->
+            <!--              </template>-->
+            <!--              <template #cell(email)="row">-->
+            <!--                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>-->
+            <!--              </template>-->
+            <!--              &lt;!&ndash;              <template #cell(edit)="edit">&ndash;&gt;-->
+            <!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  :id="'btn-edit-'+ edit.item.id"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  class="btn btn-edit fs-14"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  dusk="btn-edit"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  @click="goToEditScreen(edit.item.id)"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>&ndash;&gt;-->
+            <!--              &lt;!&ndash;              </template>&ndash;&gt;-->
+            <!--              &lt;!&ndash;              <template #cell(delete)="info">&ndash;&gt;-->
+            <!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  :id="'btn-remove-'+ info.item.id"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  class="btn btn-delete fs-14"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                  @click="confirmationForm(info.item)"&ndash;&gt;-->
+            <!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>&ndash;&gt;-->
+            <!--              &lt;!&ndash;              </template>&ndash;&gt;-->
+            <!--              <template #empty="">-->
+            <!--                {{ $t('LANGUAGES.TEXT_NO_DATA') }}-->
+            <!--              </template>-->
+            <!--            </b-table>-->
           </div>
         </div>
 
@@ -144,222 +144,392 @@
               :total="pagination.total_records"
               :current-page.sync="pagination.current_page"
               @current-change="getListAllUser"
-              >
-            </el-pagination>
+            />
           </div>
         </div>
-<!--        <div class="use-management-pagianation">-->
-<!--          <div class="card-body pagianation">-->
-<!--            <b-pagination-->
-<!--              v-model="pagination.current_page"-->
-<!--              :per-page="pagination.per_page"-->
-<!--              :total-rows="pagination.total_records"-->
-<!--              aria-controls="my-table"-->
-<!--              :disabled="pagination.isDisable"-->
-<!--            />-->
-<!--          </div>-->
-<!--        </div>-->
+        <!--        <div class="use-management-pagianation">-->
+        <!--          <div class="card-body pagianation">-->
+        <!--            <b-pagination-->
+        <!--              v-model="pagination.current_page"-->
+        <!--              :per-page="pagination.per_page"-->
+        <!--              :total-rows="pagination.total_records"-->
+        <!--              aria-controls="my-table"-->
+        <!--              :disabled="pagination.isDisable"-->
+        <!--            />-->
+        <!--          </div>-->
+        <!--        </div>-->
+
+        <!-- Modal -->
+        <el-dialog class="title-add-working" title="Add Employee" :visible.sync="openModalAdd" width="50%" @click="hideCreateModal()">
+          <ValidationObserver
+            ref="obsAddEmployee"
+            tag="div"
+          >
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="name"
+              rules="required"
+            >
+              <label for="nameEmployee">Employee Name</label>
+              <el-input id="nameEmployee" v-model="formCreate.name"/>
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="email"
+              rules="required|email"
+            >
+              <label for="emailEmployee">Employee Email</label>
+              <el-input id="emailEmployee" v-model="formCreate.email"/>
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <hr class="line">
+            <p class="title-create-employee mb-3">Face Data</p>
+            <div style="margin-bottom: 15px;">
+              <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
+                <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
+                  <div
+                    :class="{check_with_or_without_mask: withoutMask}"
+                    style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
+                    @click="checkWithoutMask()"
+                  >
+                    <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
+                    <div style="margin-right: 20px">
+                      <p>Face image</p>
+                      <p>without mask</p>
+                    </div>
+                  </div>
+                  <div
+                    :class="{check_with_or_without_mask: withMask}"
+                    style="display: flex; gap: 1rem;cursor: pointer"
+                    @click="checkWithMask()"
+                  >
+                    <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
+                    <div style="margin-right: 20px">
+                      <p>Face image</p>
+                      <p>with mask</p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="overflow-x: auto;
+                  white-space: nowrap;"
+                >
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    multiple
+                    style="display: none;"
+                    @change="handleFileSelect"
+                  >
+                  <div class="image-preview">
+                    <template v-if="withoutMask">
+                      <div v-for="(file, index) in selectedWithoutMaskFiles" :key="index" class="preview-item">
+                        <img :src="convertFileToUrl(file)">
+                        <b-icon-x-circle
+                          style="display: block;
+                                  float: right;
+                                  position: relative;
+                                  top: -9px;
+                                  right: 8px;
+                                  height: 17px;
+                                  cursor: pointer"
+                          @click="removeFile(index)"
+                        >Remove
+                        </b-icon-x-circle>
+                      </div>
+                    </template>
+                    <template v-if="withMask">
+                      <div v-for="(file, index) in selectedWithMaskFiles" :key="index" class="preview-item">
+                        <img :src="convertFileToUrl(file)">
+                        <b-icon-x-circle
+                          style="display: block;
+                                  float: right;
+                                  position: relative;
+                                  top: -9px;
+                                  right: 8px;
+                                  height: 17px;
+                                  cursor: pointer"
+                          @click="removeFile(index)"
+                        >Remove
+                        </b-icon-x-circle>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+                <div style="display: flex;font-size: large; gap: 1rem">
+                  <div style="color: blue;cursor: pointer;" @click="openFilePicker">Select File</div>
+                  <div>|</div>
+                  <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
+                </div>
+              </div>
+              <div v-if="validateFile" class="text-error">
+                {{ messageErrorFile }}
+              </div>
+            </div>
+            <hr class="line">
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="role"
+              rules="required"
+            >
+              <label class="title-create-employee" for="roleEmployee">Role</label>
+              <br>
+              <el-radio-group id="roleEmployee" v-model="formCreate.role_id">
+                <el-radio
+                  v-for="element in listRoles"
+                  :key="element.id"
+                  :label="element.id"
+                >
+                  {{ element.name }}
+                </el-radio>
+              </el-radio-group>
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <hr class="line">
+            <p class="label-custom title-create-employee">Password</p>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="password"
+              vid="password"
+              rules="required|min:8"
+            >
+              <label for="passwordEmployee">Password</label>
+              <el-input id="passwordEmployee" v-model="formCreate.password" type="password" show-password />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="password_confirmation"
+              rules="required|confirmed:password|min:8"
+            >
+              <label for="password_confirmationEmployee">Password (Confirm)</label>
+              <el-input id="password_confirmationEmployee" v-model="formCreate.password_confirmation" type="password" show-password />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+
+          </ValidationObserver>
+          <span slot="footer" class="dialog-footer">
+            <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
+            <template v-if="!waitCreate">
+              <el-button class="btn-add-custom" type="primary" @click="submitCreate()">Add</el-button>
+            </template>
+            <template v-if="waitCreate">
+              <el-button class="btn-add-custom" type="primary">...</el-button>
+            </template>
+          </span>
+        </el-dialog>
 
         <!-- Modal create -->
-        <b-modal id="bv-modal-create" size="lg" hide-footer hide-header @hidden="hideCreateModal()">
-          <div>
-            <ValidationObserver
-              ref="obsAddEmployee"
-              tag="div"
-            >
-              <h4 class="mb-0 font-weight-normal" style="border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
-                <header>
-                  <h4>Add Employee</h4>
-                </header>
-                <div>
-                  <ValidationProvider
-                    v-slot="{ errors }"
-                    name="name"
-                    rules="required"
-                  >
-                    <label for="nameEmployee" style="font-size: 16px;">Name:</label>
-                    <b-input-group>
-                      <b-form-input
-                        id="nameEmployee"
-                        v-model="formCreate.name"
-                      />
-                    </b-input-group>
-                    <div class="text-error">
-                      {{ errors[0] }}
-                    </div>
-                  </ValidationProvider>
-                </div>
-                <div style="margin-bottom: 15px;">
-                  <ValidationProvider
-                    v-slot="{ errors }"
-                    name="email"
-                    rules="required|email"
-                  >
-                    <label for="emailEmployee" style="font-size: 16px;">Email:</label>
-                    <b-input-group>
-                      <b-form-input
-                        id="emailEmployee"
-                        v-model="formCreate.email"
-                      />
-                    </b-input-group>
-                    <div class="text-error">
-                      {{ errors[0] }}
-                    </div>
-                  </ValidationProvider>
-                </div>
-              </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
-                <header>
-                  <h4>Face Data</h4>
-                </header>
-                <div style="margin-bottom: 15px;">
-                  <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
-                    <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
-                      <div
-                        :class="{check_with_or_without_mask: withoutMask}"
-                        style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
-                        @click="checkWithoutMask()"
-                      >
-                        <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />
-                        <div style="margin-right: 20px">
-                          <p>Face image</p>
-                          <p>without mask</p>
-                        </div>
-                      </div>
-                      <div
-                        :class="{check_with_or_without_mask: withMask}"
-                        style="display: flex; gap: 1rem;cursor: pointer"
-                        @click="checkWithMask()"
-                      >
-                        <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />
-                        <div style="margin-right: 20px">
-                          <p>Face image</p>
-                          <p>with mask</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      style="overflow-x: auto;
-                      white-space: nowrap;"
-                    >
-                      <input
-                        ref="fileInput"
-                        type="file"
-                        multiple
-                        style="display: none;"
-                        @change="handleFileSelect"
-                      >
-                      <div class="image-preview">
-                        <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">
-                          <img :src="convertFileToUrl(file)">
-                          <b-icon-x-circle
-                            style="display: block;
-                          float: right;
-                          position: relative;
-                          top: -9px;
-                          right: 8px;
-                          height: 17px;
-                          cursor: pointer"
-                            @click="removeFile(index)"
-                          >Remove
-                          </b-icon-x-circle>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="display: flex;font-size: large; gap: 1rem">
-                      <div style="color: blue;cursor: pointer;" @click="openFilePicker">Select File</div>
-                      <div>|</div>
-                      <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>
-                    </div>
-                  </div>
-                  <div v-if="validateFile" class="text-error">
-                    {{ messageErrorFile }}
-                  </div>
-                </div>
-              </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
-                <header>
-                  <h4>Role</h4>
-                </header>
-                <div style="margin-bottom: 15px;">
-                  <ValidationProvider
-                    v-slot="{ errors }"
-                    name="role"
-                    rules="required"
-                  >
-                    <label for="role_id_create" style="font-size: 16px;">Role:</label>
-                    <b-form-checkbox-group
-                      id="role_id_create"
-                      v-model="formCreate.role_id"
-                      :options="listRoles ?? []"
-                      value-field="id"
-                      text-field="name"
-                    />
-                    <div class="text-error">
-                      {{ errors[0] }}
-                    </div>
-                  </ValidationProvider>
-                </div>
-              </h4>
-              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
-                <header>
-                  <h4>Password</h4>
-                </header>
-                <div>
-                  <ValidationProvider
-                    v-slot="{ errors }"
-                    name="password"
-                    vid="password"
-                    rules="required"
-                  >
-                    <label for="password" style="font-size: 16px;">Password:</label>
-                    <b-input-group>
-                      <b-form-input
-                        id="password"
-                        v-model="formCreate.password"
-                        type="password"
-                      />
-                    </b-input-group>
-                    <div class="text-error">
-                      {{ errors[0] }}
-                    </div>
-                  </ValidationProvider>
-                </div>
-                <div style="margin-bottom: 15px;">
-                  <ValidationProvider
-                    v-slot="{ errors }"
-                    name="password_confirm"
-                    rules="required|confirmed:password"
-                  >
-                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>
-                    <b-input-group>
-                      <b-form-input
-                        id="password_confirm"
-                        v-model="formCreate.password_confirmation"
-                        type="password"
-                      />
-                    </b-input-group>
-                    <div class="text-error">
-                      {{ errors[0] }}
-                    </div>
-                  </ValidationProvider>
-                </div>
-              </h4>
-            </ValidationObserver>
-          </div>
-          <div class="justify-content-end d-flex p-3">
-            <b-button
-              class="mt-3 w-25 fs-12 btn btn-accept"
-              squared
-              @click="submitCreate()"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
-            <b-button
-              class="mt-3 ml-3 w-25 fs-12 btn btn-close"
-              squared
-              @click="hideCreateModal()"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>
-          </div>
-        </b-modal>
+        <!--        <b-modal id="bv-modal-create" size="lg" hide-footer hide-header @hidden="hideCreateModal()">-->
+        <!--          <div>-->
+        <!--            <ValidationObserver-->
+        <!--              ref="obsAddEmployee"-->
+        <!--              tag="div"-->
+        <!--            >-->
+        <!--              <h4 class="mb-0 font-weight-normal" style="border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
+        <!--                <header>-->
+        <!--                  <h4>Add Employee</h4>-->
+        <!--                </header>-->
+        <!--                <div>-->
+        <!--                          <ValidationProvider-->
+        <!--                            v-slot="{ errors }"-->
+        <!--                            name="name"-->
+        <!--                            rules="required"-->
+        <!--                  >-->
+        <!--                    <label for="nameEmployee" style="font-size: 16px;">Name:</label>-->
+        <!--                    <b-input-group>-->
+        <!--                      <b-form-input-->
+        <!--                        id="nameEmployee"-->
+        <!--                        v-model="formCreate.name"-->
+        <!--                      />-->
+        <!--                    </b-input-group>-->
+        <!--                    <div class="text-error">-->
+        <!--                      {{ errors[0] }}-->
+        <!--                    </div>-->
+        <!--                  </ValidationProvider>-->
+        <!--                </div>-->
+        <!--                <div style="margin-bottom: 15px;">-->
+        <!--                  <ValidationProvider-->
+        <!--                    v-slot="{ errors }"-->
+        <!--                    name="email"-->
+        <!--                    rules="required|email"-->
+        <!--                  >-->
+        <!--                    <label for="emailEmployee" style="font-size: 16px;">Email:</label>-->
+        <!--                    <b-input-group>-->
+        <!--                      <b-form-input-->
+        <!--                        id="emailEmployee"-->
+        <!--                        v-model="formCreate.email"-->
+        <!--                      />-->
+        <!--                    </b-input-group>-->
+        <!--                            <div class="text-error">-->
+        <!--                              {{ errors[0] }}-->
+        <!--                            </div>-->
+        <!--                  </ValidationProvider>-->
+        <!--                </div>-->
+        <!--              </h4>-->
+        <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
+        <!--                <header>-->
+        <!--                  <h4>Face Data</h4>-->
+        <!--                </header>-->
+        <!--                        <div style="margin-bottom: 15px;">-->
+        <!--                          <div class="image-dropzone" @dragover.prevent @drop="handleDrop">-->
+        <!--                            <div style="border-bottom: 2px solid;display: flex; gap: 1rem">-->
+        <!--                              <div-->
+        <!--                                :class="{check_with_or_without_mask: withoutMask}"-->
+        <!--                                style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"-->
+        <!--                                @click="checkWithoutMask()"-->
+        <!--                              >-->
+        <!--                                <b-icon-emoji-smile style="margin-top: 10px; height: 55%" />-->
+        <!--                                <div style="margin-right: 20px">-->
+        <!--                                  <p>Face image</p>-->
+        <!--                                  <p>without mask</p>-->
+        <!--                                </div>-->
+        <!--                              </div>-->
+        <!--                              <div-->
+        <!--                                :class="{check_with_or_without_mask: withMask}"-->
+        <!--                                style="display: flex; gap: 1rem;cursor: pointer"-->
+        <!--                                @click="checkWithMask()"-->
+        <!--                              >-->
+        <!--                                <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />-->
+        <!--                                <div style="margin-right: 20px">-->
+        <!--                                  <p>Face image</p>-->
+        <!--                                  <p>with mask</p>-->
+        <!--                                </div>-->
+        <!--                              </div>-->
+        <!--                            </div>-->
+        <!--                            <div-->
+        <!--                              style="overflow-x: auto;-->
+        <!--                              white-space: nowrap;"-->
+        <!--                            >-->
+        <!--                              <input-->
+        <!--                                ref="fileInput"-->
+        <!--                                type="file"-->
+        <!--                                multiple-->
+        <!--                                style="display: none;"-->
+        <!--                                @change="handleFileSelect"-->
+        <!--                              >-->
+        <!--                              <div class="image-preview">-->
+        <!--                                <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">-->
+        <!--                                  <img :src="convertFileToUrl(file)">-->
+        <!--                                  <b-icon-x-circle-->
+        <!--                                    style="display: block;-->
+        <!--                                  float: right;-->
+        <!--                                  position: relative;-->
+        <!--                                  top: -9px;-->
+        <!--                                  right: 8px;-->
+        <!--                                  height: 17px;-->
+        <!--                                  cursor: pointer"-->
+        <!--                                    @click="removeFile(index)"-->
+        <!--                                  >Remove-->
+        <!--                                  </b-icon-x-circle>-->
+        <!--                                </div>-->
+        <!--                              </div>-->
+        <!--                            </div>-->
+        <!--                            <div style="display: flex;font-size: large; gap: 1rem">-->
+        <!--                              <div style="color: blue;cursor: pointer;" @click="openFilePicker">Select File</div>-->
+        <!--                              <div>|</div>-->
+        <!--                              <div style="cursor: pointer;" @click="removeFileAll">Delete all</div>-->
+        <!--                            </div>-->
+        <!--                          </div>-->
+        <!--                          <div v-if="validateFile" class="text-error">-->
+        <!--                            {{ messageErrorFile }}-->
+        <!--                          </div>-->
+        <!--                        </div>-->
+        <!--              </h4>-->
+        <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
+        <!--                <header>-->
+        <!--                  <h4>Role</h4>-->
+        <!--                </header>-->
+        <!--                        <div style="margin-bottom: 15px;">-->
+        <!--                          <ValidationProvider-->
+        <!--                            v-slot="{ errors }"-->
+        <!--                            name="role"-->
+        <!--                            rules="required"-->
+        <!--                          >-->
+        <!--                            <label for="role_id_create" style="font-size: 16px;">Role:</label>-->
+        <!--                            <b-form-checkbox-group-->
+        <!--                              id="role_id_create"-->
+        <!--                              v-model="formCreate.role_id"-->
+        <!--                              :options="listRoles ?? []"-->
+        <!--                              value-field="id"-->
+        <!--                              text-field="name"-->
+        <!--                            />-->
+        <!--                            <div class="text-error">-->
+        <!--                              {{ errors[0] }}-->
+        <!--                            </div>-->
+        <!--                          </ValidationProvider>-->
+        <!--                        </div>-->
+        <!--              </h4>-->
+        <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
+        <!--                <header>-->
+        <!--                  <h4>Password</h4>-->
+        <!--                </header>-->
+        <!--                <div>-->
+<!--                          <ValidationProvider-->
+<!--                            v-slot="{ errors }"-->
+<!--                            name="password"-->
+<!--                            vid="password"-->
+<!--                            rules="required"-->
+        <!--                  >-->
+        <!--                    <label for="password" style="font-size: 16px;">Password:</label>-->
+        <!--                    <b-input-group>-->
+        <!--                      <b-form-input-->
+        <!--                        id="password"-->
+        <!--                        v-model="formCreate.password"-->
+        <!--                        type="password"-->
+        <!--                      />-->
+        <!--                    </b-input-group>-->
+        <!--                    <div class="text-error">-->
+        <!--                      {{ errors[0] }}-->
+        <!--                    </div>-->
+        <!--                  </ValidationProvider>-->
+        <!--                </div>-->
+        <!--                <div style="margin-bottom: 15px;">-->
+        <!--                  <ValidationProvider-->
+        <!--                    v-slot="{ errors }"-->
+        <!--                    name="password_confirm"-->
+        <!--                    rules="required|confirmed:password"-->
+        <!--                  >-->
+        <!--                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>-->
+        <!--                    <b-input-group>-->
+        <!--                      <b-form-input-->
+        <!--                        id="password_confirm"-->
+        <!--                        v-model="formCreate.password_confirmation"-->
+        <!--                        type="password"-->
+        <!--                      />-->
+        <!--                    </b-input-group>-->
+        <!--                    <div class="text-error">-->
+        <!--                      {{ errors[0] }}-->
+        <!--                    </div>-->
+        <!--                  </ValidationProvider>-->
+        <!--                </div>-->
+        <!--              </h4>-->
+        <!--            </ValidationObserver>-->
+        <!--          </div>-->
+        <!--          <div class="justify-content-end d-flex p-3">-->
+        <!--            <b-button-->
+        <!--              class="mt-3 w-25 fs-12 btn btn-accept"-->
+        <!--              squared-->
+        <!--              @click="submitCreate()"-->
+        <!--            >Save</b-button>-->
+        <!--            <b-button-->
+        <!--              class="mt-3 ml-3 w-25 fs-12 btn btn-close"-->
+        <!--              squared-->
+        <!--              @click="hideCreateModal()"-->
+        <!--            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>-->
+        <!--          </div>-->
+        <!--        </b-modal>-->
         <!-- Modal delete -->
         <b-modal id="bv-modal-delete" hide-footer hide-header>
           <header class="style-title-modal p-3 text-white">
@@ -435,11 +605,14 @@ export default {
         role_id: '',
         status: 1,
       },
-      selectedFiles: [],
+      selectedWithMaskFiles: [],
+      selectedWithoutMaskFiles: [],
       withoutMask: true,
       withMask: false,
       validateFile: false,
       messageErrorFile: [],
+      openModalAdd: false,
+      waitCreate: false,
     };
   },
   computed: {
@@ -529,7 +702,8 @@ export default {
       this.$router.push('/user/create');
     },
     createForm(){
-      this.$bvModal.show('bv-modal-create');
+      this.openModalAdd = true;
+      // this.$bvModal.show('bv-modal-create');
     },
     confirmationForm(item) {
       this.infoModel = item;
@@ -544,7 +718,13 @@ export default {
         role_id: '',
         status: 1,
       };
-      this.$bvModal.hide('bv-modal-create');
+      if (this.withoutMask){
+        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
+      }
+      if (this.withMask){
+        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
+      }
+      this.openModalAdd = false;
     },
     hideModal() {
       this.$bvModal.hide('bv-modal-delete');
@@ -584,6 +764,7 @@ export default {
           content: 'Still error',
         });
       } else {
+        this.waitCreate = true;
         await postOneUser(this.formCreate).then(async(response) => {
           if (response.code === 200) {
             MakeToast({
@@ -591,25 +772,16 @@ export default {
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
               content: 'Create employee success',
             });
-            if (this.selectedFiles.length !== 0){
-              let typeImage = '';
-              if (this.withoutMask){
-                typeImage = 'WithoutMask';
-              }
-              if (this.withMask){
-                typeImage = 'WithMask';
-              }
+            // Kiểm tra selectedWithoutMaskFiles
+            if (this.selectedWithoutMaskFiles.length !== 0){
               const image = new FormData();
-
-              // Lặp qua danh sách các file đã chọn để upload
-              for (let i = 0; i < this.selectedFiles.length; i++) {
-                const file = this.selectedFiles[i];
+              for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
+                const file = this.selectedWithoutMaskFiles[i];
                 image.append('file[]', file);
               }
-
-              // Thêm các trường dữ liệu khác vào FormData
-              image.append('type', typeImage);
+              image.append('type', 'WithoutMask');
               image.append('user_id', response.data.id);
+
               await ImageApi.createImage(image)
                 .then((response) => {
                   if (response.code === 200){
@@ -622,7 +794,42 @@ export default {
                     MakeToast({
                       variant: 'warning',
                       title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: response.message_content,
+                      content: response.message,
+                    });
+                  }
+                })
+                .catch((error) => {
+                  MakeToast({
+                    variant: 'warning',
+                    title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                    content: error.message,
+                  });
+                });
+            }
+
+            // Kiểm tra selectedWithMaskFiles
+            if (this.selectedWithMaskFiles.length !== 0){
+              const image = new FormData();
+              for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
+                const file = this.selectedWithMaskFiles[i];
+                image.append('file[]', file);
+              }
+              image.append('type', 'WithMask');
+              image.append('user_id', response.data.id);
+
+              await ImageApi.createImage(image)
+                .then((response) => {
+                  if (response.code === 200){
+                    MakeToast({
+                      variant: 'success',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                      content: 'Add image employee success',
+                    });
+                  } else {
+                    MakeToast({
+                      variant: 'warning',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                      content: response.message,
                     });
                   }
                 })
@@ -642,14 +849,16 @@ export default {
               role_id: '',
               status: 1,
             };
-            this.$bvModal.hide('bv-modal-create');
+            this.waitCreate = false;
+            this.openModalAdd = false;
             await this.getListAllUser();
           } else {
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-              content: response.message_content,
+              content: response.message,
             });
+            this.waitCreate = false;
           }
         }).catch((error) => {
           MakeToast({
@@ -677,16 +886,10 @@ export default {
       return `${year}-${month}-${day}`;
     },
     checkWithoutMask(){
-      if (!this.withoutMask){
-        this.selectedFiles.splice(0, this.selectedFiles.length);
-      }
       this.withoutMask = true;
       this.withMask = false;
     },
     checkWithMask(){
-      if (!this.withMask){
-        this.selectedFiles.splice(0, this.selectedFiles.length);
-      }
       this.withoutMask = false;
       this.withMask = true;
     },
@@ -696,7 +899,12 @@ export default {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         // const fileURL = URL.createObjectURL(file);
-        this.selectedFiles.push(file);
+        if (this.withoutMask){
+          this.selectedWithoutMaskFiles.push(file);
+        }
+        if (this.withMask){
+          this.selectedWithMaskFiles.push(file);
+        }
       }
     },
     openFilePicker() {
@@ -707,7 +915,12 @@ export default {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (this.isImageFile(file)) {
-          this.selectedFiles.push(file);
+          if (this.withoutMask){
+            this.selectedWithoutMaskFiles.push(file);
+          }
+          if (this.withMask){
+            this.selectedWithMaskFiles.push(file);
+          }
         }
       }
       this.validateFile = false;
@@ -721,18 +934,34 @@ export default {
       return URL.createObjectURL(file);
     },
     removeFile(index) {
-      this.selectedFiles.splice(index, 1);
+      if (this.withoutMask){
+        this.selectedWithoutMaskFiles.splice(index, 1);
+      }
+      if (this.withMask){
+        this.selectedWithMaskFiles.splice(index, 1);
+      }
       this.checkNumImage();
     },
     chooseFiles() {
       this.$refs.fileInput.click();
     },
     removeFileAll(){
-      this.selectedFiles.splice(0, this.selectedFiles.length);
+      if (this.withoutMask){
+        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
+      }
+      if (this.withMask){
+        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
+      }
       this.checkNumImage();
     },
     checkNumImage(){
-      if (this.selectedFiles.length === 0){
+      this.messageErrorFile = [];
+      if (this.selectedWithoutMaskFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Image without mask must one image');
+      }
+
+      if (this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0){
         this.validateFile = true;
         this.messageErrorFile.push('Pleas choose image');
       }
@@ -918,7 +1147,6 @@ table#__BVID__46 {
   cursor: pointer;
 }
 
-
 .email-link:hover {
   color: blue;
 }
@@ -1025,5 +1253,11 @@ table#__BVID__46 {
 }
 el-select{
   color: #0070C9 !important;
+}
+::v-deep .title-add-working .el-dialog__title, .title-create-employee {
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 48px;
+  color: #000000;
 }
 </style>

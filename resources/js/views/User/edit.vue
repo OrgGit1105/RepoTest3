@@ -20,7 +20,12 @@
                 <h1 class="title-record m-0">Employee</h1>
               </div>
               <div class="basic">
-                <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
+                <template v-if="!waitEdit">
+                  <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
+                </template>
+                <template v-if="waitEdit">
+                  <el-button class="btn-add-custom" type="primary">...</el-button>
+                </template>
               </div>
             </div>
             <hr class="line">
@@ -142,7 +147,7 @@
                         style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
                         @click="checkWithoutMask()"
                       >
-                        <b-icon-emoji-smile/>
+                        <b-icon-emoji-smile />
                         <div style="margin-right: 20px">
                           <p>Without mask</p>
                         </div>
@@ -153,10 +158,10 @@
                         @click="checkWithMask()"
                       >
                         <!--                        <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />-->
-<!--                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">-->
-<!--                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>-->
-<!--                          <path d="M9.146 5.146a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zm-5 0a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 1 1 .708.708l-.647.646.647.646a.5.5 0 1 1-.708.708L5.5 7.207l-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zM10 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>-->
-<!--                        </svg>-->
+                        <!--                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">-->
+                        <!--                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>-->
+                        <!--                          <path d="M9.146 5.146a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zm-5 0a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 1 1 .708.708l-.647.646.647.646a.5.5 0 1 1-.708.708L5.5 7.207l-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zM10 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>-->
+                        <!--                        </svg>-->
 
                         <svg
                           version="1.0"
@@ -467,12 +472,13 @@
       title="DELETE"
       :visible.sync="showModalDelete"
       width="30%"
-      center>
+      center
+    >
       <span class="text-align-center">Are you sure to delete this employee?</span>
       <span slot="footer" class="dialog-footer">
-            <el-button @click="showModalDelete= false">Cancel</el-button>
-            <el-button type="danger" @click="submitDelete()">Confirm</el-button>
-          </span>
+        <el-button @click="showModalDelete= false">Cancel</el-button>
+        <el-button type="danger" @click="submitDelete()">Confirm</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -653,6 +659,7 @@ export default {
         // }
         // // console.log('Form edit gui di', EDIT_DATA);
         // this.openLoading();
+        this.waitEdit = true;
         await UserApi.putOneUser(this.id, this.formEdit)
           .then(async(response) => {
             if (response.code === 200) {
@@ -676,7 +683,7 @@ export default {
                         MakeToast({
                           variant: 'warning',
                           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                          content: response.message_content,
+                          content: response.message,
                         });
                       }
                     })
@@ -711,7 +718,7 @@ export default {
                       MakeToast({
                         variant: 'warning',
                         title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message_content,
+                        content: response.message,
                       });
                     }
                   })
@@ -731,7 +738,7 @@ export default {
                   const file = this.selectedWithMaskFiles[i];
                   image.append('file[]', file);
                 }
-                image.append('type', 'WithoutMask');
+                image.append('type', 'WithMask');
                 image.append('user_id', this.id);
 
                 await ImageApi.createImage(image)
@@ -746,7 +753,7 @@ export default {
                       MakeToast({
                         variant: 'warning',
                         title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message_content,
+                        content: response.message,
                       });
                     }
                   })
@@ -758,14 +765,16 @@ export default {
                     });
                   });
               }
+              this.waitEdit = false;
               await this.$router.push('/user/index');
             } else {
               // this.closeLoading();
               MakeToast({
                 variant: 'warning',
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                content: response.message_content,
+                content: response.message,
               });
+              this.waitEdit = false;
             }
           })
           .catch((error) => {
@@ -775,12 +784,14 @@ export default {
               content: error.message,
             });
           });
+        this.waitEdit = false;
       } else {
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: 'Still error',
         });
+        this.waitEdit = false;
       }
     },
     removeLinkFile(file, index){
@@ -795,6 +806,7 @@ export default {
       this.checkNumImage();
     },
     checkNumImage(){
+      this.messageErrorFile = [];
       if (this.linkFilesWithoutMask.length === 0 && this.selectedWithoutMaskFiles.length === 0){
         this.validateFile = true;
         this.messageErrorFile.push('Image without mask must one image');
