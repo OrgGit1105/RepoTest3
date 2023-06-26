@@ -22,21 +22,23 @@ class SlackEventModeController extends Controller
 
         $input = $request->all();
 
-        $input = array (
-            'token' => 'mI0mHALUUpLOeMYqRURjAgIw',
-            'team_id' => 'T04S4SYEAQP',
-            'team_domain' => 'youandi-num5367',
-            'channel_id' => 'C04SMU7AF44',
-            'channel_name' => 'yai',
-            'user_id' => 'U04SKD7HTJ6',
-            'user_name' => 'ngan',
-            'command' => '/hybot',
-            'text' => 'take off,2023-06-27,2023-06-29,bị ốm',
-            'api_app_id' => 'A05DS3GPSR2',
-            'is_enterprise_install' => 'false',
-            'response_url' => 'https://hooks.slack.com/commands/T04S4SYEAQP/5488244932340/VXOTgJnvWUvuq5UicW584max',
-            'trigger_id' => '5479150648550.4888916486839.ed4f8faa25b0acaac10f19676a17454d',
-        );
+        // check channel
+
+        // $input = array (
+        //     'token' => 'mI0mHALUUpLOeMYqRURjAgIw',
+        //     'team_id' => 'T04S4SYEAQP',
+        //     'team_domain' => 'youandi-num5367',
+        //     'channel_id' => 'C04SMU7AF44',
+        //     'channel_name' => 'yai',
+        //     'user_id' => 'U04SKD7HTJ6',
+        //     'user_name' => 'ngan',
+        //     'command' => '/hybot',
+        //     'text' => 'take off,2023-06-27,2023-06-29,bị ốm',
+        //     'api_app_id' => 'A05DS3GPSR2',
+        //     'is_enterprise_install' => 'false',
+        //     'response_url' => 'https://hooks.slack.com/commands/T04S4SYEAQP/5488244932340/VXOTgJnvWUvuq5UicW584max',
+        //     'trigger_id' => '5479150648550.4888916486839.ed4f8faa25b0acaac10f19676a17454d',
+        // );
 
         $messages = explode(',', $input['text']);
 
@@ -92,7 +94,12 @@ class SlackEventModeController extends Controller
             ArrivingReport::insert($dataInsert);
         }
 
-        return 'Bạn đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' từ ngày ' . $messages['1'] . ' đến ngày ' . $messages['2'] . ' vì lí do ' . $messages['3'];
+        // return 'Bạn đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' từ ngày ' . $messages['1'] . ' đến ngày ' . $messages['2'] . ' vì lí do ' . $messages['3'];
+
+        return response()->json([
+            'response_type' => 'in_channel',
+            'text' => $user->name . ' đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' từ ngày ' . $messages['1'] . ' đến ngày ' . $messages['2'] . ' vì lí do ' . $messages['3'],
+        ]);
 
         // return response($challenge, 200)
         //     ->header('Content-Type', 'text/plain');
