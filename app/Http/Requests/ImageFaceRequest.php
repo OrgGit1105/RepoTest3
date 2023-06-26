@@ -39,6 +39,8 @@ class ImageFaceRequest extends FormRequest
                   return $this->getCustomRule();
                 case 'compareFace':
                   return $this->getCustomRule();
+                case 'checkImage':
+                  return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -67,6 +69,11 @@ class ImageFaceRequest extends FormRequest
          return [
            'time' => 'required|in:in,out',
            'type' => 'required|in:WithoutMask,WithMask',
+           'file' => 'required|mimes:jpg,jpeg,png'
+         ];
+       }
+       if(Route::getCurrentRoute()->getActionMethod() == 'checkImage'){
+         return [
            'file' => 'required|mimes:jpg,jpeg,png'
          ];
        }

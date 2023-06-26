@@ -820,6 +820,53 @@ export default {
         this.validateFile = true;
         this.messageErrorFile.push('Pleas choose image');
       }
+      if (this.messageErrorFile.length === 0){
+        this.validateFile = false;
+      }
+    },
+    async checkImage() {
+      let dem = 0;
+      for (const item of this.selectedWithoutMaskFiles) {
+        const file = new FormData();
+        file.append('file', item);
+        await ImageApi.checkImage(file).then((response) => {
+          if (response.code === 200){
+            if (response.data.checkImage === false){
+              this.messageErrorFile.push('Image must only one person');
+              dem++;
+            }
+          } else {
+            this.messageErrorFile.push(response.message);
+            this.validateFile = true;
+          }
+        }).catch((error) => {
+          this.messageErrorFile.push(error.getMessage());
+          this.validateFile = true;
+        });
+      }
+      for (const item of this.selectedWithMaskFiles) {
+        const file = new FormData();
+        file.append('file', item);
+        await ImageApi.checkImage(file).then((response) => {
+          if (response.code === 200){
+            if (response.data.checkImage === false){
+              this.messageErrorFile.push('Image must only one person');
+              dem++;
+            }
+          } else {
+            this.messageErrorFile.push(response.message);
+            this.validateFile = true;
+          }
+        }).catch((error) => {
+          this.messageErrorFile.push(error.getMessage());
+          this.validateFile = true;
+        });
+      }
+      if (dem > 0){
+        this.validateFile = true;
+      } else {
+        this.validateFile = false;
+      }
     },
     checkWithoutMask(){
       this.withoutMask = true;
@@ -842,6 +889,9 @@ export default {
           this.selectedWithMaskFiles.push(file);
         }
       }
+      this.validateFile = false;
+      this.checkNumImage();
+      this.checkImage();
     },
     openFilePicker() {
       this.$refs.fileInput.click();
@@ -861,6 +911,7 @@ export default {
       }
       this.validateFile = false;
       this.checkNumImage();
+      this.checkImage();
     },
     isImageFile(file) {
       const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
@@ -877,6 +928,7 @@ export default {
         this.selectedWithMaskFiles.splice(index, 1);
       }
       this.checkNumImage();
+      this.checkImage();
     },
     chooseFiles() {
       this.$refs.fileInput.click();
