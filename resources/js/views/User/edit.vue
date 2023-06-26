@@ -826,6 +826,7 @@ export default {
     },
     async checkImage() {
       let dem = 0;
+      this.waitEdit = true;
       for (const item of this.selectedWithoutMaskFiles) {
         const file = new FormData();
         file.append('file', item);
@@ -867,6 +868,7 @@ export default {
       } else {
         this.validateFile = false;
       }
+      this.waitEdit = false;
     },
     checkWithoutMask(){
       this.withoutMask = true;
