@@ -870,6 +870,7 @@ export default {
     },
     async checkImage() {
       let dem = 0;
+      this.waitCreate = true;
       for (const item of this.selectedWithoutMaskFiles) {
         const file = new FormData();
         file.append('file', item);
@@ -911,6 +912,7 @@ export default {
       } else {
         this.validateFile = false;
       }
+      this.waitCreate = false;
     },
     // copy cua Yen
     rowWorkingStyle({ row, rowIndex }) {
