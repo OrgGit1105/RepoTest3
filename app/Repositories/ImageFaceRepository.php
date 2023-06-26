@@ -303,4 +303,38 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getMessage());
       }
     }
+
+  public function checkImage(array $attributes)
+  {
+    $options = [
+      'region' => env('AWS_DEFAULT_REGION'),
+      'version' => 'latest',
+      'credentials' => [
+        'key' => env('AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
+        'secret' => env('AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
+      ]
+    ];
+
+    $rekognitionClient = new RekognitionClient($options);
+
+    try {
+      // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+      $checkImageMustOne = $rekognitionClient->detectFaces(
+        [
+          'Image' => [
+            'Bytes' => file_get_contents($attributes['file']),
+          ],
+        ],
+      );
+      // Ảnh chỉ được phép một người
+      if (count($checkImageMustOne['FaceDetails']) != 1) {
+        ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+      }
+      return ResponseService::responseJson(200, [
+        'checkImage' => count($checkImageMustOne['FaceDetails']) == 1,
+      ]);
+    } catch (Exception $ex) {
+      return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getMessage());
+    }
+  }
 }

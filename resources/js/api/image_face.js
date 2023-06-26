@@ -5,6 +5,7 @@ const urlAPI = {
   urlDELETEImageByUserId: template`/image_face/${'id'}`,
   urlCREATEImageByUserId: template`/image_face`,
   urlCOMPARE_FACEImage: template`/image_face/compareFace`,
+  urlCHECKImage: template`/image_face/checkImage`,
 };
 
 export function getImageByUserId(id) {
@@ -21,4 +22,8 @@ export function createImage(data) {
 
 export function compareFaceImage(data) {
   return request.postRequest(urlAPI.urlCOMPARE_FACEImage(), data);
+}
+
+export function checkImage(data) {
+  return request.postRequest(urlAPI.urlCHECKImage(), data);
 }
