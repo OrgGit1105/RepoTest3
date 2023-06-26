@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ImageFaceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AnalyticController;
+use App\Http\Controllers\Api\SlackEventModeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,3 +40,5 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
     });
   });
 });
+
+Route::post('/slack/events', [SlackEventModeController::class, 'handleVerification']);
