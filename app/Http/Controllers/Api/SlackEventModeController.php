@@ -16,13 +16,9 @@ class SlackEventModeController extends Controller
 {
     public function handleVerification(Request $request)
     {
-        \Log::info('aaaaaaaaaaaa');
-        \Log::info($request);
         $challenge = $request->input('challenge');
 
         $input = $request->all();
-
-        // check channel
 
         // $input = array (
         //     'token' => 'mI0mHALUUpLOeMYqRURjAgIw',
@@ -33,72 +29,86 @@ class SlackEventModeController extends Controller
         //     'user_id' => 'U04SKD7HTJ6',
         //     'user_name' => 'ngan',
         //     'command' => '/hybot',
-        //     'text' => 'take off,2023-06-27,2023-06-29,bị ốm',
+        //     'text' => 'take off, 2023-06-26, 2023-06-26, bị ốm',
         //     'api_app_id' => 'A05DS3GPSR2',
         //     'is_enterprise_install' => 'false',
         //     'response_url' => 'https://hooks.slack.com/commands/T04S4SYEAQP/5488244932340/VXOTgJnvWUvuq5UicW584max',
         //     'trigger_id' => '5479150648550.4888916486839.ed4f8faa25b0acaac10f19676a17454d',
         // );
 
-        $messages = explode(',', $input['text']);
+        // check channel
+        if ($input['channel_name'] != config('analytic.channel_name')) {
+            return __('analytic.not_found_bot');
+        }
+
+        $messages = explode(',',str_replace(', ', ',', $input['text']));
 
         $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
 
         if(!$user) {
-            return 'Không có dữ liệu người dùng';
+            return __('analytic.no_user');
         }
 
         if(count($messages) != 3 && count($messages) != 4) {
-            return 'Vui lòng viết đúng định dạng: loại yêu cầu, ngày nghỉ, lí do hoặc loại yêu cầu, ngày bắt đầu, ngày kết thúc, lí do';
+            return __('analytic.err_format');
         }
 
         if(count($messages) == 3) {
             if(!$this->validateDate($messages[1])) {
-                return 'Vui lòng viết đúng định dạng: loại yêu cầu, ngày nghỉ, lí do';
+                return __('analytic.err_format_one_date');
             }
-            ArrivingReport::insert([
+
+            if (Carbon::parse(Carbon::now()->format('Y-m-d'))->lte(Carbon::parse($messages[1])) == false) {
+                return __('analytic.check_date');
+            };
+
+            ArrivingReport::create([
                 'user_id' => $user->id,
                 'in_time' => Carbon::parse($messages['1'])->format('Y-m-d 08:30:00'),
                 'out_time' => Carbon::parse($messages['1'])->format('Y-m-d 18:00:00'),
-                'type_date' => $messages['0'] == 'remote' ? 2 : 3,
+                'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
                 'status' => 1,
             ]);
 
-            return 'Bạn đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' ngày ' . $messages[1] . ' vì lí do ' . $messages['2'];
+            return response()->json([
+                'response_type' => 'in_channel',
+                'text' => __('analytic.success'),
+            ]);
         }
 
         if(count($messages) == 4) {
             if(!$this->validateDate($messages[1]) || !$this->validateDate($messages[2])) {
-                return 'Vui lòng viết đúng định dạng: loại yêu cầu, ngày bắt đầu, ngày kết thúc, lí do';
+                return __('analytic.err_format_two_date');
             }
 
-            if($messages['2'] < $messages['1']) {
-                return 'Vui lòng chọn ngày bắt đầu nhỏ hơn ngày kết thúc';
+            if (Carbon::parse(Carbon::now()->format('Y-m-d'))->lte(Carbon::parse($messages[1])) == false) {
+                return __('analytic.check_date');
+            };
+
+            if($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
+                return __('analytic.date_err');
             }
 
             $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
             $index = 0;
             $dataInsert = [];
             for ($i=0; $i < $diffInDays; $i++) { 
-                array_push($dataInsert, [
+                $dataInsert = [
                     'user_id' => $user->id,
                     'in_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 08:30:00'),
                     'out_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 18:00:00'),
-                    'type_date' => $messages['0'] == 'remote' ? 2 : 3,
+                    'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
                     'status' => 1,
-                ]);
+                ];
 
+                ArrivingReport::create($dataInsert);
                 $index++;
             }
-
-            ArrivingReport::insert($dataInsert);
         }
-
-        // return 'Bạn đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' từ ngày ' . $messages['1'] . ' đến ngày ' . $messages['2'] . ' vì lí do ' . $messages['3'];
 
         return response()->json([
             'response_type' => 'in_channel',
-            'text' => $user->name . ' đã xin ' . ($messages['0'] == 'remote' ? 'remote' : 'nghỉ') . ' từ ngày ' . $messages['1'] . ' đến ngày ' . $messages['2'] . ' vì lí do ' . $messages['3'],
+            'text' => __('analytic.success'),
         ]);
 
         // return response($challenge, 200)
