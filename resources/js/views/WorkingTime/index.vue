@@ -200,7 +200,7 @@ export default {
       },
       pagination: {
         current_page: 1,
-        per_page: 3,
+        per_page: 10,
         total_records: 0,
         isDisable: false,
       },
