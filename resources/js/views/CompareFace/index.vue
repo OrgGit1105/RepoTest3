@@ -101,7 +101,7 @@ export default {
             MakeToast({
               variant: 'success',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-              content: `OK image success with email ${response.data.profile.email}`,
+              content: `Success. The face is matched to Employee name ${response.data.profile.name}`,
             });
 
             // const TOKEN = response.data.access_token;

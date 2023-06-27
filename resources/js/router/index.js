@@ -225,15 +225,15 @@ export const constantRoutes = [
     component: () => import('../views/Login/index.vue'),
     hidden: true,
   },
-  // {
-  //   path: '/compare-face',
-  //   name: 'CompareFace',
-  //   component: () => import('../views/CompareFace/index.vue'),
-  //   hidden: true,
-  //   meta: {
-  //     title: 'routes.user',
-  //   },
-  // },
+  {
+    path: '/compare-face',
+    name: 'CompareFace',
+    component: () => import('../views/CompareFace/index.vue'),
+    hidden: true,
+    meta: {
+      title: 'routes.user',
+    },
+  },
   {
     path: '/working-time',
     redirect: '/working-time/index',
