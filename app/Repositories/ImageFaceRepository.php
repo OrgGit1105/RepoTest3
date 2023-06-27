@@ -248,46 +248,47 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         whereDate("in_time",$dateTimeNow->format('Y-m-d'))
           ->where("user_id",$user->id)
           ->first();
+
         // Kiểm tra nhân viên này hôm nay đã check out chưa?
         $arrivingOut_time = ArrivingReport::
         whereDate("out_time",$dateTimeNow->format('Y-m-d'))
           ->where("user_id",$user->id)
           ->first();
-        switch ($attributes['time']){
-          case 'in':
-            if ($arrivingIn_time){
-              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
-            } else{
-              $arrivingIn_time = new ArrivingReport();
-              $arrivingIn_time->in_time = Carbon::now();
-              $arrivingIn_time->link_face_in = config('services.aws.urlImage').$image->file;
-              $arrivingIn_time->status = 1;
-              $arrivingIn_time->created_at = Carbon::now();
-              if (array_key_exists("registration_type",$attributes)){
-                $arrivingIn_time->registration_type = $attributes['registration_type'];
-              }
-              $arrivingIn_time->save();
-            }
-            break;
-          case 'out':
-            if ($arrivingIn_time == null){
-              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
-            }
-            if ($arrivingOut_time){
-              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
-            } else{
-              $arrivingOut_time = new ArrivingReport();
-              $arrivingOut_time->in_time = Carbon::now();
-              $arrivingOut_time->link_face_in = config('services.aws.urlImage').$image->file;
-              $arrivingOut_time->status = 1;
-              $arrivingOut_time->created_at = Carbon::now();
-              if (array_key_exists("registration_type",$attributes)){
-                $arrivingOut_time->registration_type = $attributes['registration_type'];
-              }
-              $arrivingOut_time->save();
-            }
-            break;
-        }
+//        switch ($attributes['time']){
+//          case 'in':
+//            if ($arrivingIn_time){
+//              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+//            } else{
+//              $arrivingIn_time = new ArrivingReport();
+//              $arrivingIn_time->in_time = Carbon::now();
+//              $arrivingIn_time->link_face_in = config('services.aws.urlImage').$image->file;
+//              $arrivingIn_time->status = 1;
+//              $arrivingIn_time->created_at = Carbon::now();
+//              if (array_key_exists("registration_type",$attributes)){
+//                $arrivingIn_time->registration_type = $attributes['registration_type'];
+//              }
+//              $arrivingIn_time->save();
+//            }
+//            break;
+//          case 'out':
+//            if ($arrivingIn_time == null){
+//              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
+//            }
+//            if ($arrivingOut_time){
+//              return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+//            } else{
+//              $arrivingOut_time = new ArrivingReport();
+//              $arrivingOut_time->in_time = Carbon::now();
+//              $arrivingOut_time->link_face_in = config('services.aws.urlImage').$image->file;
+//              $arrivingOut_time->status = 1;
+//              $arrivingOut_time->created_at = Carbon::now();
+//              if (array_key_exists("registration_type",$attributes)){
+//                $arrivingOut_time->registration_type = $attributes['registration_type'];
+//              }
+//              $arrivingOut_time->save();
+//            }
+//            break;
+//        }
 
         $token = JWTAuth::fromUser($user);
         $user->jwt_active = $token;
