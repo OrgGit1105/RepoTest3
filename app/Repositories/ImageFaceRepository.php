@@ -255,7 +255,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
               [
                 'CollectionId' => "WithMask",
                 'Image' => [
-                  'Bytes' => file_get_contents($attributes['file']),
+                  'Bytes' => $imageData,
                 ],
               ]
             );
