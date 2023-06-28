@@ -172,4 +172,111 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
 		return $data;
     }
+
+	public function createArriving($input = [])
+	{
+		// check channel
+        if ($input['channel_name'] != env('CHANNEL')) {
+            return __('analytic.not_found_bot');
+        }
+
+        $messages = explode(',',str_replace(', ', ',', $input['text']));
+
+        $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
+
+        if(!$user) {
+            return __('analytic.no_user');
+        }
+
+        if(count($messages) != 3 && count($messages) != 4) {
+            return __('analytic.err_format');
+        }
+
+        if(count($messages) == 3) {
+            if(!$this->validateDate($messages[1])) {
+                return __('analytic.err_format_one_date');
+            }
+
+            if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+                return __('analytic.check_date');
+            }
+
+			if (!$this->holiday($messages['1'])) {
+                return __('analytic.holiday');
+            } else {
+				ArrivingReport::create([
+					'user_id' => $user->id,
+					'in_time' => Carbon::parse($messages['1'])->format('Y-m-d 08:30:00'),
+					'out_time' => Carbon::parse($messages['1'])->format('Y-m-d 18:00:00'),
+					'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
+					'status' => 1,
+				]);
+			}
+
+            return response()->json([
+                'response_type' => 'in_channel',
+                'text' => __('analytic.success'),
+            ]);
+        }
+
+        if(count($messages) == 4) {
+            if(!$this->validateDate($messages[1]) || !$this->validateDate($messages[2])) {
+                return __('analytic.err_format_two_date');
+            }
+
+			if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+                return __('analytic.check_date');
+            }
+
+            if($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
+                return __('analytic.date_err');
+            }
+
+			if (!$this->holiday($messages['1']) && !$this->holiday($messages['2'])) {
+                return __('analytic.holiday');
+			}
+
+            $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
+            $index = 0;
+            $dataInsert = [];
+            for ($i=0; $i < $diffInDays; $i++) {
+				if ($this->holiday(Carbon::parse($messages['1'])->addDays($index))) {
+					$dataInsert = [
+						'user_id' => $user->id,
+						'in_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 08:30:00'),
+						'out_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 18:00:00'),
+						'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
+						'status' => 1,
+					];
+					ArrivingReport::create($dataInsert);
+				}
+
+                $index++;
+            }
+        }
+
+        return response()->json([
+            'response_type' => 'in_channel',
+            'text' => __('analytic.success'),
+        ]);
+	}
+
+	private function validateDate($date, $format = 'Y-m-d')
+    {
+        $d = DateTime::createFromFormat($format, $date);
+
+        return $d && $d->format($format) === $date;
+    }
+
+	private function holiday($date)
+    {
+		if (Carbon::parse($date)->isSaturday()) {
+			return false;
+		}
+		if (Carbon::parse($date)->isSunday()) {
+			return false;
+		}
+
+		return true;
+    }
 }

@@ -8,4 +8,5 @@ return [
     'err_format_two_date' => 'Please write in correct format: date type (remote/take off), start date (YYYY-MM-DD), end date (YYYY-MM-DD), reason',
     'not_found_bot' => 'Bot is not active in this channel',
     'check_date' => 'Date must be greater than or equal to today',
+    'holiday' => 'Please choose the date again',
 ];
