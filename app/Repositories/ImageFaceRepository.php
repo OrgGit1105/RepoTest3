@@ -68,11 +68,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
       $user = User::find($attributes['user_id']);
 
       $configOptions = [
-        'region'    => env('AWS_DEFAULT_REGION'),
+        'region'    => config('services.aws.AWS_DEFAULT_REGION'),
         'version'   => 'latest',
         'credentials' => [
-          'key' => env('AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
-          'secret' => env('AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
+          'key' => config('services.aws.AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
+          'secret' => config('services.aws.AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
         ]
       ];
 
@@ -140,11 +140,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
         // Xóa ảnh trong collection
         $options = [
-          'region'    => env('AWS_DEFAULT_REGION'),
+          'region'    => config('services.aws.AWS_DEFAULT_REGION'),
           'version'   => 'latest',
           'credentials' => [
-            'key' => env('AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
-            'secret' => env('AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
+            'key' => config('services.aws.AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
+            'secret' => config('services.aws.AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
           ]
         ];
         $rekognitionClient = new RekognitionClient($options);
@@ -167,11 +167,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
     public function compareFace(array $attributes){
       $options = [
-        'region'    => env('AWS_DEFAULT_REGION'),
+        'region'    => config('services.aws.AWS_DEFAULT_REGION'),
         'version'   => 'latest',
         'credentials' => [
-          'key' => env('AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
-          'secret' => env('AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
+          'key' => config('services.aws.AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
+          'secret' => config('services.aws.AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
         ]
       ];
 
@@ -308,11 +308,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
   public function checkImage(array $attributes)
   {
     $options = [
-      'region' => env('AWS_DEFAULT_REGION'),
+      'region' => config('services.aws.AWS_DEFAULT_REGION'),
       'version' => 'latest',
       'credentials' => [
-        'key' => env('AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
-        'secret' => env('AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
+        'key' => config('services.aws.AWS_ACCESS_KEY_ID'), // Thay thế bằng access key của bạn
+        'secret' => config('services.aws.AWS_SECRET_ACCESS_KEY'), // Thay thế bằng secret access key của bạn
       ]
     ];
 

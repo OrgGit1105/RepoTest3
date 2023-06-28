@@ -32,5 +32,8 @@ return [
 
     'aws' => [
       'urlImage' => 'https://v-face.s3.amazonaws.com/',
+      'AWS_DEFAULT_REGION' => 'ap-northeast-1',
+      'AWS_ACCESS_KEY_ID' => 'AKIA6IVJOOLI5DZ3IXNC',
+      'AWS_SECRET_ACCESS_KEY' => '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',
     ]
 ];
