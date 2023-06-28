@@ -177,83 +177,117 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
       $rekognitionClient = new RekognitionClient($options);
 
-      try {
-
-        if (request()->hasFile('file')){
-          // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
-          $checkImageMustOne = $rekognitionClient->detectFaces(
-            [
-              'Image' => [
-                'Bytes' => file_get_contents($attributes['file']),
-              ],
+      if (request()->hasFile('file')){
+        // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+        $checkImageMustOne = $rekognitionClient->detectFaces(
+          [
+            'Image' => [
+              'Bytes' => file_get_contents($attributes['file']),
             ],
-          );
-          // Ảnh chỉ được phép một người
-          if (count($checkImageMustOne['FaceDetails']) != 1 ){
-            ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
-          }
+          ],
+        );
+        // Ảnh chỉ được phép một người
+        if (count($checkImageMustOne['FaceDetails']) != 1 ){
+          ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+        }
 
+        $result = [];
+        try {
           $result = $rekognitionClient->searchFacesByImage(
             [
-              'CollectionId' => $attributes['type'],
+              'CollectionId' => "WithoutMask",
               'Image' => [
                 'Bytes' => file_get_contents($attributes['file']),
               ],
             ]
           );
-        } else {
-          // Chuyển đổi dữ liệu Base64 thành định dạng binary
-          $imageData = $attributes['file'];
-
-          // Loại bỏ phần khai báo định dạng ảnh
-          $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
-
-          // Giải mã chuỗi base64 thành dữ liệu binary
-          $imageData = base64_decode($imageData);
-
-          // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
-          $checkImageMustOne = $rekognitionClient->detectFaces(
-            [
-              'Image' => [
-                'Bytes' => $imageData,
-              ],
-            ],
-          );
-          // Ảnh chỉ được phép một người
-          if (count($checkImageMustOne['FaceDetails']) != 1 ){
-            ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+        } catch (RekognitionException $ex){
+          // Nếu không có lỗi thì tìm kiếm trong Collection WithMask
+          try {
+            $result = $rekognitionClient->searchFacesByImage(
+              [
+                'CollectionId' => "WithMask",
+                'Image' => [
+                  'Bytes' => file_get_contents($attributes['file']),
+                ],
+              ]
+            );
+          } catch (RekognitionException $ex){
+            return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getAwsErrorMessage(), $ex->getAwsErrorMessage());
           }
+        }
+      } else {
+        // Chuyển đổi dữ liệu Base64 thành định dạng binary
+        $imageData = $attributes['file'];
 
+        // Loại bỏ phần khai báo định dạng ảnh
+        $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+
+        // Giải mã chuỗi base64 thành dữ liệu binary
+        $imageData = base64_decode($imageData);
+
+        // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+        $checkImageMustOne = $rekognitionClient->detectFaces(
+          [
+            'Image' => [
+              'Bytes' => $imageData,
+            ],
+          ],
+        );
+        // Ảnh chỉ được phép một người
+        if (count($checkImageMustOne['FaceDetails']) != 1 ){
+          ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+        }
+        $result = [];
+        try {
           $result = $rekognitionClient->searchFacesByImage(
             [
-              'CollectionId' => $attributes['type'],
+              'CollectionId' => "WithoutMask",
               'Image' => [
                 'Bytes' => $imageData,
               ],
             ]
           );
+        } catch (RekognitionException $ex) {
+          // Nếu không có lỗi thì tìm kiếm trong Collection WithMask
+          try {
+            $result = $rekognitionClient->searchFacesByImage(
+              [
+                'CollectionId' => "WithMask",
+                'Image' => [
+                  'Bytes' => file_get_contents($attributes['file']),
+                ],
+              ]
+            );
+          } catch (RekognitionException $ex){
+            return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getAwsErrorMessage(), $ex->getAwsErrorMessage());
+          }
         }
-        $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
-        $image = $this->model->where("face_rekognition_id",$faceId)->first();
-        $user = User::find($image->user_id);
+      }
+      if ($result->get("FaceMatches") == []){
+        return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
+      }
+      $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
+      $image = $this->model->where("face_rekognition_id",$faceId)->first();
+      $user = User::find($image->user_id);
 
-        if ($user == null){
-          return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.user.login.false'));
-        }
+      if ($user == null){
+        return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.user.login.false'));
+      }
 
-        // Kiểm tra ngày hôm nay in hay out đã check chưa?
-        $dateTimeNow = new DateTime('now');
-        // Kiểm tra nhân viên này hôm nay đã check in chưa?
-        $arrivingIn_time = ArrivingReport::
-        whereDate("in_time",$dateTimeNow->format('Y-m-d'))
-          ->where("user_id",$user->id)
-          ->first();
+      // Kiểm tra ngày hôm nay in hay out đã check chưa?
+      $dateTimeNow = new DateTime('now');
+      // Kiểm tra nhân viên này hôm nay đã check in chưa?
+      $arrivingIn_time = ArrivingReport::
+      whereDate("in_time",$dateTimeNow->format('Y-m-d'))
+        ->where("user_id",$user->id)
+        ->first();
 
-        // Kiểm tra nhân viên này hôm nay đã check out chưa?
-        $arrivingOut_time = ArrivingReport::
-        whereDate("out_time",$dateTimeNow->format('Y-m-d'))
-          ->where("user_id",$user->id)
-          ->first();
+      // Kiểm tra nhân viên này hôm nay đã check out chưa?
+      $arrivingOut_time = ArrivingReport::
+      whereDate("out_time",$dateTimeNow->format('Y-m-d'))
+        ->where("user_id",$user->id)
+        ->first();
 //        switch ($attributes['time']){
 //          case 'in':
 //            if ($arrivingIn_time){
@@ -289,21 +323,21 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 //            }
 //            break;
 //        }
-
+      try {
         $token = JWTAuth::fromUser($user);
         $user->jwt_active = $token;
         $user->save();
-
-        return ResponseService::responseJson(200, [
-          'access_token' => "Bearer " . $token,
-          'profile' => new UserResource($user),
-          'in_time' => $arrivingIn_time,
-          'out_time' => $arrivingOut_time,
-          'imageLink' => config('services.aws.urlImage') . $image->file
-        ]);
-      } catch (Exception $ex){
+      } catch (Exception $ex) {
         return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getMessage());
       }
+
+      return ResponseService::responseJson(200, [
+        'access_token' => "Bearer " . $token,
+        'profile' => new UserResource($user),
+        'in_time' => $arrivingIn_time,
+        'out_time' => $arrivingOut_time,
+        'imageLink' => config('services.aws.urlImage') . $image->file
+      ]);
     }
 
   public function checkImage(array $attributes)

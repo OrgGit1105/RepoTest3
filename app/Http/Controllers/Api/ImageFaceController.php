@@ -219,7 +219,7 @@ class ImageFaceController extends Controller
    *   @OA\RequestBody(
    *       @OA\MediaType(
    *          mediaType="application/json",
-   *          example={"file":"file", "type": "string"},
+   *          example={"file":"file", "time": "string"},
    *          @OA\Schema(
    *            required={"file","type"},
    *            @OA\Property(
@@ -227,9 +227,9 @@ class ImageFaceController extends Controller
    *              format="file",
    *            ),
    *            @OA\Property(
-   *              property="type",
+   *              property="time",
    *              format="string",
-   *              description="in WithoutMask, WithMask",
+   *              description="in, out",
    *            ),
    *         )
    *      )
