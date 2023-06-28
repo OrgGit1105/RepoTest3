@@ -103,7 +103,8 @@ class ArrivingReportController extends Controller
     public function index(ArrivingReportRequest $request)
     {
         $data = $this->repository->getList($request);
-        return $this->responseJson(200, BaseResource::collection($data));
+
+        return $this->responseJson(200, $data);
     }
 
     /**
