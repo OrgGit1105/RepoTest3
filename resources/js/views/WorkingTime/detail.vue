@@ -33,9 +33,11 @@
                   <p class="header-working-record fw-5">No</p>
                   <p class="header-working-record fw-5">Employee name</p>
                   <p class="header-working-record fw-5">Input Type</p>
+                  <p class="header-working-record fw-5">Date</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.id}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : ''}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.registration_type}}</p>
+                  <p class="header-working-record">{{dataWorkingTimeRecord.type_date}}</p>
                 </div>
               </div>
 
@@ -370,7 +372,7 @@ export default {
   text-align: left;
 }
 ::v-deep .header-working-record {
-  width: calc(100% / 3);
+  width: calc(100% / 4);
   height: 40px;
   margin: 0;
   font-size: 20px;
