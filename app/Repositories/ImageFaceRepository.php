@@ -298,7 +298,8 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
           'access_token' => "Bearer " . $token,
           'profile' => new UserResource($user),
           'in_time' => $arrivingIn_time,
-          'out_time' => $arrivingOut_time
+          'out_time' => $arrivingOut_time,
+          'imageLink' => config('services.aws.urlImage') . $image->file
         ]);
       } catch (Exception $ex){
         return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR,$ex->getMessage());
