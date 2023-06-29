@@ -122,7 +122,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
   public function detail($id)
   {
-    return $this->model->with('user')->find($id);
+	$arriving = $this->model->with('user')->find($id);
+	$arriving['type_date'] = __('analytic.type.'.$arriving->type_date);
+
+    return $arriving;
   }
    public function update(array $attributes, $id)
    {
@@ -278,7 +281,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     {
         $d = DateTime::createFromFormat($format, $date);
 
-    	return $d && $d->format($format) === $date;
+		return $d && $d->format($format) === $date;
     }
 
 	private function holiday($date)
