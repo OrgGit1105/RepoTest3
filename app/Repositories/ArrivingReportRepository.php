@@ -70,11 +70,11 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $data = [];
         $arrivings = $arrivings->orderBy('id', 'desc');
         $arrivings = $arrivings->get();
-        foreach ($arrivings as $key => $value) {
+        foreach ($arrivings as $key => $value) {    
             $data[$key]['id'] = $value->id;
             $data[$key]['user_name'] = $value->user ? $value->user->name : '';
             $data[$key]['registration_type'] = $value->registration_type;
-            $data[$key]['type_date'] = __('analytic.type.'.$value->type_date);
+            $data[$key]['type_date'] = $value->type_date ? __('analytic.type.'.$value->type_date) : __('analytic.type.1');
             $data[$key]['remark'] = $value->remark;
             $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
             $data[$key]['out_time'] = date("H:i:s", strtotime($value->out_time));
@@ -127,7 +127,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
   public function detail($id)
   {
 	$arriving = $this->model->with('user')->find($id);
-	$arriving['type_date'] = __('analytic.type.'.$arriving->type_date);
+	$arriving['type_date'] = $value->type_date ? __('analytic.type.'.$value->type_date) : __('analytic.type.1');
 
     return $arriving;
   }
