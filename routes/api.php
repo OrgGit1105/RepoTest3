@@ -25,17 +25,16 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 //    Route::post('loginTest', 'AuthController@loginTest')->name('user.loginTest');
     Route::post('logout', 'AuthController@logout');
   });
-  Route::group(['middleware' => 'auth:user'], function () {
+  Route::group(['middleware' => ['auth:user','managerRole']], function () {
     Route::apiResource('arriving_report', 'ArrivingReportController');
     Route::apiResource('analytic', 'AnalyticController');
-
 //    Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
     Route::apiResource('user', 'UserController');
     Route::get('/role',[RoleController::class, 'index']);
     Route::group(['prefix' => 'image_face'],function (){
-      Route::get('', [ImageFaceController::class, 'index'])->withoutMiddleware('auth:user');
-      Route::post('compareFace', [ImageFaceController::class, 'compareFace'])->withoutMiddleware('auth:user');
-      Route::post('checkImage', [ImageFaceController::class, 'checkImage'])->withoutMiddleware('auth:user');
+      Route::get('', [ImageFaceController::class, 'index'])->withoutMiddleware(['auth:user']);
+      Route::post('compareFace', [ImageFaceController::class, 'compareFace'])->withoutMiddleware(['auth:user','managerRole']);
+      Route::post('checkImage', [ImageFaceController::class, 'checkImage'])->withoutMiddleware(['auth:user']);
       Route::post('', [ImageFaceController::class, 'create']);
       Route::delete('{id}', [ImageFaceController::class, 'destroy']);
     });
