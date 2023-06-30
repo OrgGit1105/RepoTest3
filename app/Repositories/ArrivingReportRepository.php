@@ -22,6 +22,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Arr;
 use Helper\Common;
+use Illuminate\Support\Str;
 
 class ArrivingReportRepository extends BaseRepository implements ArrivingReportRepositoryInterface
 {
@@ -45,37 +46,39 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
 	public function getList($request = [])
 	{
-		$defaulStartWeek = Carbon::now()->startOfWeek();
-		$defaulEndWeek = Carbon::now()->startOfWeek()->addDay(4);
-		$startDate = Arr::get($request, 'start_date', $defaulStartWeek);
-		$endDate = Arr::get($request, 'end_date', $defaulEndWeek);
-		$startDate = date("Y-m-d 00:00", strtotime($startDate));
-		$endDate = date("Y-m-d 23:59", strtotime($endDate));
-		$userId = Arr::get($request, 'user_id', []);
-		$keySearch = Arr::get($request, 'key_search', []);
+        $defaulStartWeek = Carbon::now()->startOfWeek();
+        $defaulEndWeek = Carbon::now()->startOfWeek()->addDay(4);
+        $startDate = Arr::get($request, 'start_date', $defaulStartWeek);
+        $endDate = Arr::get($request, 'end_date', $defaulEndWeek);
+        $startDate = date("Y-m-d 00:00", strtotime($startDate));
+        $endDate = date("Y-m-d 23:59", strtotime($endDate));
+        $userId = Arr::get($request, 'user_id', []);
+        $keySearch = Arr::get($request, 'key_search', []);
 
-		$arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
-		if (!empty($userId)) {
-			$arrivings = $arrivings->where('user_id', $userId);
-		}
-		if (!empty($keySearch)) {
-			$arrivings = $arrivings->where(function($query) use ($keySearch) {
-				$query->orWhereHas('user', function ($q) use ($keySearch) {
-					$q->where('name', 'like', '%'.$keySearch.'%');
-				});
-			});
-		}
+        $arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
+        if (!empty($userId)) {
+            $arrivings = $arrivings->where('user_id', $userId);
+        }
+        if (!empty($keySearch)) {
+            $arrivings = $arrivings->where(function($query) use ($keySearch) {
+                $query->orWhereHas('user', function ($q) use ($keySearch) {
+                    $q->where('name', 'like', '%'.$keySearch.'%');
+                });
+            });
+        }
 
-		$data = [];
-		$arrivings = $arrivings->get();
-		foreach ($arrivings as $key => $value) {
-			$data[$key]['id'] = $value->id;
-			$data[$key]['user_name'] = $value->user ? $value->user->name : '';
-			$data[$key]['in_time'] = $value->in_time;
-			$data[$key]['out_time'] = $value->out_time;
-			$data[$key]['remark'] = $value->remark;
-			$data[$key]['registration_type'] = $value->registration_type;
-			$data[$key]['type_date'] = __('analytic.type.'.$value->type_date);
+        $data = [];
+        $arrivings = $arrivings->orderBy('id', 'desc');
+        $arrivings = $arrivings->get();
+        foreach ($arrivings as $key => $value) {
+            $data[$key]['id'] = $value->id;
+            $data[$key]['user_name'] = $value->user ? $value->user->name : '';
+            $data[$key]['registration_type'] = $value->registration_type;
+            $data[$key]['type_date'] = __('analytic.type.'.$value->type_date);
+            $data[$key]['remark'] = $value->remark;
+            $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
+            $data[$key]['out_time'] = date("H:i:s", strtotime($value->out_time));
+            $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
 		}
 
 		return (new Common)->myPaginate($data);
@@ -116,6 +119,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
     $attributes['status'] = 1;
     $attributes['created_at'] = Carbon::now();
+    $attributes['type_date'] = config('analytic.type.work');
 
     return ResponseService::responseJson(200, new BaseResource(parent::create($attributes)));
   }
@@ -186,12 +190,12 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             }
         }
 
-		return $data;
+        return $data;
     }
 
-	public function createArriving($input = [])
-	{
-		// check channel
+    public function createArriving($input = [])
+    {
+        // check channel
         if ($input['channel_name'] != env('CHANNEL')) {
             return __('analytic.not_found_bot');
         }
@@ -209,7 +213,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         if(count($messages) == 3) {
-            if(!$this->validateDate($messages[1])) {
+            if(!$this->validateDate($messages['1'])) {
                 return __('analytic.err_format_one_date');
             }
 
@@ -217,17 +221,17 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 return __('analytic.check_date');
             }
 
-			if (!$this->holiday($messages['1'])) {
+            if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
             } else {
-				ArrivingReport::create([
-					'user_id' => $user->id,
-					'in_time' => Carbon::parse($messages['1'])->format('Y-m-d 08:30:00'),
-					'out_time' => Carbon::parse($messages['1'])->format('Y-m-d 18:00:00'),
-					'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
-					'status' => 1,
-				]);
-			}
+                ArrivingReport::create([
+                    'user_id' => $user->id,
+                    'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
+                    'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
+                    'type_date' => Str::contains($messages['0'], 'remote') ? config('analytic.type.remote') : config('analytic.type.off'),
+                    'status' => 1,
+                ]);
+            }
 
             return response()->json([
                 'response_type' => 'in_channel',
@@ -275,24 +279,50 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             'response_type' => 'in_channel',
             'text' => __('analytic.success'),
         ]);
-	}
+    }
 
-	private function validateDate($date, $format = 'Y-m-d')
+    private function validateDate($date, $format = 'Y-m-d')
     {
         $d = DateTime::createFromFormat($format, $date);
 
-		return $d && $d->format($format) === $date;
+        return $d && $d->format($format) === $date;
     }
 
-	private function holiday($date)
+    private function holiday($date)
     {
-		if (Carbon::parse($date)->isSaturday()) {
-			return false;
-		}
-		if (Carbon::parse($date)->isSunday()) {
-			return false;
-		}
+        if (Carbon::parse($date)->isSaturday()) {
+            return false;
+        }
+        if (Carbon::parse($date)->isSunday()) {
+            return false;
+        }
 
-		return true;
+        return true;
+    }
+
+    private function inTimeDate($typeDate, $date)
+    {
+        if (Str::contains($typeDate, 'morning')) {
+            return $inTime = Carbon::parse($date)->format('Y-m-d 08:30:00');
+        }
+
+        if (Str::contains($typeDate, 'afternoon')) {
+            return $inTime = Carbon::parse($date)->format('Y-m-d 13:30:00');
+        }
+
+        return $inTime = Carbon::parse($date)->format('Y-m-d 08:30:00');
+    }
+
+    private function outTimeDate($typeDate, $date)
+    {
+        if (Str::contains($typeDate, 'morning')) {
+            return $outTime = Carbon::parse($date)->format('Y-m-d 12:00:00');
+        }
+
+        if (Str::contains($typeDate, 'afternoon')) {
+            return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
+        }
+
+        return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
     }
 }

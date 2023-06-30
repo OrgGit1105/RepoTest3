@@ -33,7 +33,7 @@
                   <p class="header-working-record fw-5">No</p>
                   <p class="header-working-record fw-5">Employee name</p>
                   <p class="header-working-record fw-5">Input Type</p>
-                  <p class="header-working-record fw-5">Date</p>
+                  <p class="header-working-record fw-5">Type</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.id}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : ''}}</p>
                   <p class="header-working-record">{{dataWorkingTimeRecord.registration_type}}</p>

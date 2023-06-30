@@ -69,8 +69,8 @@
               :row-style="rowWorkingStyle"
               @row-click="showDetail">
               <el-table-column
-                prop="id"
-                label="No"
+                prop="type_date"
+                label="Type"
                 width="350"
                 align="center">
               </el-table-column>
@@ -78,6 +78,11 @@
                 prop="user_name"
                 label="Employee name"
                 width="250"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="date"
+                label="Date"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -93,11 +98,6 @@
               <el-table-column
                 prop="registration_type"
                 label="Input type"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="type_date"
-                label="Date"
                 align="center">
               </el-table-column>
             </el-table>
@@ -310,6 +310,7 @@ export default {
         .then((response) => {
           if (response.code === 200) {
             this.listWorkingTimes = response.data.result;
+            console.log('list', this.listWorkingTimes);
             this.pagination = response.data.pagination;
           }
         })
@@ -347,7 +348,6 @@ export default {
         user_id: this.form.userId,
         in_time: this.form.inDate + ' ' + this.form.inTime,
         out_time: this.form.outDate + ' ' + this.form.outTime,
-        registration_type: 'ipad'
       };
       await createNewWorkingTime(PARAMS)
         .then((response) => {
