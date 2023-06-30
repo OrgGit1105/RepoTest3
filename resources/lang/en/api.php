@@ -27,8 +27,8 @@ return [
   'arriving_report' => [
     'time_in_more_than_time_out'=> 'Time in not more than time out',
     'need_check_time_in'=> 'Please check time in first',
-    'time_in_is_check'=> 'Employee time in is check',
-    'time_out_is_check'=> 'Employee time out is check',
+    'time_in_is_check'=> 'Employee was check in',
+    'time_out_is_check'=> 'Employee was check out',
     'time_must_today'=> 'Please time_in must today',
   ]
 ];

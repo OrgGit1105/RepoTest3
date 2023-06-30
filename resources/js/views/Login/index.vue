@@ -151,22 +151,29 @@ export default {
                 role_id: PROFILE.role_id || '',
                 status: PROFILE.status || '',
               };
-
-              this.$store
-                .dispatch('user/saveLogin', { USER, TOKEN })
-                .then(() => {
-                  MakeToast({
-                    variant: 'success',
-                    title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                    content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
-                  });
-
-                  this.$router.push('/working-time/index');
-                  this.closeLoading();
-                })
-                .catch(() => {
-                  console.error('Can not saveLogin!');
+              if (PROFILE.role_id !== 1){
+                MakeToast({
+                  variant: 'warning',
+                  title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                  content: 'user not permission',
                 });
+              } else {
+                this.$store
+                  .dispatch('user/saveLogin', { USER, TOKEN })
+                  .then(() => {
+                    MakeToast({
+                      variant: 'success',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                      content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
+                    });
+
+                    this.$router.push('/working-time/index');
+                    this.closeLoading();
+                  })
+                  .catch(() => {
+                    console.error('Can not saveLogin!');
+                  });
+              }
             } else if (response.code === 401) {
               this.closeLoading();
               MakeToast({
