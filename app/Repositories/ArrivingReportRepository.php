@@ -21,6 +21,7 @@ use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Arr;
+use Helper\Common;
 
 class ArrivingReportRepository extends BaseRepository implements ArrivingReportRepositoryInterface
 {
@@ -42,31 +43,43 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         return ArrivingReport::class;
     }
 
-  public function getList($request)
-  {
-    $data = $this->model->select('arriving_reports.*')->with('user')->join('users', 'users.id', '=', 'arriving_reports.user_id');
-    $start_of_week=Carbon::now()->startOfWeek()->format('Y-m-d');
-    $end_of_week=Carbon::now()->startOfWeek()->copy()->addDay(6)->format('Y-m-d');
-    if (request()->has('start_date') && $request->start_date && request()->has('end_date') && $request->end_date) {
-      $data = $data->whereBetween("in_time", [$request->start_date, $request->end_date]);
-    }
-    if (!request()->has('start_date') || request()->has('end_date')) {
-      $data = $data->whereBetween("in_time", [$start_of_week, $end_of_week]);
-    }
-    if (request()->has('key_search') && $request->key_search) {
-      $data = $data
-        ->where('users.name', 'like', "%" . $request->key_search . "%")
-        ->orWhere('in_time', 'like', "%" . $request->key_search . "%")
-        ->orWhere('out_time', 'like', "%" . $request->key_search . "%")
-        ->orWhere('registration_type', 'like', "%" . $request->key_search . "%")
-      ;
-    }
-    if (request()->has('user_id') && $request->user_id) {
-      $data = $data
-        ->where('users.id', $request->user_id);
-    }
-    return $data->paginate($request->per_page);
-  }
+	public function getList($request = [])
+	{
+		$defaulStartWeek = Carbon::now()->startOfWeek();
+		$defaulEndWeek = Carbon::now()->startOfWeek()->addDay(4);
+		$startDate = Arr::get($request, 'start_date', $defaulStartWeek);
+		$endDate = Arr::get($request, 'end_date', $defaulEndWeek);
+		$startDate = date("Y-m-d 00:00", strtotime($startDate));
+		$endDate = date("Y-m-d 23:59", strtotime($endDate));
+		$userId = Arr::get($request, 'user_id', []);
+		$keySearch = Arr::get($request, 'key_search', []);
+
+		$arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
+		if (!empty($userId)) {
+			$arrivings = $arrivings->where('user_id', $userId);
+		}
+		if (!empty($keySearch)) {
+			$arrivings = $arrivings->where(function($query) use ($keySearch) {
+				$query->orWhereHas('user', function ($q) use ($keySearch) {
+					$q->where('name', 'like', '%'.$keySearch.'%');
+				});
+			});
+		}
+
+		$data = [];
+		$arrivings = $arrivings->get();
+		foreach ($arrivings as $key => $value) {
+			$data[$key]['id'] = $value->id;
+			$data[$key]['user_name'] = $value->user ? $value->user->name : '';
+			$data[$key]['in_time'] = $value->in_time;
+			$data[$key]['out_time'] = $value->out_time;
+			$data[$key]['remark'] = $value->remark;
+			$data[$key]['registration_type'] = $value->registration_type;
+			$data[$key]['type_date'] = __('analytic.type.'.$value->type_date);
+		}
+
+		return (new Common)->myPaginate($data);
+	}
 
   public function create(array $attributes)
   {
@@ -109,7 +122,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
   public function detail($id)
   {
-    return $this->model->with('user')->find($id);
+	$arriving = $this->model->with('user')->find($id);
+	$arriving['type_date'] = __('analytic.type.'.$arriving->type_date);
+
+    return $arriving;
   }
    public function update(array $attributes, $id)
    {
@@ -265,7 +281,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     {
         $d = DateTime::createFromFormat($format, $date);
 
-        return $d && $d->format($format) === $date;
+		return $d && $d->format($format) === $date;
     }
 
 	private function holiday($date)

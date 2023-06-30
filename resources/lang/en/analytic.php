@@ -9,4 +9,9 @@ return [
     'not_found_bot' => 'Bot is not active in this channel',
     'check_date' => 'Date must be greater than or equal to today',
     'holiday' => 'Please choose the date again',
+    'type' => [
+        1 => 'Working',
+        2 => 'Remote',
+        3 => 'Take off',
+    ]
 ];

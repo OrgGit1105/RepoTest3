@@ -75,7 +75,7 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="user.name"
+                prop="user_name"
                 label="Employee name"
                 width="250"
                 align="center">
@@ -93,6 +93,11 @@
               <el-table-column
                 prop="registration_type"
                 label="Input type"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="type_date"
+                label="Date"
                 align="center">
               </el-table-column>
             </el-table>
