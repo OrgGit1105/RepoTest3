@@ -119,7 +119,7 @@ class UserSeeder extends Seeder
         ],
         [
           'name' => 'Nguyễn Tùng Bách',
-          'email' => 'nguyentungbacholo@gmail.com',
+          'email' => 'nguyentungbachholo@gmail.com',
           'password' => Hash::make($password),
           'role_id' => 2,
           'status' => 1,
