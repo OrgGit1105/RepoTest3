@@ -269,6 +269,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
       }
       $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
       $image = $this->model->where("face_rekognition_id",$faceId)->first();
+      if ($image == null){
+        return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
+      }
       $user = User::find($image->user_id);
 
       if ($user == null){

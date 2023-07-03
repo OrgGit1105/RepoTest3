@@ -247,33 +247,25 @@ class ImageFaceController extends Controller
    * @return \Illuminate\Http\JsonResponse
    * @throws \Exception
    */
-    public function compareFace(Request $request){
+    public function compareFace(ImageFaceRequest $request){
       return $this->repository->compareFace($request->all());
     }
 
   /**
    * @OA\Post(
-   *   path="/api/image_face/compareFace",
+   *   path="/api/image_face/checkImage",
    *   tags={"ImageFace"},
-   *   summary="Compare image_face",
-   *   operationId="image_face_compare",
+   *   summary="check image_face",
+   *   operationId="image_face_check_image",
    *   @OA\RequestBody(
    *       @OA\MediaType(
    *          mediaType="application/json",
-   *          example={"file":"file","type":"string","time":"string"},
+   *          example={"file":"file"},
    *          @OA\Schema(
-   *            required={"file","type","time"},
+   *            required={"file"},
    *            @OA\Property(
    *              property="file",
    *              format="file",
-   *            ),
-   *            @OA\Property(
-   *              property="type",
-   *              format="string",
-   *            ),
-   *            @OA\Property(
-   *              property="time",
-   *              format="string",
    *            ),
    *         )
    *      )
