@@ -20,31 +20,10 @@ class UserSeeder extends Seeder
       DB::table('users')->truncate();
       DB::table('users')->insert([
         [
-          'name' => 'manager',
-          'email' => 'manager@gmail.com',
+          'name' => 'Nawa Hinako',
+          'email' => 'hi8nawa@gmail.com',
           'password' => Hash::make($password),
           'role_id' => 1,
-          'status' => 1,
-        ],
-        [
-          'name' => 'manager2',
-          'email' => 'manager2@gmail.com',
-          'password' => Hash::make($password),
-          'role_id' => 1,
-          'status' => 1,
-        ],
-        [
-          'name' => 'staff',
-          'email' => 'staff@gmail.com',
-          'password' => Hash::make($password),
-          'role_id' => 2,
-          'status' => 1,
-        ],
-        [
-          'name' => 'ngan',
-          'email' => 'ngan@gmail.com',
-          'password' => Hash::make($password),
-          'role_id' => 2,
           'status' => 1,
         ],
         [

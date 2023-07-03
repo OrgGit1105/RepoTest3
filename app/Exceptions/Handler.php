@@ -78,7 +78,7 @@ class Handler extends ExceptionHandler
             } else if ($exception instanceof EmailInvalidate) {
               return ResponseService::responseJsonError(Response::HTTP_EMAIL_INVALIDATE, trans('errors.unauthenticated'), trans('errors.email_invalidate'));
             } else {
-                return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, trans('errors.something_error'), $exception->getMessage(), $exception->getTraceAsString());
+                return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $exception->getMessage(), $exception->getMessage(), $exception->getTraceAsString());
             }
 //        }
     }
