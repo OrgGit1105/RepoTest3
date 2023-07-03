@@ -322,7 +322,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             $arrivingOut_time = $arrivingIn_time;
             $arrivingOut_time->user_id = $user->id;
             $arrivingOut_time->out_time = Carbon::now();
-            $arrivingOut_time->link_face_in = $image->file;
+            $arrivingOut_time->link_face_out = $image->file;
             $arrivingOut_time->type_date = 1;
             $arrivingOut_time->status = 1;
             $arrivingOut_time->updated_at = Carbon::now();

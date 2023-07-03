@@ -94,6 +94,7 @@ export default {
       const image = new FormData();
       image.append('file', this.img);
       image.append('type', 'WithoutMask');
+      image.append('registration_type', 'pc');
 
       ImageApi.compareFaceImage(image)
         .then((response) => {
