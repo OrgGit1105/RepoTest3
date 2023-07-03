@@ -293,10 +293,14 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         ->where("user_id",$user->id)
         ->first();
 
+      $isCheckIn = false;
+      $isCheckOut = false;
+
       switch ($attributes['time']){
         case 'in':
           if ($arrivingIn_time){
-            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+            $isCheckIn = true;
+//            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
           } else{
             $arrivingIn_time = new ArrivingReport();
             $arrivingIn_time->in_time = Carbon::now();
@@ -313,10 +317,12 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
           break;
         case 'out':
           if ($arrivingIn_time == null){
-            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
+            $isCheckIn = true;
+//            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
           }
           if ($arrivingOut_time){
-            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+            $isCheckOut = true;
+//            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
           } else{
             // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
             $arrivingOut_time = $arrivingIn_time;
@@ -346,7 +352,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         'access_token' => "Bearer " . $token,
         'profile' => new UserResource($user),
         'in_time' => $arrivingIn_time,
+        'is_check_in' => $isCheckIn,
         'out_time' => $arrivingOut_time,
+        'is_check_out' => $isCheckOut,
         'imageLink' => config('services.aws.urlImage') . $image->file
       ]);
     }
