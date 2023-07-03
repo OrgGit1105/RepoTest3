@@ -318,13 +318,14 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
           if ($arrivingOut_time){
             return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
           } else{
-            $arrivingOut_time = new ArrivingReport();
+            // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
+            $arrivingOut_time = $arrivingIn_time;
             $arrivingOut_time->user_id = $user->id;
             $arrivingOut_time->out_time = Carbon::now();
             $arrivingOut_time->link_face_in = $image->file;
             $arrivingOut_time->type_date = 1;
             $arrivingOut_time->status = 1;
-            $arrivingOut_time->created_at = Carbon::now();
+            $arrivingOut_time->updated_at = Carbon::now();
             if (array_key_exists("registration_type",$attributes)){
               $arrivingOut_time->registration_type = $attributes['registration_type'];
             }
