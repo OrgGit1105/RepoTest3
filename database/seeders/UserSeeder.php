@@ -37,14 +37,14 @@ class UserSeeder extends Seeder
           'name' => 'Takaba Moeko',
           'email' => 'takaba.veho@gmail.com',
           'password' => Hash::make($password),
-          'role_id' => 2,
+          'role_id' => 1,
           'status' => 1,
         ],
         [
           'name' => 'Vũ Anh Thư',
           'email' => 'thu.vu@veho-works.com',
           'password' => Hash::make($password),
-          'role_id' => 2,
+          'role_id' => 1,
           'status' => 1,
         ],
         [
