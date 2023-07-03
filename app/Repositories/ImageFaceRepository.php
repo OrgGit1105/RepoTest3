@@ -7,6 +7,7 @@
 
 namespace Repository;
 
+use App\Helpers\UserSystemInfoHelper;
 use App\Http\Resources\UserResource;
 use App\Models\ArrivingReport;
 use App\Models\ImageFace;
@@ -381,5 +382,12 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
     } catch (Exception $ex) {
       return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getMessage());
     }
+  }
+
+  public function checkIpAddress(array $attributes)
+  {
+    return ResponseService::responseJson(200, [
+      'data' => UserSystemInfoHelper::get_ip()
+    ]);
   }
 }

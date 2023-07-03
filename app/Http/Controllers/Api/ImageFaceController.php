@@ -287,6 +287,43 @@ class ImageFaceController extends Controller
     return $this->repository->checkImage($request->all());
   }
 
+  /**
+   * @OA\Post(
+   *   path="/api/image_face/checkImage",
+   *   tags={"ImageFace"},
+   *   summary="check image_face",
+   *   operationId="image_face_check_image",
+   *   @OA\RequestBody(
+   *       @OA\MediaType(
+   *          mediaType="application/json",
+   *          example={"file":"file"},
+   *          @OA\Schema(
+   *            required={"file"},
+   *            @OA\Property(
+   *              property="file",
+   *              format="file",
+   *            ),
+   *         )
+   *      )
+   *   ),
+   *   @OA\Response(
+   *     response=200,
+   *     description="Send request success",
+   *     @OA\MediaType(
+   *      mediaType="application/json",
+   *      example={"code":200,"data":{"id":7,"file":"WithoutMask\/1687151741BachImage.jpg","user_id":1,"type":"WithoutMask","created_at":"2023-06-19 12:15:38","updated_at":null,"deleted_at":null,"face_rekognition_id":"2ad7c68b-68cb-4c55-a0d4-b2ca39b3c65b"}}
+   *     )
+   *   ),
+   * )
+   * @param int $id
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Exception
+   */
+  public function checkIpAddress(Request $request){
+
+    return $this->responseJson(200, new BaseResource($request->ips()));
+  }
+
 //    public function getAllImageAWS(Request $request){
 //      $images = [];
 //      $files = Storage::disk('s3')->files($request->type);
