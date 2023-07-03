@@ -25,7 +25,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 //    Route::post('loginTest', 'AuthController@loginTest')->name('user.loginTest');
     Route::post('logout', 'AuthController@logout');
   });
-  Route::post('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
+  Route::get('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
   Route::group(['middleware' => ['auth:user','managerRole']], function () {
     Route::apiResource('arriving_report', 'ArrivingReportController');
     Route::apiResource('analytic', 'AnalyticController');
