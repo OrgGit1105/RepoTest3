@@ -289,29 +289,16 @@ class ImageFaceController extends Controller
 
   /**
    * @OA\Post(
-   *   path="/api/image_face/checkImage",
+   *   path="/api/image_face/checkIpAddress",
    *   tags={"ImageFace"},
-   *   summary="check image_face",
-   *   operationId="image_face_check_image",
-   *   @OA\RequestBody(
-   *       @OA\MediaType(
-   *          mediaType="application/json",
-   *          example={"file":"file"},
-   *          @OA\Schema(
-   *            required={"file"},
-   *            @OA\Property(
-   *              property="file",
-   *              format="file",
-   *            ),
-   *         )
-   *      )
-   *   ),
+   *   summary="check image_face ip_address",
+   *   operationId="image_face_check_ip_address",
    *   @OA\Response(
    *     response=200,
    *     description="Send request success",
    *     @OA\MediaType(
    *      mediaType="application/json",
-   *      example={"code":200,"data":{"id":7,"file":"WithoutMask\/1687151741BachImage.jpg","user_id":1,"type":"WithoutMask","created_at":"2023-06-19 12:15:38","updated_at":null,"deleted_at":null,"face_rekognition_id":"2ad7c68b-68cb-4c55-a0d4-b2ca39b3c65b"}}
+   *      example={"code":200,"data":{"ip":"127.0.0.1"}}
    *     )
    *   ),
    * )
