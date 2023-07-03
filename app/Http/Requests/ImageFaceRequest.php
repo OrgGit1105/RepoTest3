@@ -69,7 +69,7 @@ class ImageFaceRequest extends FormRequest
          return [
            'time' => 'required|in:in,out',
 //           'type' => 'required|in:WithoutMask,WithMask',
-           'file' => 'required|mimes:jpg,jpeg,png'
+           'file' => 'required'
          ];
        }
        if(Route::getCurrentRoute()->getActionMethod() == 'checkImage'){
