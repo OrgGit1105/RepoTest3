@@ -46,6 +46,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
       $data = $this->model->query()->with('role')
         ->whereNull('deleted_at')
       ->FindByName($request)
+      ->FindByEmail($request)
       ->FindByRole($request);
 
       if ($limit > 0) {
