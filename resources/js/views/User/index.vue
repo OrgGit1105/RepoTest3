@@ -22,16 +22,18 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createForm()" />
-            <!--            <div class="box-search align-items-center">-->
-            <!--              &lt;!&ndash;              <el-input&ndash;&gt;-->
-            <!--              &lt;!&ndash;                placeholder="検索"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                prefix-icon="el-icon-search"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                v-model="input2">&ndash;&gt;-->
-            <!--              &lt;!&ndash;              </el-input>&ndash;&gt;-->
-            <!--              &lt;!&ndash;              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>&ndash;&gt;-->
-            <!--            </div>-->
+            <div class="box-search align-items-center" :class="displayBoxSearch">
+              <el-input
+                v-model="name_search"
+                placeholder="search by email"
+                prefix-icon="el-icon-search"
+                @keyup.native="getListAllUser()"
+              >
+              </el-input>
+              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
+            </div>
             <div class="d-flex justify-content-end align-items-center">
-              <img class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)">
+              <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
               <template class="select-custom">
                 <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" value="" @change="getListAllUser()">
                   <el-option
@@ -520,6 +522,8 @@ export default {
       messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
+      displayBoxSearch: 'd-none',
+      displaySearch: 'd-block',
     };
   },
   computed: {
@@ -574,7 +578,7 @@ export default {
         page: this.pagination.current_page,
         per_page: this.pagination.per_page,
         role_id: this.role_id_selected,
-        name: this.name_search,
+        email: this.name_search,
       };
       await getAllUser(PARAMS)
         .then((response) => {
@@ -918,6 +922,14 @@ export default {
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
     },
+    openInputSearch() {
+      this.displayBoxSearch = 'd-flex';
+      this.displaySearch = 'd-none';
+    },
+    closeInputSearch() {
+      this.displayBoxSearch = 'd-none';
+      this.displaySearch = 'd-block';
+    },
   },
 };
 </script>
@@ -1160,6 +1172,27 @@ table#__BVID__46 {
   color: #0070C9;
   font-size: 26px;
   font-weight: 600;
+}
+.box-search{
+  margin-left: 214px;
+}
+::v-deep .box-search .el-input__inner {
+  border: 1px solid rgba(63, 63, 63, 0.4);
+  border-radius: 5px;
+  padding-left: 40px;
+}
+::v-deep .box-search .el-icon-search {
+  color: #3F3F3F;
+  font-weight: bolder;
+  font-size: 20px;
+}
+::v-deep .box-search ::placeholder {
+  color: #8A8A8A;
+}
+::v-deep .box-search .el-icon-close {
+  margin-left: 10px;
+  font-size: 25px;
+  color: #8A8A8A;
 }
 .use-management-title-table {
   padding: 0 45px;
