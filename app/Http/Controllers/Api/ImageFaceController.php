@@ -321,7 +321,9 @@ class ImageFaceController extends Controller
    */
   public function checkIpAddress(Request $request){
 
-    return $this->responseJson(200, new BaseResource($request->ips()));
+    return $this->responseJson(200, new BaseResource([
+      "ipAddress" => $request->ip()
+    ]));
   }
 
 //    public function getAllImageAWS(Request $request){
