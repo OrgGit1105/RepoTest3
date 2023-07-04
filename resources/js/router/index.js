@@ -21,10 +21,17 @@ export const constantRoutes = [
   },
   {
     path: '/',
-    redirect: '/enrollment/create',
+    // redirect: '/enrollment/create',
+    redirect: '/working-time/index',
+    // meta: {
+    //   title: 'routes.enrollment',
+    //   icon: 'icofont-institution',
+    // },
+    component: () => import('../views/WorkingTime/index'),
+    name: 'WorkingTimeManagement',
     meta: {
-      title: 'routes.enrollment',
-      icon: 'icofont-institution',
+      title: 'routes.working-time',
+      icon: 'icofont-ui-user',
     },
     hidden: true,
   },
