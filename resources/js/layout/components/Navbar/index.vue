@@ -21,7 +21,7 @@
             <template #button-content>
               <span class="user-login-custom">{{ auth ? auth.name : '' }}</span>
             </template>
-            <b-dropdown-item href="#">Profile</b-dropdown-item>
+            <b-dropdown-item :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
             <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
