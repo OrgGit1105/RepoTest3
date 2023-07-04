@@ -218,13 +218,14 @@ class ImageFaceController extends Controller
    *   operationId="image_face_compare",
    *   @OA\RequestBody(
    *       @OA\MediaType(
-   *          mediaType="application/json",
-   *          example={"file":"file", "time": "string"},
+   *          mediaType="multipart/form-data",
+   *          example={"file":"file|string", "time": "string"},
    *          @OA\Schema(
    *            required={"file","type"},
    *            @OA\Property(
-   *              property="file",
-   *              format="file",
+   *              property="file[]",
+   *              description="The file or string base64",
+   *              type="file",
    *            ),
    *            @OA\Property(
    *              property="time",
@@ -257,19 +258,19 @@ class ImageFaceController extends Controller
    *   tags={"ImageFace"},
    *   summary="check image_face",
    *   operationId="image_face_check_image",
-   *   @OA\RequestBody(
-   *       @OA\MediaType(
-   *          mediaType="application/json",
-   *          example={"file":"file"},
-   *          @OA\Schema(
-   *            required={"file"},
-   *            @OA\Property(
-   *              property="file",
-   *              format="file",
-   *            ),
-   *         )
-   *      )
-   *   ),
+   *     	@OA\RequestBody(
+   *          required=true,
+   *          @OA\MediaType(
+   *              mediaType="multipart/form-data",
+   *              @OA\Schema(
+   *                  @OA\Property(
+   *                      property="file",
+   *                      description="file",
+   *                      type="file",
+   *                   ),
+   *               ),
+   *           ),
+   *       ),
    *   @OA\Response(
    *     response=200,
    *     description="Send request success",
@@ -288,8 +289,8 @@ class ImageFaceController extends Controller
   }
 
   /**
-   * @OA\Post(
-   *   path="/api/image_face/checkIpAddress",
+   * @OA\Get(
+   *   path="/api/checkIpAddress",
    *   tags={"ImageFace"},
    *   summary="check image_face ip_address",
    *   operationId="image_face_check_ip_address",
