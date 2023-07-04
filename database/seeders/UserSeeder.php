@@ -173,6 +173,13 @@ class UserSeeder extends Seeder
           'role_id' => 2,
           'status' => 1,
         ],
+        [
+          'name' => 'Đồng Việt Long',
+          'email' => 'dongvietlong123@gmail.com',
+          'password' => Hash::make($password),
+          'role_id' => 2,
+          'status' => 1,
+        ],
       ]);
 //      DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
