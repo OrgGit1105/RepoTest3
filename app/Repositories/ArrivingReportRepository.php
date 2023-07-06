@@ -173,19 +173,39 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $data = [];
         foreach ($arrUserId as $key => $value) {
             $analytic = $analytics->where('user_id', $value);
+
+            $numberDayWork = [];
+            $numberDayRemote = [];
+            $numberDayOff = [];
+            foreach ($analytic as $k => $v) {
+                if (date("H:i:s", strtotime($v['out_time'])) == "12:00:00" || date("H:i:s", strtotime($v['in_time'])) == "13:30:00") {
+                    if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
+                        $numberDayWork[] = 0.5;
+                    } elseif ($v['type_date'] == config('analytic.type.remote')) {
+                        $numberDayRemote[] = 0.5;
+                    } else {
+                        $numberDayOff[] = 0.5;
+                    }
+                } else {
+                    if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
+                        $numberDayWork[] = 1;
+                    } elseif ($v['type_date'] == config('analytic.type.remote')) {
+                        $numberDayRemote[] = 1;
+                    } else {
+                        $numberDayOff[] = 1;
+                    }
+                }
+            }
+
             if($analytic->isNotEmpty()) {
                 $analytic = $analytic->first();
-
-                $sumWorked = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.work'))->count();
-                $sumRemoted = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.remote'))->count();
-                $sumTakeOff = $analytic->where('user_id', $value)->where('type_date', config('analytic.type.off'))->count();
 
                 $data[] = [
                     'user_id' => $analytic->user_id,
                     'user_name' => $analytic->user ? $analytic->user->name : '',
-                    'work_day' => $sumWorked,
-                    'remote_day' => $sumRemoted,
-                    'off_day' => $sumTakeOff,
+                    'work_day' => array_sum($numberDayWork),
+                    'remote_day' => array_sum($numberDayRemote),
+                    'off_day' => array_sum($numberDayOff),
                 ];
             }
         }
@@ -324,5 +344,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
+    }
+
+    private function FunctionName(Type $var = null)
+    {
+        # code...
     }
 }
