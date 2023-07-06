@@ -310,7 +310,11 @@ class ImageFaceController extends Controller
   public function checkIpAddress(Request $request){
 
     return $this->responseJson(200, new BaseResource([
-      "ipAddress" => $request->ip()
+      "ipAddress" => $request->ip(),
+      "getHost" => $request->getHost(),
+      "getClientIp" => $request->getClientIp(),
+      "getHttpHost" => $request->getHttpHost(),
+      "userAgent" => $request->userAgent(),
     ]));
   }
 
