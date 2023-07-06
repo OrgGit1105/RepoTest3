@@ -255,7 +255,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
             return response()->json([
                 'response_type' => 'in_channel',
-                'text' => __('analytic.success'),
+                'text' => $user->name . ' ' .__('analytic.success'),
             ]);
         }
 
@@ -297,7 +297,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
         return response()->json([
             'response_type' => 'in_channel',
-            'text' => __('analytic.success'),
+            'text' => $user->name . ' ' .__('analytic.success'),
         ]);
     }
 
@@ -344,10 +344,5 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
-    }
-
-    private function FunctionName(Type $var = null)
-    {
-        # code...
     }
 }

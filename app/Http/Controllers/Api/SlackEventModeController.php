@@ -35,7 +35,7 @@ class SlackEventModeController extends Controller
         //     'channel_id' => 'C04SMU7AF44',
         //     'channel_name' => 'yai',
         //     'user_id' => 'U04SKD7HTJ6',
-        //     'user_name' => 'ngan',
+        //     'user_name' => 'haiyentp.1204',
         //     'command' => '/hybot',
         //     'text' => 'take off, 2023-06-29, 2023-07-02, bị ốm',
         //     'api_app_id' => 'A05DS3GPSR2',
