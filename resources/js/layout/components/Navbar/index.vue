@@ -8,10 +8,8 @@
 
       <b-navbar-toggle target="nav-collapse" />
       <b-collapse id="nav-collapse" style="display: none;" is-nav>
-        <b-navbar-nav style="font-size: 23px; gap: 2rem; margin-left: 100px">
-          <b-nav-item class="custom-item-nav" href="/working-time/index">Working time</b-nav-item>
-          <b-nav-item class="custom-item-nav" href="/analytics/index">Analytics</b-nav-item>
-          <b-nav-item class="custom-item-nav" href="/user/index">Employee</b-nav-item>
+        <b-navbar-nav style="font-size: 23px; gap: 2rem; margin-left: 100px" v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
+          <b-nav-item class="custom-item-nav" :href="item.href">{{ item.name }}</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
@@ -43,6 +41,16 @@ export default {
       listOne: false,
       listTwo: false,
       listThree: false,
+      navbars: [],
+      navbarAdmin: [
+        { name: 'Working time', href: '/working-time/index' },
+        { name: 'Analytics', href: '/analytics/index' },
+        { name: 'Employee', href: '/user/index' },
+      ],
+      navbarUser: [
+        { name: 'Working time', href: '/working-time/index' },
+        { name: 'Analytics', href: '/analytics/index' },
+      ]
     };
   },
   computed: {
@@ -66,12 +74,20 @@ export default {
   },
   created() {
     // this.getMonthAndYear();
+    this.navbarSetting();
   },
   methods: {
     doLogout() {
       this.$store.dispatch('user/logout').then(() => {
         this.$router.push('/login');
       });
+    },
+    navbarSetting() {
+      if (this.$store.getters.role_id === 1) {
+        this.navbars = this.navbarAdmin;
+      } else {
+        this.navbars = this.navbarUser;
+      }
     },
   },
 };
