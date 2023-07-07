@@ -151,13 +151,13 @@ export default {
                 role_id: PROFILE.role_id || '',
                 status: PROFILE.status || '',
               };
-              if (PROFILE.role_id !== 1){
-                MakeToast({
-                  variant: 'warning',
-                  title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                  content: 'user not permission',
-                });
-              } else {
+              // if (PROFILE.role_id !== 1){
+              //   MakeToast({
+              //     variant: 'warning',
+              //     title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+              //     content: 'user not permission',
+              //   });
+              // } else {
                 this.$store
                   .dispatch('user/saveLogin', { USER, TOKEN })
                   .then(() => {
@@ -173,7 +173,7 @@ export default {
                   .catch(() => {
                     console.error('Can not saveLogin!');
                   });
-              }
+              // }
             } else if (response.code === 401) {
               this.closeLoading();
               MakeToast({
