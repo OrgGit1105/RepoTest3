@@ -216,7 +216,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     public function createArriving($input = [])
     {
         // check channel
-        if ($input['channel_name'] != env('CHANNEL')) {
+        if ($input['channel_name'] != 'yai') {
             return __('analytic.not_found_bot');
         }
 
@@ -237,9 +237,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 return __('analytic.err_format_one_date');
             }
 
-            if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-                return __('analytic.check_date');
-            }
+            // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+            //     return __('analytic.check_date');
+            // }
 
             if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
@@ -264,9 +264,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 return __('analytic.err_format_two_date');
             }
 
-			if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-                return __('analytic.check_date');
-            }
+			// if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+            //     return __('analytic.check_date');
+            // }
 
             if($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
                 return __('analytic.date_err');
