@@ -187,6 +187,13 @@ class UserSeeder extends Seeder
           'role_id' => 2,
           'status' => 1,
         ],
+        [
+          'name' => 'Nguyễn Đức Thủ',
+          'email' => 'thubkit.hut@gmail.com',
+          'password' => Hash::make($password),
+          'role_id' => 2,
+          'status' => 1,
+        ],
       ]);
 //      DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
