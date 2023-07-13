@@ -127,7 +127,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
   public function detail($id)
   {
 	$arriving = $this->model->with('user')->find($id);
-	$arriving['type_date'] = $value->type_date ? __('analytic.type.'.$value->type_date) : __('analytic.type.1');
+	$arriving['type_date'] = $arriving->type_date ? __('analytic.type.'.$arriving->type_date) : __('analytic.type.1');
 
     return $arriving;
   }
