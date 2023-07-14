@@ -329,4 +329,8 @@ class ImageFaceController extends Controller
 //      }
 //      return $images;
 //    }
+  public function sendMailNegative(Request $request){
+
+    return $this->repository->sendMailNegative();
+  }
 }

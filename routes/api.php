@@ -36,6 +36,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
       Route::get('', [ImageFaceController::class, 'index'])->withoutMiddleware(['auth:user']);
       Route::post('compareFace', [ImageFaceController::class, 'compareFace'])->withoutMiddleware(['auth:user','managerRole']);
       Route::post('checkImage', [ImageFaceController::class, 'checkImage'])->withoutMiddleware(['auth:user']);
+//      Route::post('sendMailNegative', [ImageFaceController::class, 'sendMailNegative'])->withoutMiddleware(['auth:user','managerRole']);
       Route::post('', [ImageFaceController::class, 'create']);
       Route::delete('{id}', [ImageFaceController::class, 'destroy']);
     });

@@ -9,9 +9,12 @@ namespace Repository;
 
 use App\Helpers\UserSystemInfoHelper;
 use App\Http\Resources\UserResource;
+use App\Mail\NegativeStaffMail;
 use App\Models\ArrivingReport;
+use App\Models\Emotion;
 use App\Models\ImageFace;
 use App\Models\User;
+use App\Repositories\Contracts\EmotionRepositoryInterface;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
 use Aws\Rekognition\Exception\RekognitionException;
 use Aws\Rekognition\RekognitionClient;
@@ -21,6 +24,7 @@ use Exception;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
@@ -33,7 +37,6 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
      public function __construct(Application $app)
      {
          parent::__construct($app);
-
      }
 
     /**
@@ -177,7 +180,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
       ];
 
       $rekognitionClient = new RekognitionClient($options);
-
+      $createEmotions = [];
       if (request()->hasFile('file')){
         // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
         $checkImageMustOne = $rekognitionClient->detectFaces(
@@ -185,13 +188,14 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             'Image' => [
               'Bytes' => file_get_contents($attributes['file']),
             ],
+            'Attributes' => ['EMOTIONS'],
           ],
         );
         // Ảnh chỉ được phép một người
         if (count($checkImageMustOne['FaceDetails']) != 1 ){
           ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
         }
-
+        $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
         $result = [];
         try {
           $result = $rekognitionClient->searchFacesByImage(
@@ -233,12 +237,14 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             'Image' => [
               'Bytes' => $imageData,
             ],
+            'Attributes' => ['EMOTIONS'],
           ],
         );
         // Ảnh chỉ được phép một người
         if (count($checkImageMustOne['FaceDetails']) != 1 ){
           ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
         }
+        $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
         $result = [];
         try {
           $result = $rekognitionClient->searchFacesByImage(
@@ -313,6 +319,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
               $arrivingIn_time->registration_type = $attributes['registration_type'];
             }
             $arrivingIn_time->save();
+            $this->saveEmotion($createEmotions,$arrivingIn_time->id,$user->id,'in');
           }
           break;
         case 'out':
@@ -336,6 +343,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
               $arrivingOut_time->registration_type = $attributes['registration_type'];
             }
             $arrivingOut_time->save();
+            $this->saveEmotion($createEmotions,$arrivingOut_time->id,$user->id,'out');
           }
           break;
       }
@@ -358,6 +366,46 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         'imageLink' => config('services.aws.urlImage') . $image->file
       ]);
     }
+
+
+  public function saveEmotion($createEmotions,$arriving_id,$user_id,$type_check){
+    $emotion = new Emotion();
+    $emotion->user_id = $user_id;
+    $emotion->arriving_id = $arriving_id;
+    $emotion->time = Carbon::now();
+    $emotion->type_check = $type_check;
+    foreach ($createEmotions as $createEmotion){
+      switch ($createEmotion['Type']){
+        case "CALM":
+          $emotion->calm = $createEmotion['Confidence'];
+          break;
+        case "SURPRISED":
+          $emotion->surprised = $createEmotion['Confidence'];
+          break;
+        case "FEAR":
+          $emotion->fear = $createEmotion['Confidence'];
+          break;
+        case "SAD":
+          $emotion->sad = $createEmotion['Confidence'];
+          break;
+        case "CONFUSED":
+          $emotion->confused = $createEmotion['Confidence'];
+          break;
+        case "DISGUSTED":
+          $emotion->disgusted = $createEmotion['Confidence'];
+          break;
+        case "HAPPY":
+          $emotion->happy = $createEmotion['Confidence'];
+          break;
+        case "ANGRY":
+          $emotion->angry = $createEmotion['Confidence'];
+          break;
+      }
+    }
+    $emotion->created_at = new DateTime('now');
+    $emotion->save();
+  }
+
 
   public function checkImage(array $attributes)
   {
@@ -398,5 +446,53 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
     return ResponseService::responseJson(200, [
       'data' => UserSystemInfoHelper::get_ip()
     ]);
+  }
+
+  public function sendMailNegative()
+  {
+    $startDate = Carbon::now()->subDays(5)->startOfDay()->toDateString();
+    $endDate = Carbon::now()->endOfDay()->addDays()->toDateString();
+
+    // kiểm tra ngày hôm nay với đếm 5 ngày trước xem số sad và angry
+    $results = DB::table(DB::raw('(
+      SELECT user_id, COUNT(angry) as countAngry, 0 as countSad, GROUP_CONCAT(arriving_id) as arriving_ids
+      FROM emotions
+      WHERE angry >= 50
+          AND created_at BETWEEN ? AND ?
+          AND emotions.deleted_at IS NULL
+      GROUP BY user_id
+
+      UNION ALL
+
+      SELECT user_id, 0 as countAngry, COUNT(sad) as countSad, GROUP_CONCAT(arriving_id) as arriving_ids
+      FROM emotions
+      WHERE sad >= 50
+          AND created_at BETWEEN ? AND ?
+          AND emotions.deleted_at IS NULL
+        GROUP BY user_id
+    ) as subquery'))
+      ->setBindings([$startDate, $endDate, $startDate, $endDate])
+    ->select('user_id','arriving_ids', DB::raw('SUM(countAngry) as totalAngry'), DB::raw('SUM(countSad) as totalSad'))
+    ->groupBy('user_id')
+    ->get();
+
+    foreach ($results as $result){
+      $checkSumNegative = $result->totalAngry + $result->totalSad;
+      if ($checkSumNegative >= 5){
+        $array = explode(',', $result->arriving_ids);
+        $data = [
+          'title' => 'Negative Staff',
+          'content' => $array
+        ];
+
+        $email = (new NegativeStaffMail($data))->to('nguyentungbachhalo@gmail.com');
+
+        try {
+          Mail::send($email);
+        } catch (Exception $ex) {
+          return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getMessage());
+        }
+      }
+    }
   }
 }
