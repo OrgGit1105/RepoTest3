@@ -70,14 +70,14 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $data = [];
         $arrivings = $arrivings->orderBy('id', 'desc');
         $arrivings = $arrivings->get();
-        foreach ($arrivings as $key => $value) {    
+        foreach ($arrivings as $key => $value) {
             $data[$key]['id'] = $value->id;
             $data[$key]['user_name'] = $value->user ? $value->user->name : '';
             $data[$key]['registration_type'] = $value->registration_type;
             $data[$key]['type_date'] = $value->type_date ? __('analytic.type.'.$value->type_date) : __('analytic.type.1');
             $data[$key]['remark'] = $value->remark;
             $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
-            $data[$key]['out_time'] = date("H:i:s", strtotime($value->out_time));
+            $data[$key]['out_time'] = empty($value['out_time']) ? '' : date("H:i:s", strtotime($value->out_time));
             $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
 		}
 
