@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-
+use App\Repositories\Contracts\AnalyticRepositoryInterface;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Repositories\Contracts\AuthRepositoryInterface;
@@ -16,6 +16,7 @@ use Repository\ArrivingReportRepository;
 use Repository\BaseRepository;
 use Repository\AuthRepository;
 use Laravel\Dusk\DuskServiceProvider;
+use Repository\AnalyticRepository;
 use Repository\EmotionRepository;
 use Repository\HistoryEditReportRepository;
 use Repository\ImageFaceRepository;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(HistoryEditReportRepositoryInterface::class,HistoryEditReportRepository::class);
     $this->app->bind(ImageFaceRepositoryInterface::class,ImageFaceRepository::class);
     $this->app->bind(EmotionRepositoryInterface::class,EmotionRepository::class);
+    $this->app->bind(AnalyticRepositoryInterface::class, AnalyticRepository::class);
     //Customer
     if ($this->app->environment('local', 'testing')) {
       $this->app->register(DuskServiceProvider::class);

@@ -10,7 +10,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmotionRequest;
 use App\Repositories\Contracts\EmotionRepositoryInterface;
-use App\Http\Resources\EmotionRequest;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\EmotionResource;
 use Illuminate\Http\Request;
