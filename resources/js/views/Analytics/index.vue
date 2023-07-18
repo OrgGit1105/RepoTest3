@@ -17,9 +17,9 @@
                     start-placeholder="Start Date"
                     end-placeholder="End Date"
                     value-format="yyyy-MM-dd"
-                    firstDayOfWeek="1"
-                    @blur="fillDate()">
-                  </el-date-picker>
+                    first-day-of-week="1"
+                    @blur="fillDate()"
+                  />
                 </template>
 
               </div>
@@ -32,21 +32,20 @@
             <div class="d-flex justify-content-end align-items-center">
               <template class="select-custom">
                 <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom" @change="fillSearch(employeeValue)">
-                    <el-option
-                      class="el-option-custom"
-                      label="All Employee"
-                      value="">
-                    </el-option>
-                    <el-option
-                      v-for="item in listEmployee"
-                      :key="item.id"
-                      :label="item.name"
-                      :value="item.id"
-                      >
-                    </el-option>
+                  <el-option
+                    class="el-option-custom"
+                    label="All Employee"
+                    value=""
+                  />
+                  <el-option
+                    v-for="item in listEmployee"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
                 </el-select>
               </template>
-            <i class="el-icon-download custom-icon-down cursor-pointer"></i>
+              <i class="el-icon-download custom-icon-down cursor-pointer" />
             </div>
           </div>
           <hr class="line">
@@ -54,29 +53,30 @@
             <el-table
               :data="listAnalytic"
               style="width: 100%"
-              :row-style="rowWorkingStyle">
+              :row-style="rowWorkingStyle"
+              @row-click="showDetail">
               <el-table-column
                 prop="user_name"
                 label="Employee name"
                 width="400"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="work_day"
                 label="Work Day"
                 width="400"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="remote_day"
                 label="Remote Work"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="off_day"
                 label="Day Off"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
             </el-table>
           </template>
         </div>
@@ -90,12 +90,12 @@ import { getAllAnalytic } from '../../api/analytic';
 import { getAllUser } from '../../api/user';
 import moment from 'moment';
 export default {
-  name: 'WorkingTimeManagement',
+  name: 'AnalyticsManagement',
   data() {
     return {
       formSearch: {
         userId: '',
-        date: [ moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD') ],
+        date: [moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD')],
       },
       listAnalytic: [],
       listEmployee: [],
@@ -112,12 +112,12 @@ export default {
     },
     async getListAllAnalytic() {
       let PARAMS = {};
-      if(this.search !== ''){
+      if (this.search !== ''){
         PARAMS = {
           start_date: this.formSearch.date[0],
           end_date: this.formSearch.date[1],
           user_id: this.employeeValue,
-        }
+        };
       }
       await getAllAnalytic(PARAMS)
         .then((response) => {
@@ -150,6 +150,9 @@ export default {
         .catch((error) => {
           this.listEmployee = [];
         });
+    },
+    showDetail: function(row, column, event) {
+      this.$router.push({ path: `/analytics/detail/${row.user_id}` });
     },
   },
 };

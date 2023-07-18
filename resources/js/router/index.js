@@ -283,9 +283,18 @@ export const constantRoutes = [
       {
         path: 'index',
         component: () => import('../views/Analytics/index'),
-        name: 'Analytics',
+        name: 'AnalyticsManagement',
         meta: {
           // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+      {
+        path: 'detail/:id',
+        component: () => import('../views/Analytics/detail'),
+        name: 'AnalyticsDetail',
+        meta: {
+          title: 'routes.analytics',
           icon: 'icofont-ui-user',
         },
       },
@@ -299,7 +308,7 @@ const createRouter = () =>
   new VueRouter({
     mode: 'history',
     scrollBehavior: () => ({ y: 0 }),
-    base: process.env.MIX_LARAVEL_PATH,
+    // base: process.env.MIX_LARAVEL_PATH,
     routes: constantRoutes,
   });
 
