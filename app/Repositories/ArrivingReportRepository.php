@@ -68,7 +68,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         $data = [];
-        $arrivings = $arrivings->orderBy('id', 'desc');
+        $arrivings = $arrivings->orderBy('in_time', 'desc')->orderBy('type_date', 'asc');
         $arrivings = $arrivings->get();
         foreach ($arrivings as $key => $value) {
             $data[$key]['id'] = $value->id;
@@ -153,65 +153,6 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
      HistoryEditReport::create($attribute_history);
      return ResponseService::responseJson(200, new BaseResource(parent::update($attributes, $id)));
    }
-
-    public function getListAnalytic($input = [])
-    {
-        $defaulStartDate = Carbon::now()->startOfMonth();
-        $defaulEndDate = Carbon::now()->endOfMonth();
-        $startDate = Arr::get($input, 'start_date', $defaulStartDate);
-        $endDate = Arr::get($input, 'end_date', $defaulEndDate);
-        $startDate = date("Y-m-d 00:00", strtotime($startDate));
-        $endDate = date("Y-m-d 23:59", strtotime($endDate));
-        $userId = Arr::get($input, 'user_id', []);
-
-        $analytics = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user')->get();
-        if (!empty($userId)) {
-            $analytics = $analytics->where('user_id', $userId);
-        }
-        $arrUserId = User::get()->pluck('id')->toArray();
-
-        $data = [];
-        foreach ($arrUserId as $key => $value) {
-            $analytic = $analytics->where('user_id', $value);
-
-            $numberDayWork = [];
-            $numberDayRemote = [];
-            $numberDayOff = [];
-            foreach ($analytic as $k => $v) {
-                if (date("H:i:s", strtotime($v['out_time'])) == "12:00:00" || date("H:i:s", strtotime($v['in_time'])) == "13:30:00") {
-                    if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
-                        $numberDayWork[] = 0.5;
-                    } elseif ($v['type_date'] == config('analytic.type.remote')) {
-                        $numberDayRemote[] = 0.5;
-                    } else {
-                        $numberDayOff[] = 0.5;
-                    }
-                } else {
-                    if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
-                        $numberDayWork[] = 1;
-                    } elseif ($v['type_date'] == config('analytic.type.remote')) {
-                        $numberDayRemote[] = 1;
-                    } else {
-                        $numberDayOff[] = 1;
-                    }
-                }
-            }
-
-            if($analytic->isNotEmpty()) {
-                $analytic = $analytic->first();
-
-                $data[] = [
-                    'user_id' => $analytic->user_id,
-                    'user_name' => $analytic->user ? $analytic->user->name : '',
-                    'work_day' => array_sum($numberDayWork),
-                    'remote_day' => array_sum($numberDayRemote),
-                    'off_day' => array_sum($numberDayOff),
-                ];
-            }
-        }
-
-        return $data;
-    }
 
     public function createArriving($input = [])
     {

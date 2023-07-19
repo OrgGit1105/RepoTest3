@@ -29,3 +29,5 @@ public/js/
 .DS_Store
 .env.testing
 phpunit.dusk.xml
+public/mix-manifest.json
+package-lock.json
