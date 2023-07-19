@@ -33,7 +33,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 
         Route::apiResource('arriving_report', 'ArrivingReportController');
         Route::get('analytic/emotions', 'AnalyticController@getEmotions');
-        Route::apiResource('analytic', 'AnalyticController');
+        Route::get('analytic', 'AnalyticController@index');
         //Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
         Route::apiResource('user', 'UserController');
         Route::get('/role',[RoleController::class, 'index']);
