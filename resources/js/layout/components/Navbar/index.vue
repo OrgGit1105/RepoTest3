@@ -43,6 +43,7 @@ export default {
       listThree: false,
       navbars: [],
       navbarAdmin: [
+        { name: 'Schedules', href: '/schedules/index' },
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         { name: 'Employee', href: '/user/index' },

@@ -79,7 +79,23 @@ class ScheduleController extends Controller
     public function index(ScheduleRequest $request)
     {
         $data = $this->repository->getAllSchedule($request);
-        return $this->responseJson(200, ScheduleResource::collection($data));
+        $convertData = [];
+
+        $type = [
+            1 => 'Work',
+            2 => 'Remote',
+            3 => 'Take off'
+        ];
+
+        if($data) {
+           foreach ($data as $value) {
+                $convertData[] = [
+                    'title' => $value['name'] .' '. $type[$value['title']],
+                    'start' => $value['start'],
+                ];
+           }
+        }
+        return $this->responseJson(200, ScheduleResource::collection($convertData));
     }
 
     /**

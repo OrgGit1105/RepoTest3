@@ -299,6 +299,25 @@ export const constantRoutes = [
         },
       },
     ],
+  }, {
+    path: '/schedules',
+    redirect: '/schedules/index',
+    component: Layout,
+    meta: {
+      title: 'routes.user',
+      icon: 'icofont-ui-user',
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/Schedules/index'),
+        name: 'SchedulesManagement',
+        meta: {
+          // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
   },
 ];
 
