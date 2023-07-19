@@ -73,6 +73,11 @@
                 label="Type"
                 width="350"
                 align="center">
+                <template slot-scope="scope">
+                  <div :class="scope.row.type_date == 'Working' ? 'type_working' : (scope.row.type_date == 'Remote' ? 'type_remote' : 'type_take_off')">
+                    <strong>{{ scope.row.type_date }}</strong>
+                  </div>
+                </template>
               </el-table-column>
               <el-table-column
                 prop="user_name"
@@ -473,6 +478,27 @@ export default {
   height: 1px;
   color: rgba(63, 63, 63, 0.4);
   margin: 10px auto;
+}
+::v-deep .type_remote {
+  margin: auto;
+  padding: 7px 0 5px 0;
+  width: 20%;
+  border-radius: 10px;
+  background-color: #80ffbf;
+}
+::v-deep .type_working {
+  margin: auto;
+  padding: 7px 0 5px 0;
+  width: 20%;
+  border-radius: 10px;
+  background-color: #ccf2ff;
+}
+::v-deep .type_take_off {
+  margin: auto;
+  padding: 7px 0 5px 0;
+  width: 20%;
+  border-radius: 10px;
+  background-color: #ffcc99;
 }
 ::v-deep .title-add-working .el-dialog__title, .title-working {
   font-weight: 600;
