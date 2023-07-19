@@ -387,7 +387,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
     public function saveImage64ForAWSs3($base64String,$folder,$nameStaff){
       $image = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '',$base64String));
-      $name = time() . Str::slug($nameStaff,' ') . '.jpg';
+      $name = time() . Str::slug($nameStaff,'') . '.jpg';
       $filePath = $folder.'/' . $name;
       Storage::disk('s3')->put($filePath, $image);
       return $filePath;
