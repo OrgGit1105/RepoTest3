@@ -68,7 +68,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         $data = [];
-        $arrivings = $arrivings->orderBy('id', 'desc');
+        $arrivings = $arrivings->orderBy('in_time', 'desc')->orderBy('type_date', 'asc');
         $arrivings = $arrivings->get();
         foreach ($arrivings as $key => $value) {
             $data[$key]['id'] = $value->id;
