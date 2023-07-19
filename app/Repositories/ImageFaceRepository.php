@@ -26,6 +26,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -312,6 +313,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             $arrivingIn_time->in_time = Carbon::now();
             $arrivingIn_time->user_id = $user->id;
             $arrivingIn_time->link_face_in = $image->file;
+            if (request()->hasFile('file')){
+              $arrivingIn_time->link_check_in = $this->saveImageFileForAWSs3($attributes['file'],"CheckIn");
+            } else{
+              $arrivingIn_time->link_check_in = $this->saveImage64ForAWSs3($attributes['file'],"CheckIn",$user->name);
+            }
             $arrivingIn_time->type_date = 1;
             $arrivingIn_time->status = 1;
             $arrivingIn_time->created_at = Carbon::now();
@@ -336,6 +342,11 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             $arrivingOut_time->user_id = $user->id;
             $arrivingOut_time->out_time = Carbon::now();
             $arrivingOut_time->link_face_out = $image->file;
+            if (request()->hasFile('file')){
+              $arrivingIn_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'],"CheckIn");
+            } else{
+              $arrivingIn_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'],"CheckIn",$user->name);
+            }
             $arrivingOut_time->type_date = 1;
             $arrivingOut_time->status = 1;
             $arrivingOut_time->updated_at = Carbon::now();
@@ -367,6 +378,20 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
       ]);
     }
 
+  public function saveImageFileForAWSs3($file,$folder){
+    $name = time() . $file->getClientOriginalName();
+    $filePath = $folder.'/' . $name;
+    Storage::disk('s3')->put($filePath, file_get_contents($file));
+    return $filePath;
+  }
+
+    public function saveImage64ForAWSs3($base64String,$folder,$nameStaff){
+      $image = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '',$base64String));
+      $name = time() . Str::slug($nameStaff,' ') . '.jpg';
+      $filePath = $folder.'/' . $name;
+      Storage::disk('s3')->put($filePath, $image);
+      return $filePath;
+    }
 
   public function saveEmotion($createEmotions,$arriving_id,$user_id,$type_check){
     $emotion = new Emotion();

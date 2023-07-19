@@ -28,6 +28,8 @@ class ArrivingReport extends Model
       'number_day',
       'link_face_in',
       'link_face_out',
+      'link_check_in',
+      'link_check_out',
       'status',
       'created_at',
       'updated_at',
