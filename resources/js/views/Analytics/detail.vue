@@ -10,24 +10,23 @@
               </div>
             </div>
             <hr class="line">
-            <p class="back-list cursor-pointer" @click="listAllAnalytic()"> <i class="el-icon-arrow-left icon-back-list" ></i> All Analytics </p>
+            <p class="back-list cursor-pointer all-analytics" @click="listAllAnalytic()"> 
+              <i class="el-icon-arrow-left icon-back-list"></i> All Analytics 
+            </p>
             <div class="use-management-title-table mt-3">
-              <div>
+              <div class="employee-name">
                 <strong>Employee name</strong>
                 <div>{{ nameEmployee }}</div>
               </div>
               <div class="fill mt-5">
                 <h1>Emotion Statistics</h1>
-                <div class="d-flex justify-content-end align-items-center">
+                <div class="d-flex justify-content-end align-items-center all-date">
                   <p class="back-list cursor-pointer" @click="getAllEmmotions"> All date 
-                    <span class="el-input__suffix">
-                      <span class="el-input__suffix-inner">
-                        <i class="el-select__caret el-input__icon el-icon-down"></i>
-                        <b-icon-chevron-down></b-icon-chevron-down>
-                      </span>
-                    </span>
-                    <i class="el-icon-download custom-icon-down cursor-pointer"></i>
-                   </p>
+                    <i class="el-icon-arrow-down icon-back-list ml-1"></i>
+                  </p>
+                  <p class="back-list cursor-pointer">
+                    <i class="el-icon-download custom-icon-down cursor-pointer ml-3"></i>
+                  </p>
                 </div>
               </div>
             <hr class="line">
@@ -172,5 +171,35 @@
   height: 1px;
   color: rgba(63, 63, 63, 0.4);
   margin: 0 auto;
+}
+.el-icon-download {
+  color: #0070C9;
+  font-size: 21px;
+  font-weight: 600;
+}
+.all-date {
+  cursor: pointer;
+  color: #0070C9;
+  font-size: 16px;
+  font-weight: 500;
+}
+.el-icon-arrow-left {
+  color: #0070C9;
+  font-size:23px;
+  font-weight: 600;
+}
+.el-icon-arrow-down {
+  color: #0070C9;
+  font-size: 19px;
+  font-weight: 600;
+}
+.employee-name {
+  font-size: 20px;
+}
+.all-analytics {
+  cursor: pointer;
+  color: #0070C9;
+  font-size: 23px;
+  font-weight: 500;
 }
 </style>

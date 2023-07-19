@@ -482,21 +482,21 @@ export default {
 ::v-deep .type_remote {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 20%;
+  width: 50%;
   border-radius: 10px;
   background-color: #80ffbf;
 }
 ::v-deep .type_working {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 20%;
+  width: 50%;
   border-radius: 10px;
   background-color: #ccf2ff;
 }
 ::v-deep .type_take_off {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 20%;
+  width: 50%;
   border-radius: 10px;
   background-color: #ffcc99;
 }
