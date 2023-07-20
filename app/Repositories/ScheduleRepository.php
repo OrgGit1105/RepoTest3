@@ -42,14 +42,16 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
         $endOfMonthNow  = Carbon::now()->endOfMonth()->format('Y-m-d h:i:s');
         $firstOfMonth = Carbon::parse($yearMonth)->startOfMonth()->format('Y-m-d h:i:s');
         $endOfMonth   = Carbon::parse($yearMonth)->endOfMonth()->format('Y-m-d h:i:s');
-        $arrivingReport = ArrivingReport::whereIn('type_date', $typDate)->whereNull('deleted_at');
+        $arrivingReport = ArrivingReport::selectRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d') AS start, arriving_reports.type_date as title, users.name")
+            ->whereIn('arriving_reports.type_date', $typDate)->whereNull('arriving_reports.deleted_at')
+            ->join('users', 'users.id', '=' , 'arriving_reports.user_id');
         
         if($yearMonth) {
-            $arrivingReport->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
-                           ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth]) ;
+            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
+                           ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth]) ;
         }
-        return $arrivingReport->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonthNow])
-                              ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonthNow])
+        return $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonthNow])
+                              ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonthNow])
                               ->get();
 
     }
@@ -61,7 +63,7 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
         $firstOfMonth = Carbon::parse($date)->format('Y-m-d 0:0:0');
         $endOfMonth   = Carbon::parse($date)->format('Y-m-d 23:59:59');
 
-        return  ArrivingReport::whereIn('type_date', $typDate)
+        return  ArrivingReport::selectRaw("DATE_FORMAT(in_time, '%Y-%m-%d') AS in_date, type_date")->whereIn('type_date', $typDate)
             ->whereNull('deleted_at')
             ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
             ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth])

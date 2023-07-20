@@ -200,6 +200,6 @@
   cursor: pointer;
   color: #0070C9;
   font-size: 23px;
-  font-weight: 500;
+  font-weight: 400;
 }
 </style>
