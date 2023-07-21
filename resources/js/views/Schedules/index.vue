@@ -9,7 +9,7 @@
         @dayClick="dayClick">
       </full-calendar>
     </div>
-    <b-modal v-model="modalShow" :title="this.date_click" centered id="modal-center">
+    <b-modal v-model="modalShow" :title="this.date_click" centered id="modal-center" :config="calendarConfig">
       <div v-for="item in this.one_day">
         <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'" >{{item.title}}</div>
       </div>
@@ -38,7 +38,12 @@ export default {
         year_months: new Date().toISOString().substr(0, 7),
         modalShow: false,
         date_click: '',
-        one_day: []
+        one_day: [], 
+        calendarConfig: {
+        eventRender: function (fcEvents, element) {
+          element.addClass(fcEvents.cssClass);
+        }
+      },
       }
     },
     components: {
@@ -123,5 +128,18 @@ export default {
   padding-left: 10px;
   width: 50%;
   border-radius: 10px;
+}
+.comp-full-calendar {
+  max-width: none !important;
+}
+::v-deep .work-remote {
+  background-color: #C7E6FD !important;
+  width: 70%;
+  border-radius: 6px;
+}
+::v-deep .titelOff {
+  background-color: antiquewhite !important;
+  width: 70%;
+  border-radius: 6px;
 }
 </style>
