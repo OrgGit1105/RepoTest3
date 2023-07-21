@@ -78,7 +78,6 @@ export default {
           const dayClick = `${year}-${month}-${days}`;
           const formattedDate = `${year}-${month}`;
             if(this.year_months == formattedDate) {
-              this.modalShow = true;
               const filterDate = new Date(dayClick);
               const filteredArray = this.fcEvents.filter((obj) => {
                   const objDate = new Date(obj.start);
@@ -86,12 +85,14 @@ export default {
               });
               this.date_click = dayClick;
               this.one_day = filteredArray;
+              if (this.one_day.length != 0) {
+                this.modalShow = true;
+              }
             }
         },
         'eventClick'(event, jsEvent, pos) {
           this.month_click = new Date(event.start).toISOString().slice(0, 7);
-            if (this.year_months == this.month_click) { 
-              this.modalShow = true;
+            if (this.year_months == this.month_click) {
               const filterDate = new Date(event.start);
               const filteredArray = this.fcEvents.filter((obj) => {
                   const objDate = new Date(obj.start);
@@ -99,6 +100,9 @@ export default {
               });
               this.date_click = event.start;
               this.one_day = filteredArray;
+              if (this.one_day.length != 0) {
+                this.modalShow = true;
+              }
             }
         }
     }
