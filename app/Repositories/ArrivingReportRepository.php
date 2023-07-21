@@ -79,6 +79,12 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
             $data[$key]['out_time'] = empty($value['out_time']) ? '' : date("H:i:s", strtotime($value->out_time));
             $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
+            if($value->in_time == null || $value->out_time == null) {
+                $data[$key]['warning'] = 'Warning';
+            } else {
+                $data[$key]['warning'] = null;
+            }
+            
 		}
 
 		return (new Common)->myPaginate($data);

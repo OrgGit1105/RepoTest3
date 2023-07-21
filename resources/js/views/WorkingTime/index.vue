@@ -69,6 +69,18 @@
               :row-style="rowWorkingStyle"
               @row-click="showDetail">
               <el-table-column
+                prop="warning"
+                label=""
+                width="250"
+                align="center">
+                 <template slot-scope="scope">
+                    <div :class="scope.row.warning ? 'warning' : ''">
+                      <i :class="scope.row.warning ? 'el-icon-warning' : ''"></i> 
+                      <span>{{ scope.row.warning }}</span>
+                    </div>
+                  </template>
+              </el-table-column>
+              <el-table-column
                 prop="type_date"
                 label="Type"
                 width="350"
@@ -549,5 +561,11 @@ export default {
 }
 ::v-deep .date-time-custom .item-time {
   width: 40%;
+}
+::v-deep .warning {
+  color: red;
+  border: 1px solid;
+  width: 40%;
+  margin-left: 60%;
 }
 </style>
