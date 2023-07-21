@@ -343,9 +343,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             $arrivingOut_time->out_time = Carbon::now();
             $arrivingOut_time->link_face_out = $image->file;
             if (request()->hasFile('file')){
-              $arrivingIn_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'],"CheckOut");
+              $arrivingOut_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'],"CheckOut");
             } else{
-              $arrivingIn_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'],"CheckOut",$user->name);
+              $arrivingOut_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'],"CheckOut",$user->name);
             }
             $arrivingOut_time->type_date = 1;
             $arrivingOut_time->status = 1;
