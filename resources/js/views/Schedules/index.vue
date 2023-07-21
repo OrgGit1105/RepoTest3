@@ -40,6 +40,13 @@
         </div>
       </template>
     </b-modal>
+    <button @click="showModalChat = true" class="button-chart">Mở modal</button>
+      <div v-if="showModalChat" class="modal-chart">
+        <div class="modal-content">
+          <span class="close" @click="showModalChat = false">&times;</span>
+          <p>Nội dung modal</p>
+        </div>
+      </div>
   </div>
 </template>
 <script>
@@ -54,10 +61,11 @@ export default {
         date_click: '',
         one_day: [], 
         calendarConfig: {
-        eventRender: function (fcEvents, element) {
-          element.addClass(fcEvents.cssClass);
-        }
-      },
+          eventRender: function (fcEvents, element) {
+            element.addClass(fcEvents.cssClass);
+          }
+        },
+        showModalChat: false
       }
     },
     components: {
@@ -170,5 +178,20 @@ export default {
 }
 ::v-deep .comp-full-calendar * {
     box-sizing: unset !important;
+}
+.modal-chart{
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  height: 200px;
+  background-color: white;
+  border: 1px solid black;
+  z-index: 9999;
+}
+.button-chart {
+  position: fixed;
+  bottom: 0;
+  left: 0;
 }
 </style>
