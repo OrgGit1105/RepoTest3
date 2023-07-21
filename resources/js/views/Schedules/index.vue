@@ -1,5 +1,19 @@
 <template>
   <div>
+    <div class="container-fluid w-90">
+      <div class="container-fluid-body">
+        <div class="schedules-management-title">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="basic">
+                <h1 class="title">Schedules</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr class="line-bottom">
+      </div>
+    </div>
     <div>
       <full-calendar 
         :events="fcEvents" 
@@ -135,6 +149,7 @@ export default {
 }
 .comp-full-calendar {
   max-width: none !important;
+  padding-left: 3rem !important;
 }
 ::v-deep .work-remote {
   background-color: #C7E6FD !important;
@@ -145,5 +160,15 @@ export default {
   background-color: antiquewhite !important;
   width: 70%;
   border-radius: 6px;
+}
+.line-bottom {
+  margin-left: 2rem !important;
+}
+.card-body {
+  padding-top: 2rem !important;
+  padding-left: 2.1rem !important;
+}
+::v-deep .comp-full-calendar * {
+    box-sizing: unset !important;
 }
 </style>
