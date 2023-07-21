@@ -92,6 +92,7 @@ class ScheduleController extends Controller
                 $convertData[] = [
                     'title' => $value['name'] .' '. $type[$value['title']],
                     'start' => $value['start'],
+                    'cssClass' => ($value['title'] == 2 && $value['title'] != 1) ? 'work-remote' : 'titelOff'
                 ];
            }
         }
