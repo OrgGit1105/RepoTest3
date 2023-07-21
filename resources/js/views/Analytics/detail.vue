@@ -19,7 +19,7 @@
                 <div>{{ nameEmployee }}</div>
               </div>
               <div class="fill mt-5">
-                <h1>Emotion Statistics</h1>
+                <h1 class="titel-emotion">Emotion Statistics</h1>
                 <div class="d-flex justify-content-end align-items-center all-date">
                   <p class="back-list cursor-pointer" @click="getAllEmmotions"> All date 
                     <i class="el-icon-arrow-down icon-back-list ml-1"></i>
@@ -201,5 +201,9 @@
   color: #0070C9;
   font-size: 23px;
   font-weight: 400;
+}
+.titel-emotion {
+  font-weight: 600;
+  font-size: 35px;
 }
 </style>
