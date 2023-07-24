@@ -976,12 +976,12 @@ table#__BVID__46 {
 ::v-deep .table thead {
   background: none;
 }
-::v-deep .table tbody {
-  /*border: 0.9px solid #888888;*/
-}
-::v-deep .table thead th {
-  /*border: 0.9px solid #888888;*/
-}
+/* ::v-deep .table tbody {
+  border: 0.9px solid #888888;
+} */
+/* ::v-deep .table thead th {
+  border: 0.9px solid #888888;
+} */
 ::v-deep .table td {
   /*background: #ffffff !important;*/
   /*border-top: 0 !important;*/
