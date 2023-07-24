@@ -42,17 +42,33 @@
         </div>
       </template>
     </b-modal>
-    <button class="button-chart" @click="showModalChat = true">Mở modal</button>
+    <a class="button-chart" @click="showModalChat = true"><img class="custom-image" :src="logo" alt="V-FACE"></a>
     <div v-if="showModalChat" class="modal-chart">
-      <div class="modal-content">
-        <span class="close" @click="showModalChat = false">&times;</span>
-        <p>Nội dung modal</p>
+      <div class="modal-header chart-header">
+        <strong>V-Face x GPT</strong>
+        <button class="close close-chart" @click="showModalChat = false"><span>&ndash;</span></button>
+      </div>
+      <div class="modal-content chart-content">
+        <div class="content-left">
+          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+          <p>Who comes to work late this month?</p>
+        </div>
+        <div class="content-right">
+          <p>Is Ms.Trang</p>
+          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+        </div>
+      </div>
+      <div class="modal-footer chart-footer">
+        <input type="text" class="chart-input">
+        <button class="chart-submit">Send</button>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { getAllSchedules } from '../../api/schedules';
+const logo = require('@/assets/images/chatgpt-icon.png');
+const logoImage = require('@/assets/images/logo.png');
 export default {
   name: 'SchedulesManagement',
   components: {
@@ -71,6 +87,8 @@ export default {
         },
       },
       showModalChat: false,
+      logo,
+      logoImage,
     };
   },
   created() {
@@ -115,8 +133,8 @@ export default {
       }
     },
     'eventClick'(event, jsEvent, pos) {
-      this.month_click = new Date(event.start).toISOString().slice(0, 7);
-      if (this.year_months === this.month_click) {
+      const month_click = new Date(event.start).toISOString().slice(0, 7);
+      if (this.year_months === month_click) {
         const filterDate = new Date(event.start);
         const filteredArray = this.fcEvents.filter((obj) => {
           const objDate = new Date(obj.start);
@@ -130,7 +148,24 @@ export default {
       }
     },
     'moreClick'(day, events, jsEvent) {
-      this.modalShow = true;
+      const date = new Date(day);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const days = String(date.getDate()).padStart(2, '0');
+      const dayClick = `${year}-${month}-${days}`;
+      const formattedDate = `${year}-${month}`;
+      if (this.year_months === formattedDate) {
+        const filterDate = new Date(dayClick);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = dayClick;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
+        }
+      }
       return;
     },
   },
@@ -187,17 +222,87 @@ export default {
 }
 .modal-chart{
   position: fixed;
-  bottom: 0;
-  right: 0;
-  width: 300px;
-  height: 200px;
+  bottom: 2%;
+  right: 2%;
+  width: 25%;
+  height: 45%;
   background-color: white;
-  border: 1px solid black;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-top-left-radius: calc(0.3rem - 1px) !important;
+  border-top-right-radius: calc(0.3rem - 1px);
   z-index: 9999;
 }
 .button-chart {
   position: fixed;
-  bottom: 0;
-  left: 0;
+  bottom: 2%;
+  right: 2%;
+  z-index: 9998;
+  cursor: pointer;
+}
+::v-deep .more-events {
+  display: none;
+}
+.chart-content {
+  height: 72% !important;
+  border: none !important;
+}
+.chart-input {
+  width: 80%;
+  border-radius: 6px;
+  border: none;
+  padding: 3px;
+}
+.chart-input:focus {
+  border: none;
+}
+.chart-header {
+  background-color: #0070c9;
+  color: white;
+  position: relative;
+}
+.chart-header strong {
+  position: inherit;
+  left: 40%;
+}
+.close-chart {
+  background-color: white;
+  opacity: initial;
+  padding: revert;
+  margin: inherit;
+  border-radius: 6px;
+}
+.custom-image {
+  width: 55px;
+}
+.chart-footer {
+  background-color: #E6E6E6;
+}
+.chart-submit {
+  background-color: #40729A;
+  color: white;
+  border-radius: 10%;
+  border: none;
+  padding: 3px;
+  width: 16%;
+}
+.content-right {
+  text-align: right;
+  display: flex;
+  align-self: flex-end;
+}
+.content-right p {
+  margin: auto;
+}
+.content-left {
+  align-self: initial;
+  text-align: left;
+  display: flex;
+  max-width: max-content;
+}
+.content-left p {
+  margin: auto;
+}
+.modal-content {
+  flex-direction: column-reverse !important;
 }
 </style>

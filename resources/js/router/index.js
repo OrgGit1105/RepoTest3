@@ -253,7 +253,7 @@ export const constantRoutes = [
       {
         path: 'index',
         component: () => import('../views/WorkingTime/index'),
-        name: 'WorkingTimeManagement',
+        name: 'WorkingTimeIndexManagement',
         meta: {
           title: 'routes.working-time',
           icon: 'icofont-ui-user',
