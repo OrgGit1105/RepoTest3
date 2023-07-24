@@ -12,12 +12,12 @@
           </div>
         </div>
 
-				<hr class="line-bottom">
+        <hr class="line-bottom">
 
         <div class="use-management-title-table mt-5">
-          <p class="back-list cursor-pointer" @click="listWorkingRecord()"> <i class="el-icon-arrow-left icon-back-list"></i> All Working Records </p>
-					<div class="card-body p-card-body">
-            <el-form :model="dataWorkingTimeRecord" :rules="rules" ref="ruleForm" label-width="120px" label-position="top">
+          <p class="back-list cursor-pointer" @click="listWorkingRecord()"> <i class="el-icon-arrow-left icon-back-list" /> All Working Records </p>
+          <div class="card-body p-card-body">
+            <el-form ref="ruleForm" :model="dataWorkingTimeRecord" :rules="rules" label-width="120px" label-position="top">
               <!-- Working Record -->
               <div class="d-flex justify-content-between align-items-center">
                 <div class="basic">
@@ -34,10 +34,10 @@
                   <p class="header-working-record fw-5">Employee name</p>
                   <p class="header-working-record fw-5">Input Type</p>
                   <p class="header-working-record fw-5">Type</p>
-                  <p class="header-working-record">{{dataWorkingTimeRecord.id}}</p>
-                  <p class="header-working-record">{{dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : ''}}</p>
-                  <p class="header-working-record">{{dataWorkingTimeRecord.registration_type}}</p>
-                  <p class="header-working-record">{{dataWorkingTimeRecord.type_date}}</p>
+                  <p class="header-working-record">{{ dataWorkingTimeRecord.id }}</p>
+                  <p class="header-working-record">{{ dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : '' }}</p>
+                  <p class="header-working-record">{{ dataWorkingTimeRecord.registration_type }}</p>
+                  <p class="header-working-record">{{ dataWorkingTimeRecord.type_date }}</p>
                 </div>
               </div>
 
@@ -46,44 +46,46 @@
                 <div class="basic">
                   <h1 class="title-record">Working Time</h1>
                 </div>
-                <div class="basic"></div>
+                <div class="basic" />
               </div>
               <hr class="line">
               <div class="time-line">
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
                   <el-date-picker
-                    class="disable-date-custom"
                     v-model="dataWorkingTimeRecord.convert_in_date"
+                    class="disable-date-custom"
                     format="MMMM dd yyyy"
-                    value-format="yyyy-MM-dd" disabled>
-                  </el-date-picker>
+                    value-format="yyyy-MM-dd"
+                    disabled
+                  />
 
                   <el-form-item prop="convert_in_time" class="custom-time m-0">
                     <el-time-picker
                       v-model="dataWorkingTimeRecord.convert_in_time"
                       format="HH:mm:ss"
-                      value-format="HH:mm:ss">
-                    </el-time-picker>
+                      value-format="HH:mm:ss"
+                    />
                   </el-form-item>
                 </div>
 
                 <p class="title-time">Out Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
-                    <el-date-picker
-                      class="disable-date-custom"
-                      v-model="dataWorkingTimeRecord.convert_out_date"
-                      format="MMMM dd yyyy"
-                      value-format="yyyy-MM-dd" disabled>
-                    </el-date-picker>
+                  <el-date-picker
+                    v-model="dataWorkingTimeRecord.convert_out_date"
+                    class="disable-date-custom"
+                    format="MMMM dd yyyy"
+                    value-format="yyyy-MM-dd"
+                    disabled
+                  />
 
                   <el-form-item prop="convert_out_time" class="custom-time m-0">
                     <el-time-picker
-                      class="custime-time-input"
                       v-model="dataWorkingTimeRecord.convert_out_time"
+                      class="custime-time-input"
                       format="HH:mm:ss"
-                      value-format="HH:mm:ss">
-                    </el-time-picker>
+                      value-format="HH:mm:ss"
+                    />
                   </el-form-item>
                 </div>
               </div>
@@ -93,16 +95,16 @@
                 <div class="basic">
                   <h1 class="title-record">Remark</h1>
                 </div>
-                <div class="basic"></div>
+                <div class="basic" />
               </div>
               <hr class="line">
               <el-form-item>
                 <el-input
+                  v-model="dataWorkingTimeRecord.remark"
                   type="textarea"
                   :rows="5"
-                  v-model="dataWorkingTimeRecord.remark"
-                  class="textarea-style">
-                </el-input>
+                  class="textarea-style"
+                />
               </el-form-item>
             </el-form>
           </div>
@@ -114,7 +116,8 @@
           title="DELETE"
           :visible.sync="showModalDelete"
           width="30%"
-          center>
+          center
+        >
           <span class="text-align-center">Are you sure to delete this working time record?</span>
           <span slot="footer" class="dialog-footer">
             <el-button @click="showModalDelete = false">Cancel</el-button>
@@ -135,27 +138,26 @@ export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      dataWorkingTimeRecord: 
+      dataWorkingTimeRecord:
         {
           convert_in_date: '',
           convert_in_time: '',
           convert_out_date: '',
           convert_out_time: '',
-          remark: ''
-        }
-      ,
+          remark: '',
+        },
       showModalDelete: false,
       dateRangeOptions1: {
         firstDayOfWeek: 5,
       },
       rules: {
-          convert_in_time: [
-            { required: true,  message: 'Please pick a time in', trigger: 'change' }
-          ],
-          convert_out_time: [
-            { required: true,  message: 'Please pick a time out', trigger: 'change' }
-          ],
-        }
+        convert_in_time: [
+          { required: true, message: 'Please pick a time in', trigger: 'change' },
+        ],
+        convert_out_time: [
+          { required: true, message: 'Please pick a time out', trigger: 'change' },
+        ],
+      },
     };
   },
   created() {
@@ -179,7 +181,7 @@ export default {
     },
     async getWorkingRecordById() {
       const id = this.$route.params.id;
-      await getWokingTimeDetailById({id})
+      await getWokingTimeDetailById({ id })
         .then((response) => {
           if (response.code === 200) {
             response.data.result.convert_in_date = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
@@ -190,20 +192,20 @@ export default {
             this.dataWorkingTimeRecord = response.data.result;
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.dataWorkingTimeRecord = [];
         });
     },
     async editWorkingTime() {
       const id = this.$route.params.id;
-      let DATA = {
+      const DATA = {
         user_id: this.$route.params.id,
         in_time: this.dataWorkingTimeRecord.convert_in_date + ' ' + this.dataWorkingTimeRecord.convert_in_time,
         out_time: this.dataWorkingTimeRecord.convert_out_date + ' ' + this.dataWorkingTimeRecord.convert_out_time,
         remark: this.dataWorkingTimeRecord.remark,
-      }
+      };
 
-      await editWorkingTimeById({id}, DATA)
+      await editWorkingTimeById({ id }, DATA)
         .then((response) => {
           if (response.code === 200) {
             MakeToast({
@@ -212,8 +214,7 @@ export default {
               content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_EDIT_SUCCESSFULLY'),
             });
             this.getWorkingRecordById();
-          }
-          else {
+          } else {
             MakeToast({
               variant: 'danger',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
@@ -231,8 +232,8 @@ export default {
     },
     async deleteWorkingRecord() {
       const id = this.$route.params.id;
-      await deleteWorkingTimeById({id})
-      .then((response) => {
+      await deleteWorkingTimeById({ id })
+        .then((response) => {
           if (response.code === 200) {
             MakeToast({
               variant: 'success',
@@ -240,8 +241,7 @@ export default {
               content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_SUCCESSFULLY'),
             });
             this.$router.push({ path: `/working-time/index` });
-          }
-          else {
+          } else {
             MakeToast({
               variant: 'danger',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
@@ -256,8 +256,8 @@ export default {
             content: error.message,
           });
         });
-    }
-	},
+    },
+  },
 };
 </script>
 

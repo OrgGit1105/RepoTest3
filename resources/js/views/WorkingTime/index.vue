@@ -9,7 +9,7 @@
                 <h1 class="title">Working time Management</h1>
               </div>
               <div class="basic">
-                <template>
+                <div>
                   <el-date-picker
                     v-model="formSearch.date"
                     type="daterange"
@@ -17,12 +17,10 @@
                     start-placeholder="Start Date"
                     end-placeholder="End Date"
                     value-format="yyyy-MM-dd"
-                    firstDayOfWeek="1"
+                    first-day-of-week="1"
                     @blur="fillDate()"
-                    >
-                  </el-date-picker>
-                </template>
-
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -30,61 +28,63 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill">
-            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="showModalAdd()"></i>
+            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="showModalAdd()" />
             <div class="box-search align-items-center" :class="display">
               <el-input
+                v-model="formSearch.search"
                 placeholder="検索"
                 prefix-icon="el-icon-search"
-                v-model="formSearch.search"
-                @keyup.enter.native="handleSearch()">
-              </el-input>
-              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
+                @keyup.enter.native="handleSearch()"
+              />
+              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()" />
             </div>
             <div class="d-flex justify-content-end align-items-center">
               <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
-              <template class="select-custom">
+              <div class="select-custom">
                 <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom" @change="fillSearch(employeeValue)">
-                    <el-option
-                      class="el-option-custom"
-                      label="All Employee"
-                      value="">
-                    </el-option>
-                    <el-option
-                      v-for="item in listEmployee"
-                      :key="item.id"
-                      :label="item.name"
-                      :value="item.id"
-                      >
-                    </el-option>
+                  <el-option
+                    class="el-option-custom"
+                    label="All Employee"
+                    value=""
+                  />
+                  <el-option
+                    v-for="item in listEmployee"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
                 </el-select>
-              </template>
-            <i class="el-icon-download custom-icon-down cursor-pointer"></i>
+              </div>
+              <i class="el-icon-download custom-icon-down cursor-pointer" />
             </div>
           </div>
           <hr class="line">
-          <template class="">
+          <div>
             <el-table
               :data="listWorkingTimes"
               style="width: 100%"
               :row-style="rowWorkingStyle"
-              @row-click="showDetail">
+              @row-click="showDetail"
+            >
               <el-table-column
                 prop="warning"
                 label=""
                 width="250"
-                align="center">
-                 <template slot-scope="scope">
-                    <div :class="scope.row.warning ? 'warning' : ''">
-                      <i :class="scope.row.warning ? 'el-icon-warning' : ''"></i> 
-                      <span>{{ scope.row.warning }}</span>
-                    </div>
-                  </template>
+                align="center"
+              >
+                <template slot-scope="scope">
+                  <div :class="scope.row.warning ? 'warning' : ''">
+                    <i :class="scope.row.warning ? 'el-icon-warning' : ''" />
+                    <span>{{ scope.row.warning }}</span>
+                  </div>
+                </template>
               </el-table-column>
               <el-table-column
                 prop="type_date"
                 label="Type"
                 width="350"
-                align="center">
+                align="center"
+              >
                 <template slot-scope="scope">
                   <div :class="scope.row.type_date == 'Working' ? 'type_working' : (scope.row.type_date == 'Remote' ? 'type_remote' : 'type_take_off')">
                     <strong>{{ scope.row.type_date }}</strong>
@@ -95,30 +95,30 @@
                 prop="user_name"
                 label="Employee name"
                 width="250"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="date"
                 label="Date"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="in_time"
                 label="IN"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="out_time"
                 label="OUT"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
               <el-table-column
                 prop="registration_type"
                 label="Input type"
-                align="center">
-              </el-table-column>
+                align="center"
+              />
             </el-table>
-          </template>
+          </div>
         </div>
 
         <div class="use-management-pagianation">
@@ -130,48 +130,47 @@
               :page-size="pagination.per_page"
               :total="pagination.total_records"
               :current-page.sync="pagination.current_page"
-              @current-change="getWorkingTime">
-            </el-pagination>
+              @current-change="getWorkingTime"
+            />
           </div>
         </div>
 
         <!-- Modal add new -->
         <el-dialog class="title-add-working" title="Add Working time" :visible.sync="openModalAdd" width="35%" @close="resetForm('ruleForm')">
-          <el-form :model="form" :rules="rules" ref="ruleForm" label-width="120px" label-position="top">
+          <el-form ref="ruleForm" :model="form" :rules="rules" label-width="120px" label-position="top">
             <el-form-item label="Employee Name" required prop="userId">
               <el-select v-model="form.userId" placeholder="Please select employee name">
-                  <el-option
-                    v-for="item in listEmployee"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                    >
-                  </el-option>
+                <el-option
+                  v-for="item in listEmployee"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
               </el-select>
             </el-form-item>
             <hr class="line">
             <p class="title-working mb-3">Working Time</p>
-              <p class="label-custom">In Time</p>
-              <div class="date-time-custom">
-                <el-form-item prop="inDate" class="item-date">
-                  <el-date-picker
-                    v-model="form.inDate"
-                    type="date"
-                    format="yyyy/MM/dd"
-                    value-format="yyyy-MM-dd"
-                    style="width: 100%;">
-                  </el-date-picker>
-                </el-form-item>
+            <p class="label-custom">In Time</p>
+            <div class="date-time-custom">
+              <el-form-item prop="inDate" class="item-date">
+                <el-date-picker
+                  v-model="form.inDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;"
+                />
+              </el-form-item>
 
-                <el-form-item prop="inTime" class="item-time">
-                  <el-time-picker
-                    v-model="form.inTime"
-                    format="HH:mm:ss"
-                    value-format="HH:mm:ss"
-                    style="width: 100%;">
-                  </el-time-picker>
-                </el-form-item>
-              </div>
+              <el-form-item prop="inTime" class="item-time">
+                <el-time-picker
+                  v-model="form.inTime"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+            </div>
 
             <p class="label-custom">Out Time</p>
             <div class="date-time-custom">
@@ -181,16 +180,16 @@
                   type="date"
                   format="yyyy/MM/dd"
                   value-format="yyyy-MM-dd"
-                  style="width: 100%;">
-                </el-date-picker>
+                  style="width: 100%;"
+                />
               </el-form-item>
               <el-form-item prop="outTime" class="item-time">
                 <el-time-picker
                   v-model="form.outTime"
                   format="HH:mm:ss"
                   value-format="HH:mm:ss"
-                  style="width: 100%;">
-                </el-time-picker>
+                  style="width: 100%;"
+                />
               </el-form-item>
             </div>
           </el-form>
@@ -217,7 +216,7 @@ export default {
       formSearch: {
         search: '',
         userId: '',
-        date: [ moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD') ],
+        date: [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')],
         // date: [ '', '' ],
       },
       pagination: {
@@ -240,22 +239,22 @@ export default {
       displaySearch: 'd-block',
       openModalAdd: false,
       rules: {
-          userId: [
-            { required: true, message: 'Please select Employee Name', trigger: 'change' }
-          ],
-          inDate: [
-            { required: true,  message: 'Please pick a date in', trigger: 'change' }
-          ],
-          inTime: [
-            { required: true,  message: 'Please pick a time in', trigger: 'change' }
-          ],
-          outDate: [
-            { required: true,  message: 'Please pick a date out', trigger: 'change' }
-          ],
-          outTime: [
-            { required: true,  message: 'Please pick a time out', trigger: 'change' }
-          ],
-        }
+        userId: [
+          { required: true, message: 'Please select Employee Name', trigger: 'change' },
+        ],
+        inDate: [
+          { required: true, message: 'Please pick a date in', trigger: 'change' },
+        ],
+        inTime: [
+          { required: true, message: 'Please pick a time in', trigger: 'change' },
+        ],
+        outDate: [
+          { required: true, message: 'Please pick a date out', trigger: 'change' },
+        ],
+        outTime: [
+          { required: true, message: 'Please pick a time out', trigger: 'change' },
+        ],
+      },
     };
   },
   created() {
@@ -307,21 +306,21 @@ export default {
         inTime: '',
         outDate: '',
         outTime: '',
-      }
+      };
       this.$refs[formName].resetFields();
     },
     async getWorkingTime() {
       let PARAMS = {};
-      if(this.search !== ''){
+      if (this.search !== ''){
         PARAMS = {
           key_search: this.formSearch.search,
           start_date: this.formSearch.date[0],
-          start_date: this.formSearch.date[0],
+          // start_date: this.formSearch.date[0],
           end_date: this.formSearch.date[1],
           user_id: this.employeeValue,
           per_page: this.pagination.per_page,
           page: this.pagination.current_page,
-        }
+        };
       }
       await getArrving(PARAMS)
         .then((response) => {
@@ -356,7 +355,7 @@ export default {
             this.listEmployee = response.data.result;
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.listEmployee = [];
         });
     },
@@ -369,7 +368,7 @@ export default {
       await createNewWorkingTime(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            this.resetForm("ruleForm");
+            this.resetForm('ruleForm');
             MakeToast({
               variant: 'success',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
@@ -391,7 +390,7 @@ export default {
             content: error.message,
           });
         });
-    }
+    },
   },
 };
 </script>

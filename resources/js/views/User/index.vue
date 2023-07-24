@@ -28,13 +28,12 @@
                 placeholder="search by email"
                 prefix-icon="el-icon-search"
                 @keyup.native="getListAllUser()"
-              >
-              </el-input>
-              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()"></i>
+              />
+              <i class="el-icon-close cursor-pointer" @click="closeInputSearch()" />
             </div>
             <div class="d-flex justify-content-end align-items-center">
               <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
-              <template class="select-custom">
+              <div class="select-custom">
                 <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" value="" @change="getListAllUser()">
                   <el-option
                     class="el-option-custom"
@@ -48,7 +47,7 @@
                     :value="role.id"
                   />
                 </el-select>
-              </template>
+              </div>
             </div>
           </div>
           <hr class="line">
@@ -173,7 +172,7 @@
               rules="required"
             >
               <label for="nameEmployee">Employee Name</label>
-              <el-input id="nameEmployee" v-model="formCreate.name"/>
+              <el-input id="nameEmployee" v-model="formCreate.name" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -184,7 +183,7 @@
               rules="required|email"
             >
               <label for="emailEmployee" class="mt-3">Employee Email</label>
-              <el-input id="emailEmployee" v-model="formCreate.email"/>
+              <el-input id="emailEmployee" v-model="formCreate.email" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>

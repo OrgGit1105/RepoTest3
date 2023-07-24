@@ -1,9 +1,9 @@
 <template>
   <div class="container">
-<!--    <div v-if="type === ''">-->
-<!--      <b-button>IN</b-button>-->
-<!--      <b-button>OUT</b-button>-->
-<!--    </div>-->
+    <!--    <div v-if="type === ''">-->
+    <!--      <b-button>IN</b-button>-->
+    <!--      <b-button>OUT</b-button>-->
+    <!--    </div>-->
     <div v-if="type === ''" class="row">
       <div class="col-md-6">
         <h2>Current Camera</h2>
@@ -26,10 +26,10 @@
             <select v-model="camera">
               <option>-- Select Device --</option>
               <option
-                v-for="device in devices"
-                :key="device.deviceId"
-                :value="device.deviceId"
-              >{{ device.label }}</option>
+                v-for="deviceDetail in devices"
+                :key="deviceDetail.deviceId"
+                :value="deviceDetail.deviceId"
+              >{{ deviceDetail.label }}</option>
             </select>
           </div>
           <div class="col-md-12">
@@ -42,7 +42,7 @@
       <div class="col-md-6">
         <h2>Captured Image</h2>
         <figure class="figure">
-          <img :src="img" class="img-responsive" />
+          <img :src="img" class="img-responsive">
         </figure>
       </div>
     </div>
@@ -81,7 +81,7 @@ export default {
     },
     devices: function() {
       // Once we have a list select the first one
-      const [first, ...tail] = this.devices;
+      const [first] = this.devices;
       if (first) {
         this.camera = first.deviceId;
         this.deviceId = first.deviceId;

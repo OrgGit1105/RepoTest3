@@ -15,17 +15,18 @@
       </div>
     </div>
     <div>
-      <full-calendar 
-        :events="fcEvents" 
+      <full-calendar
+        :events="fcEvents"
         locale="en"
         @changeMonth="changeMonth"
         @eventClick="eventClick"
-        @dayClick="dayClick">
-      </full-calendar>
+        @dayClick="dayClick"
+        @moreClick="moreClick"
+      />
     </div>
-    <b-modal v-model="modalShow" :title="this.date_click" centered id="modal-center" :config="calendarConfig">
-      <div v-for="item in this.one_day">
-        <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'" >{{item.title}}</div>
+    <b-modal id="modal-center" v-model="modalShow" :title="date_click" centered :config="calendarConfig">
+      <div v-for="item in one_day" :key="item.id">
+        <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'">{{ item.title }}</div>
       </div>
       <template #modal-footer>
         <div class="w-100">
@@ -34,101 +35,106 @@
             variant="outline-secondary"
             size="lg"
             class="float-left"
-            @click="modalShow = false">
+            @click="modalShow = false"
+          >
             Close
           </b-button>
         </div>
       </template>
     </b-modal>
-    <button @click="showModalChat = true" class="button-chart">Mở modal</button>
-      <div v-if="showModalChat" class="modal-chart">
-        <div class="modal-content">
-          <span class="close" @click="showModalChat = false">&times;</span>
-          <p>Nội dung modal</p>
-        </div>
+    <button class="button-chart" @click="showModalChat = true">Mở modal</button>
+    <div v-if="showModalChat" class="modal-chart">
+      <div class="modal-content">
+        <span class="close" @click="showModalChat = false">&times;</span>
+        <p>Nội dung modal</p>
       </div>
+    </div>
   </div>
 </template>
 <script>
 import { getAllSchedules } from '../../api/schedules';
 export default {
-    name: 'SchedulesManagement',
-    data() {
-      return {
-        fcEvents: [],
-        year_months: new Date().toISOString().substr(0, 7),
-        modalShow: false,
-        date_click: '',
-        one_day: [], 
-        calendarConfig: {
-          eventRender: function (fcEvents, element) {
-            element.addClass(fcEvents.cssClass);
-          }
+  name: 'SchedulesManagement',
+  components: {
+    'full-calendar': require('vue-fullcalendar'),
+  },
+  data() {
+    return {
+      fcEvents: [],
+      year_months: new Date().toISOString().substr(0, 7),
+      modalShow: false,
+      date_click: '',
+      one_day: [],
+      calendarConfig: {
+        eventRender: function(fcEvents, element) {
+          element.addClass(fcEvents.cssClass);
         },
-        showModalChat: false
-      }
+      },
+      showModalChat: false,
+    };
+  },
+  created() {
+    this.getAllSchedulesByDate();
+  },
+  methods: {
+    async getAllSchedulesByDate() {
+      const PARAMS = {
+        year_month: this.year_months,
+      };
+      await getAllSchedules(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.fcEvents = response.data;
+          }
+        }).catch(() => {
+          this.fcEvents = [];
+        });
     },
-    components: {
-      'full-calendar': require('vue-fullcalendar')
-    },
-    created() {
+    'changeMonth'(start, end, current) {
+      this.year_months = new Date(current).toISOString().substr(0, 7);
       this.getAllSchedulesByDate();
     },
-    methods: {
-        async getAllSchedulesByDate() {
-          let PARAMS = {
-            year_month: this.year_months
-          }
-          await getAllSchedules(PARAMS)
-          .then((response) => {
-            if (response.code === 200) {
-                this.fcEvents = response.data;
-            }
-          }).catch((error) => {
-            this.fcEvents = [];
-          });
-        }, 
-        'changeMonth'(start, end, current) {
-          this.year_months = new Date(current).toISOString().substr(0, 7);
-          this.getAllSchedulesByDate();
-        },
-        'dayClick'(day, jsEvent) {
-          const date = new Date(day);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const days = String(date.getDate()).padStart(2, '0');
-          const dayClick = `${year}-${month}-${days}`;
-          const formattedDate = `${year}-${month}`;
-            if(this.year_months == formattedDate) {
-              const filterDate = new Date(dayClick);
-              const filteredArray = this.fcEvents.filter((obj) => {
-                  const objDate = new Date(obj.start);
-                  return objDate.getTime() === filterDate.getTime();
-              });
-              this.date_click = dayClick;
-              this.one_day = filteredArray;
-              if (this.one_day.length != 0) {
-                this.modalShow = true;
-              }
-            }
-        },
-        'eventClick'(event, jsEvent, pos) {
-          this.month_click = new Date(event.start).toISOString().slice(0, 7);
-            if (this.year_months == this.month_click) {
-              const filterDate = new Date(event.start);
-              const filteredArray = this.fcEvents.filter((obj) => {
-                  const objDate = new Date(obj.start);
-                  return objDate.getTime() === filterDate.getTime();
-              });
-              this.date_click = event.start;
-              this.one_day = filteredArray;
-              if (this.one_day.length != 0) {
-                this.modalShow = true;
-              }
-            }
+    'dayClick'(day, jsEvent) {
+      const date = new Date(day);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const days = String(date.getDate()).padStart(2, '0');
+      const dayClick = `${year}-${month}-${days}`;
+      const formattedDate = `${year}-${month}`;
+      if (this.year_months === formattedDate) {
+        const filterDate = new Date(dayClick);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = dayClick;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
         }
-    }
-}
+      }
+    },
+    'eventClick'(event, jsEvent, pos) {
+      this.month_click = new Date(event.start).toISOString().slice(0, 7);
+      if (this.year_months === this.month_click) {
+        const filterDate = new Date(event.start);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = event.start;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
+        }
+      }
+    },
+    'moreClick'(day, events, jsEvent) {
+      this.modalShow = true;
+      return;
+    },
+  },
+};
 </script>
 
 <style scoped>

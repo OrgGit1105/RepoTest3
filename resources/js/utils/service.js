@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { MakeToast } from './toast_message';
 import i18n from '../lang/index';
-import router from '../router/index';
+// import router from '../router/index';
 import { getToken } from './getToken';
 
 const baseURL = process.env.MIX_BASE_API;

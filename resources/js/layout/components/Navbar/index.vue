@@ -8,7 +8,7 @@
 
       <b-navbar-toggle target="nav-collapse" />
       <b-collapse id="nav-collapse" style="display: none;" is-nav>
-        <b-navbar-nav style="font-size: 23px; gap: 2rem; margin-left: 100px" v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
+        <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px">
           <b-nav-item class="custom-item-nav" :href="item.href">{{ item.name }}</b-nav-item>
         </b-navbar-nav>
 
@@ -51,7 +51,7 @@ export default {
       navbarUser: [
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
-      ]
+      ],
     };
   },
   computed: {

@@ -9,7 +9,7 @@
                 <h1 class="title">Analytics</h1>
               </div>
               <div class="basic">
-                <template>
+                <div>
                   <el-date-picker
                     v-model="formSearch.date"
                     type="daterange"
@@ -20,8 +20,7 @@
                     first-day-of-week="1"
                     @blur="fillDate()"
                   />
-                </template>
-
+                </div>
               </div>
             </div>
           </div>
@@ -30,7 +29,7 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <div class="d-flex justify-content-end align-items-center">
-              <template class="select-custom">
+              <div class="select-custom">
                 <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom" @change="fillSearch(employeeValue)">
                   <el-option
                     class="el-option-custom"
@@ -44,17 +43,18 @@
                     :value="item.id"
                   />
                 </el-select>
-              </template>
+              </div>
               <i class="el-icon-download custom-icon-down cursor-pointer" />
             </div>
           </div>
           <hr class="line">
-          <template class="">
+          <div>
             <el-table
               :data="listAnalytic"
               style="width: 100%"
               :row-style="rowWorkingStyle"
-              @row-click="showDetail">
+              @row-click="showDetail"
+            >
               <el-table-column
                 prop="user_name"
                 label="Employee name"
@@ -78,7 +78,7 @@
                 align="center"
               />
             </el-table>
-          </template>
+          </div>
         </div>
       </div>
     </div>
@@ -89,6 +89,7 @@
 import { getAllAnalytic } from '../../api/analytic';
 import { getAllUser } from '../../api/user';
 import moment from 'moment';
+import { MakeToast } from '../../utils/toast_message';
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -147,7 +148,7 @@ export default {
             this.listEmployee = response.data.result;
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.listEmployee = [];
         });
     },
