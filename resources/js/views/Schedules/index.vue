@@ -222,7 +222,7 @@ export default {
 }
 .modal-chart{
   position: fixed;
-  bottom: 2%;
+  bottom: 10%;
   right: 2%;
   width: 25%;
   height: 45%;
@@ -234,7 +234,7 @@ export default {
 }
 .button-chart {
   position: fixed;
-  bottom: 2%;
+  bottom: 10%;
   right: 2%;
   z-index: 9998;
   cursor: pointer;
@@ -276,6 +276,7 @@ export default {
 }
 .chart-footer {
   background-color: #E6E6E6;
+  flex-wrap: nowrap;
 }
 .chart-submit {
   background-color: #40729A;
