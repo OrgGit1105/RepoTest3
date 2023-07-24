@@ -1,27 +1,27 @@
 <script>
-import Vue from 'vue'
-import App from './App'
+import Vue from 'vue';
+import App from './App';
 
-import fullCalendar from 'vue-fullcalendar'
+import fullCalendar from 'vue-fullcalendar';
 
-Vue.component('full-calendar', fullCalendar)
+Vue.component('FullCalendar', fullCalendar);
 
 // Vue2
 new Vue({
-  el : '#app',
+  el: '#app',
+  components: {
+    App,
+  },
   render: h => h(App),
-  template : '<App/>',
-  components : {
-    App
-  }
-})
+  template: '<App/>',
+});
 
-//Vue1
+// Vue1
 
 new Vue({
-	el : 'body',
-	components : {
-		App
-	}
-})
+  el: 'body',
+  components: {
+    App,
+  },
+});
 </script>

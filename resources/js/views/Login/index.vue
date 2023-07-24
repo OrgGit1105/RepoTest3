@@ -158,21 +158,21 @@ export default {
               //     content: 'user not permission',
               //   });
               // } else {
-                this.$store
-                  .dispatch('user/saveLogin', { USER, TOKEN })
-                  .then(() => {
-                    MakeToast({
-                      variant: 'success',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                      content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
-                    });
-
-                    this.$router.push('/working-time/index');
-                    this.closeLoading();
-                  })
-                  .catch(() => {
-                    console.error('Can not saveLogin!');
+              this.$store
+                .dispatch('user/saveLogin', { USER, TOKEN })
+                .then(() => {
+                  MakeToast({
+                    variant: 'success',
+                    title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                    content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
                   });
+
+                  this.$router.push('/working-time/index');
+                  this.closeLoading();
+                })
+                .catch(() => {
+                  console.error('Can not saveLogin!');
+                });
               // }
             } else if (response.code === 401) {
               this.closeLoading();

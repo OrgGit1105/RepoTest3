@@ -15,17 +15,18 @@
       </div>
     </div>
     <div>
-      <full-calendar 
-        :events="fcEvents" 
+      <full-calendar
+        :events="fcEvents"
         locale="en"
         @changeMonth="changeMonth"
         @eventClick="eventClick"
-        @dayClick="dayClick">
-      </full-calendar>
+        @dayClick="dayClick"
+        @moreClick="moreClick"
+      />
     </div>
-    <b-modal v-model="modalShow" :title="this.date_click" centered id="modal-center" :config="calendarConfig">
-      <div v-for="item in this.one_day">
-        <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'" >{{item.title}}</div>
+    <b-modal id="modal-center" v-model="modalShow" :title="date_click" centered :config="calendarConfig">
+      <div v-for="item in one_day" :key="item.id">
+        <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'">{{ item.title }}</div>
       </div>
       <template #modal-footer>
         <div class="w-100">
@@ -34,93 +35,141 @@
             variant="outline-secondary"
             size="lg"
             class="float-left"
-            @click="modalShow = false">
+            @click="modalShow = false"
+          >
             Close
           </b-button>
         </div>
       </template>
     </b-modal>
+    <a class="button-chart" @click="showModalChat = true"><img class="custom-image" :src="logo" alt="V-FACE"></a>
+    <div v-if="showModalChat" class="modal-chart">
+      <div class="modal-header chart-header">
+        <strong>V-Face x GPT</strong>
+        <button class="close close-chart" @click="showModalChat = false"><span>&ndash;</span></button>
+      </div>
+      <div class="modal-content chart-content">
+        <div class="content-right">
+          <p>Is Ms.Trang</p>
+          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+        </div>
+        <div class="content-left">
+          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+          <p>Who comes to work late this month?</p>
+        </div>
+      </div>
+      <div class="modal-footer chart-footer">
+        <input type="text" class="chart-input">
+        <button class="chart-submit">Send</button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
 import { getAllSchedules } from '../../api/schedules';
+const logo = require('@/assets/images/chatgpt-icon.png');
+const logoImage = require('@/assets/images/logo.png');
 export default {
-    name: 'SchedulesManagement',
-    data() {
-      return {
-        fcEvents: [],
-        year_months: new Date().toISOString().substr(0, 7),
-        modalShow: false,
-        date_click: '',
-        one_day: [], 
-        calendarConfig: {
-        eventRender: function (fcEvents, element) {
+  name: 'SchedulesManagement',
+  components: {
+    'full-calendar': require('vue-fullcalendar'),
+  },
+  data() {
+    return {
+      fcEvents: [],
+      year_months: new Date().toISOString().substr(0, 7),
+      modalShow: false,
+      date_click: '',
+      one_day: [],
+      calendarConfig: {
+        eventRender: function(fcEvents, element) {
           element.addClass(fcEvents.cssClass);
-        }
+        },
       },
-      }
+      showModalChat: false,
+      logo,
+      logoImage,
+    };
+  },
+  created() {
+    this.getAllSchedulesByDate();
+  },
+  methods: {
+    async getAllSchedulesByDate() {
+      const PARAMS = {
+        year_month: this.year_months,
+      };
+      await getAllSchedules(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            this.fcEvents = response.data;
+          }
+        }).catch(() => {
+          this.fcEvents = [];
+        });
     },
-    components: {
-      'full-calendar': require('vue-fullcalendar')
-    },
-    created() {
+    'changeMonth'(start, end, current) {
+      this.year_months = new Date(current).toISOString().substr(0, 7);
       this.getAllSchedulesByDate();
     },
-    methods: {
-        async getAllSchedulesByDate() {
-          let PARAMS = {
-            year_month: this.year_months
-          }
-          await getAllSchedules(PARAMS)
-          .then((response) => {
-            if (response.code === 200) {
-                this.fcEvents = response.data;
-            }
-          }).catch((error) => {
-            this.fcEvents = [];
-          });
-        }, 
-        'changeMonth'(start, end, current) {
-          this.year_months = new Date(current).toISOString().substr(0, 7);
-          this.getAllSchedulesByDate();
-        },
-        'dayClick'(day, jsEvent) {
-          const date = new Date(day);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const days = String(date.getDate()).padStart(2, '0');
-          const dayClick = `${year}-${month}-${days}`;
-          const formattedDate = `${year}-${month}`;
-            if(this.year_months == formattedDate) {
-              const filterDate = new Date(dayClick);
-              const filteredArray = this.fcEvents.filter((obj) => {
-                  const objDate = new Date(obj.start);
-                  return objDate.getTime() === filterDate.getTime();
-              });
-              this.date_click = dayClick;
-              this.one_day = filteredArray;
-              if (this.one_day.length != 0) {
-                this.modalShow = true;
-              }
-            }
-        },
-        'eventClick'(event, jsEvent, pos) {
-          this.month_click = new Date(event.start).toISOString().slice(0, 7);
-            if (this.year_months == this.month_click) {
-              const filterDate = new Date(event.start);
-              const filteredArray = this.fcEvents.filter((obj) => {
-                  const objDate = new Date(obj.start);
-                  return objDate.getTime() === filterDate.getTime();
-              });
-              this.date_click = event.start;
-              this.one_day = filteredArray;
-              if (this.one_day.length != 0) {
-                this.modalShow = true;
-              }
-            }
+    'dayClick'(day, jsEvent) {
+      const date = new Date(day);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const days = String(date.getDate()).padStart(2, '0');
+      const dayClick = `${year}-${month}-${days}`;
+      const formattedDate = `${year}-${month}`;
+      if (this.year_months === formattedDate) {
+        const filterDate = new Date(dayClick);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = dayClick;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
         }
-    }
-}
+      }
+    },
+    'eventClick'(event, jsEvent, pos) {
+      const month_click = new Date(event.start).toISOString().slice(0, 7);
+      if (this.year_months === month_click) {
+        const filterDate = new Date(event.start);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = event.start;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
+        }
+      }
+    },
+    'moreClick'(day, events, jsEvent) {
+      const date = new Date(day);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const days = String(date.getDate()).padStart(2, '0');
+      const dayClick = `${year}-${month}-${days}`;
+      const formattedDate = `${year}-${month}`;
+      if (this.year_months === formattedDate) {
+        const filterDate = new Date(dayClick);
+        const filteredArray = this.fcEvents.filter((obj) => {
+          const objDate = new Date(obj.start);
+          return objDate.getTime() === filterDate.getTime();
+        });
+        this.date_click = dayClick;
+        this.one_day = filteredArray;
+        if (this.one_day.length !== 0) {
+          this.modalShow = true;
+        }
+      }
+      return;
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -170,5 +219,90 @@ export default {
 }
 ::v-deep .comp-full-calendar * {
     box-sizing: unset !important;
+}
+.modal-chart{
+  position: fixed;
+  bottom: 2%;
+  right: 2%;
+  width: 25%;
+  height: 45%;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-top-left-radius: calc(0.3rem - 1px) !important;
+  border-top-right-radius: calc(0.3rem - 1px);
+  z-index: 9999;
+}
+.button-chart {
+  position: fixed;
+  bottom: 2%;
+  right: 2%;
+  z-index: 9998;
+  cursor: pointer;
+}
+::v-deep .more-events {
+  display: none;
+}
+.chart-content {
+  height: 72% !important;
+  border: none !important;
+}
+.chart-input {
+  width: 80%;
+  border-radius: 6px;
+  border: none;
+  padding: 3px;
+}
+.chart-input:focus {
+  border: none;
+}
+.chart-header {
+  background-color: #0070c9;
+  color: white;
+  position: relative;
+}
+.chart-header strong {
+  position: inherit;
+  left: 40%;
+}
+.close-chart {
+  background-color: white;
+  opacity: initial;
+  padding: revert;
+  margin: inherit;
+  border-radius: 6px;
+}
+.custom-image {
+  width: 55px;
+}
+.chart-footer {
+  background-color: #E6E6E6;
+}
+.chart-submit {
+  background-color: #40729A;
+  color: white;
+  border-radius: 10%;
+  border: none;
+  padding: 3px;
+  width: 16%;
+}
+.content-right {
+  text-align: right;
+  display: flex;
+  align-self: flex-end;
+}
+.content-right p {
+  margin: auto;
+}
+.content-left {
+  align-self: initial;
+  text-align: left;
+  display: flex;
+  max-width: max-content;
+}
+.content-left p {
+  margin: auto;
+}
+.modal-content {
+  flex-direction: column-reverse !important;
 }
 </style>

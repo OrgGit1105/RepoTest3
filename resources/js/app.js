@@ -9,7 +9,7 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
 import VueApexCharts from 'vue-apexcharts';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-import locale from 'element-ui/lib/locale/lang/en'
+import locale from 'element-ui/lib/locale/lang/en';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import { WebCam } from 'vue-web-cam';
 // import './style/index.scss';
