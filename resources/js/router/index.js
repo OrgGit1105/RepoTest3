@@ -22,15 +22,15 @@ export const constantRoutes = [
   {
     path: '/',
     // redirect: '/enrollment/create',
-    redirect: '/working-time/index',
+    redirect: '/schedules/index',
     // meta: {
     //   title: 'routes.enrollment',
     //   icon: 'icofont-institution',
     // },
-    component: () => import('../views/WorkingTime/index'),
-    name: 'WorkingTimeManagement',
+    component: () => import('../views/Schedules/index'),
+    name: 'SchedulesManagement',
     meta: {
-      title: 'routes.working-time',
+      title: 'routes.schedules',
       icon: 'icofont-ui-user',
     },
     hidden: true,
@@ -311,7 +311,7 @@ export const constantRoutes = [
       {
         path: 'index',
         component: () => import('../views/Schedules/index'),
-        name: 'SchedulesManagement',
+        name: 'SchedulesIndexManagement',
         meta: {
           // title: 'routes.user',
           icon: 'icofont-ui-user',

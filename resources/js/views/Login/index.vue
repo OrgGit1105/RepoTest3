@@ -167,7 +167,7 @@ export default {
                     content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_LOGIN_SUCCESSFULLY'),
                   });
 
-                  this.$router.push('/working-time/index');
+                  this.$router.push('/schedules/index');
                   this.closeLoading();
                 })
                 .catch(() => {
