@@ -49,13 +49,13 @@
         <button class="close close-chart" @click="showModalChat = false"><span>&ndash;</span></button>
       </div>
       <div class="modal-content chart-content">
-        <div class="content-left">
-          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
-          <p>Who comes to work late this month?</p>
-        </div>
         <div class="content-right">
           <p>Is Ms.Trang</p>
           <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+        </div>
+        <div class="content-left">
+          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+          <p>Who comes to work late this month?</p>
         </div>
       </div>
       <div class="modal-footer chart-footer">
