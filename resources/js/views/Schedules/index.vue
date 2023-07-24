@@ -42,7 +42,7 @@
         </div>
       </template>
     </b-modal>
-    <a class="button-chart" @click="showModalChat = true"><img class="custom-image" :src="logo" alt="V-FACE"></a>
+    <a class="button-chart" @click="showModalChat = true"><img class="custom-image" :src="logo" alt="V-FACE" @click="generateRandomNumber"></a>
     <div v-if="showModalChat" class="modal-chart">
       <div class="modal-header chart-header">
         <strong>V-Face x GPT</strong>
@@ -50,7 +50,7 @@
       </div>
       <div class="modal-content chart-content">
         <div class="content-right">
-          <p>Is Ms.Trang</p>
+          <p>Is {{ randomElement }}</p>
           <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
         </div>
         <div class="content-left">
@@ -89,12 +89,22 @@ export default {
       showModalChat: false,
       logo,
       logoImage,
+      randomNumber: null,
+      myArray: [
+        'i.kohei',
+        'Phạm Thị Trang',
+        'Ly Văn Phương',
+      ],
     };
   },
   created() {
     this.getAllSchedulesByDate();
   },
   methods: {
+    generateRandomNumber() {
+      const randomIndex = Math.floor(Math.random() * this.myArray.length);
+      this.randomElement = this.myArray[randomIndex];
+    },
     async getAllSchedulesByDate() {
       const PARAMS = {
         year_month: this.year_months,
