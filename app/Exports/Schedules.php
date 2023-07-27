@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithStyles;
 
-class Schedules implements FromView, WithStyles
+class Schedules implements FromView
 {
     protected $y_month;
     protected $data;
@@ -20,8 +20,8 @@ class Schedules implements FromView, WithStyles
         $this->data = $data;
     }
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function view(): View
     {
         $start = Carbon::parse($this->y_month)->firstOfMonth()->startOfWeek()->subDay()->format("Y-m-d");
@@ -29,25 +29,13 @@ class Schedules implements FromView, WithStyles
         $result = CarbonPeriod::create($start, '1 day', $end);
 
         $days = [];
-        foreach($result as $val){
+        foreach ($result as $val) {
             $days[] = $val->format('Y-m-d');
         }
         return view('excel.schedule', [
             'days' => collect($days),
-            'datas' => $this->data
+            'datas' => $this->data,
+            'year_month' => $this->y_month
         ]);
     }
-    // public function styles(Worksheet $sheet)
-    // {
-    //     $cell = 'B2'; // Change this to the cell you want to add the text to
-    //     $sheet->getStyle($cell)->applyFromArray([
-    //         'alignment' => [
-    //             'horizontal' => Alignment::HORIZONTAL_RIGHT,
-    //             'vertical' => Alignment::VERTICAL_TOP,
-    //         ],
-    //     ]);
-    //     $sheet->setCellValue('A2', $sheet->getCell('A2')->getValue());
-    //     $sheet->mergeCells('A2:B2', 'merge');
-        
-    // }
 }
