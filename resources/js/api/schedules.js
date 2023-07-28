@@ -10,6 +10,6 @@ export function getAllSchedules(data) {
   return request.getRequest(urlAPI.urlData(), data);
 }
 
-export function exportDataSchedules(data) {
+export function exportSchedules(data) {
   return request.getRequest(urlAPI.exportDAta(), data);
 }

@@ -203,7 +203,7 @@ class ScheduleController extends Controller
                 ];
             }
         }
-        $fileName = "Schedule" . $request->year_month . ".xlsx";
-        return Excel::download(new Schedules($request->year_month, $convertData), $fileName);
+        $fileName = "Schedule-" . $request->year_month . ".xlsx";
+        return Excel::download(new Schedules($request->year_month, $convertData), $fileName, null, ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
     }
 }

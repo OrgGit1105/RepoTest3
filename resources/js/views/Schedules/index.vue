@@ -12,6 +12,7 @@
           </div>
         </div>
         <hr class="line-bottom">
+        <div class="dowload-schedule"><a @click="exportDataSchedules"><i class="el-icon-download custom-icon-down cursor-pointer" /></a></div>
       </div>
     </div>
     <div>
@@ -66,7 +67,8 @@
   </div>
 </template>
 <script>
-import { getAllSchedules, exportSchedules } from '../../api/schedules';
+import { getAllSchedules } from '../../api/schedules';
+import axios from 'axios';
 const logo = require('@/assets/images/chatgpt-icon.png');
 const logoImage = require('@/assets/images/logo.png');
 export default {
@@ -178,21 +180,20 @@ export default {
       }
       return;
     }, async exportDataSchedules() {
-      const PARAMS = {
-        year_month: this.year_months,
-      };
-      await exportSchedules(PARAMS)
-        .then((response) => {
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement('a');
-          link.href = url;
-          const fileName = 'Schedule' + this.year_month + '.xlsx';
-          link.setAttribute('download', fileName);
-          document.body.appendChild(link);
-          link.click();
-        }).catch(() => {
-          this.fcEvents = [];
-        });
+      const URL = `/api/schedule/export?year_month=${this.year_months}`;
+      axios.get(URL, {
+        responseType: 'blob',
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = 'Schedule-' + this.year_months + '.xlsx';
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+      }).catch((error) => {
+        console.log(error);
+      });
     },
   },
 };
@@ -356,5 +357,14 @@ export default {
 
 .modal-content {
   flex-direction: column-reverse !important;
+}
+.dowload-schedule {
+  color: #0070C9;
+  font-size: 26px;
+  font-weight: 600;
+  text-align: right;
+}
+.dowload-schedule a {
+  cursor: pointer;
 }
 </style>
