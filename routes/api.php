@@ -26,7 +26,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         //Route::post('loginTest', 'AuthController@loginTest')->name('user.loginTest');
         Route::post('logout', 'AuthController@logout');
     });
-
+    Route::get('schedule/export', 'ScheduleController@export');
     Route::get('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
 
     Route::group(['middleware' => ['auth:user','managerRole']], function () {

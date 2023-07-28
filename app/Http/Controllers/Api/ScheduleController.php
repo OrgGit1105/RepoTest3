@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: cuongnt
@@ -7,17 +8,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\Schedules;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ScheduleRequest;
 use App\Repositories\Contracts\ScheduleRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\ScheduleResource;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ScheduleController extends Controller
 {
 
-     /**
+    /**
      * var Repository
      */
     protected $repository;
@@ -87,14 +92,14 @@ class ScheduleController extends Controller
             3 => 'Take off'
         ];
 
-        if($data) {
-           foreach ($data as $value) {
+        if ($data) {
+            foreach ($data as $value) {
                 $convertData[] = [
-                    'title' => $value['name'] .' '. $type[$value['title']],
+                    'title' => $value['name'] . ' ' . $type[$value['title']],
                     'start' => $value['start'],
                     'cssClass' => ($value['title'] == 2 && $value['title'] != 1) ? 'work-remote' : 'titelOff'
                 ];
-           }
+            }
         }
         return $this->responseJson(200, ScheduleResource::collection($convertData));
     }
@@ -141,5 +146,64 @@ class ScheduleController extends Controller
         $data = $this->repository->scheduleOneDay($request);
         return $this->responseJson(200, ScheduleResource::collection($data));
     }
-    
+
+    /**
+     * @OA\Get(
+     *   path="/api/schedule/export",
+     *   tags={"Schedule"},
+     *   summary="export schedule",
+     *   operationId="schedule_exporty",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{{"id": 1,"name": "..........."}}}
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="year_month",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *      example="2023-07"
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function export(Request $request)
+    {
+        $data = $this->repository->getAllSchedule($request);
+        $convertData = [];
+
+        $type = [
+            1 => 'Work',
+            2 => 'Remote',
+            3 => 'Take off'
+        ];
+        if ($data) {
+            foreach ($data as $value) {
+                $convertData[] = [
+                    'title' => $value['name'] . ' ' . $type[$value['title']],
+                    'start' => $value['start'],
+                    'cssClass' => ($value['title'] == 2 && $value['title'] != 1) ? 'work-remote' : 'titelOff'
+                ];
+            }
+        }
+        $fileName = "Schedule-" . $request->year_month . ".xlsx";
+        return Excel::download(new Schedules($request->year_month, $convertData), $fileName, null, ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
+    }
 }
