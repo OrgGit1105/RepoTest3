@@ -66,7 +66,7 @@
   </div>
 </template>
 <script>
-import { getAllSchedules } from '../../api/schedules';
+import { getAllSchedules, exportSchedules } from '../../api/schedules';
 const logo = require('@/assets/images/chatgpt-icon.png');
 const logoImage = require('@/assets/images/logo.png');
 export default {
@@ -177,6 +177,22 @@ export default {
         }
       }
       return;
+    }, async exportDataSchedules() {
+      const PARAMS = {
+        year_month: this.year_months,
+      };
+      await exportSchedules(PARAMS)
+        .then((response) => {
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          const fileName = 'Schedule' + this.year_month + '.xlsx';
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+        }).catch(() => {
+          this.fcEvents = [];
+        });
     },
   },
 };
@@ -186,12 +202,13 @@ export default {
 #close-schedule {
   color: #70afe1;
   padding: 0 40px 0 40px;
-  border-color:#70afe1 !important;
+  border-color: #70afe1 !important;
 }
 
 #close-schedule:hover {
- background-color: white;
+  background-color: white;
 }
+
 .remote {
   background-color: #C7E6FD;
   margin-bottom: 10px;
@@ -199,6 +216,7 @@ export default {
   width: 50%;
   border-radius: 10px;
 }
+
 .take-off {
   background-color: antiquewhite;
   margin-bottom: 10px;
@@ -206,31 +224,38 @@ export default {
   width: 50%;
   border-radius: 10px;
 }
+
 .comp-full-calendar {
   max-width: none !important;
   padding-left: 3rem !important;
 }
+
 ::v-deep .work-remote {
   background-color: #C7E6FD !important;
   width: 70%;
   border-radius: 6px;
 }
+
 ::v-deep .titelOff {
   background-color: antiquewhite !important;
   width: 70%;
   border-radius: 6px;
 }
+
 .line-bottom {
   margin-left: 2rem !important;
 }
+
 .card-body {
   padding-top: 2rem !important;
   padding-left: 2.1rem !important;
 }
+
 ::v-deep .comp-full-calendar * {
-    box-sizing: unset !important;
+  box-sizing: unset !important;
 }
-.modal-chart{
+
+.modal-chart {
   position: fixed;
   bottom: 10%;
   right: 2%;
@@ -242,6 +267,7 @@ export default {
   border-top-right-radius: calc(0.3rem - 1px);
   z-index: 9999;
 }
+
 .button-chart {
   position: fixed;
   bottom: 10%;
@@ -249,31 +275,38 @@ export default {
   z-index: 9998;
   cursor: pointer;
 }
+
 ::v-deep .more-events {
   display: none;
 }
+
 .chart-content {
   height: 72% !important;
   border: none !important;
 }
+
 .chart-input {
   width: 80%;
   border-radius: 6px;
   border: none;
   padding: 3px;
 }
+
 .chart-input:focus {
   border: none;
 }
+
 .chart-header {
   background-color: #0070c9;
   color: white;
   position: relative;
 }
+
 .chart-header strong {
   position: inherit;
   left: 40%;
 }
+
 .close-chart {
   background-color: white;
   opacity: initial;
@@ -281,13 +314,16 @@ export default {
   margin: inherit;
   border-radius: 6px;
 }
+
 .custom-image {
   width: 55px;
 }
+
 .chart-footer {
   background-color: #E6E6E6;
   flex-wrap: nowrap;
 }
+
 .chart-submit {
   background-color: #40729A;
   color: white;
@@ -296,23 +332,28 @@ export default {
   padding: 3px;
   width: 16%;
 }
+
 .content-right {
   text-align: right;
   display: flex;
   align-self: flex-end;
 }
+
 .content-right p {
   margin: auto;
 }
+
 .content-left {
   align-self: initial;
   text-align: left;
   display: flex;
   max-width: max-content;
 }
+
 .content-left p {
   margin: auto;
 }
+
 .modal-content {
   flex-direction: column-reverse !important;
 }

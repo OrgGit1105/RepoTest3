@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: cuongnt
@@ -21,7 +22,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class ScheduleController extends Controller
 {
 
-     /**
+    /**
      * var Repository
      */
     protected $repository;
@@ -91,14 +92,14 @@ class ScheduleController extends Controller
             3 => 'Take off'
         ];
 
-        if($data) {
-           foreach ($data as $value) {
+        if ($data) {
+            foreach ($data as $value) {
                 $convertData[] = [
-                    'title' => $value['name'] .' '. $type[$value['title']],
+                    'title' => $value['name'] . ' ' . $type[$value['title']],
                     'start' => $value['start'],
                     'cssClass' => ($value['title'] == 2 && $value['title'] != 1) ? 'work-remote' : 'titelOff'
                 ];
-           }
+            }
         }
         return $this->responseJson(200, ScheduleResource::collection($convertData));
     }
@@ -202,7 +203,7 @@ class ScheduleController extends Controller
                 ];
             }
         }
-        $fileName = 'calendar.xlsx';
+        $fileName = "Schedule" . $request->year_month . ".xlsx";
         return Excel::download(new Schedules($request->year_month, $convertData), $fileName);
     }
 }
