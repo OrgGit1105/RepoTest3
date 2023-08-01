@@ -62,7 +62,7 @@
         </div>
       </div>
       <div class="modal-footer chart-footer">
-        <form @submit.prevent="hendaleSubmitChartGPT">
+        <form @submit.prevent="hendaleSubmitChatGPT">
           <input v-model="questions" type="text" class="chart-input">
           <button class="chart-submit" type="submit">Send</button>
         </form>
@@ -203,8 +203,8 @@ export default {
         console.log(error);
       });
     },
-    hendaleSubmitChartGPT() {
-      const URL = process.env.MIX_API_CHART_GPT + 'chartGPT?question=' + this.questions;
+    hendaleSubmitChatGPT() {
+      const URL = process.env.MIX_API_CHART_GPT + 'chatGPT?question=' + this.questions;
       axios.get(URL).then((response) => {
         const newChart = { que: this.questions, result: response.data.data };
         if (this.questions !== null) {
