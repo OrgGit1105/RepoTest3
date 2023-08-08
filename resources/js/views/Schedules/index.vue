@@ -71,7 +71,7 @@
   </div>
 </template>
 <script>
-import { getAllSchedules } from '../../api/schedules';
+import { getAllSchedules, resultChatGPT } from '../../api/schedules';
 import axios from 'axios';
 const logo = require('@/assets/images/chatgpt-icon.png');
 const logoImage = require('@/assets/images/logo.png');
@@ -203,17 +203,23 @@ export default {
         console.log(error);
       });
     },
-    hendaleSubmitChatGPT() {
-      const URL = process.env.MIX_API_CHART_GPT + 'chatGPT?question=' + this.questions;
-      axios.get(URL).then((response) => {
-        const newChart = { que: this.questions, result: response.data.data };
-        if (this.questions !== null) {
-          this.arrayCharts.unshift(newChart);
-        }
-        this.questions = '';
-      }).catch((error) => {
-        console.log(error);
-      });
+    async hendaleSubmitChatGPT() {
+      const PARAMS = {
+        question: this.questions,
+      };
+      await resultChatGPT(PARAMS)
+        .then((response) => {
+          if (response.code === 200) {
+            console.log(response.data);
+            const newChart = { que: this.questions, result: response.data };
+            if (this.questions !== null) {
+              this.arrayCharts.unshift(newChart);
+            }
+            this.questions = '';
+          }
+        }).catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

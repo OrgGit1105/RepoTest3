@@ -10,9 +10,11 @@ namespace Repository;
 use App\Models\ArrivingReport;
 use App\Repositories\Contracts\ScheduleRepositoryInterface;
 use Carbon\Carbon;
+use Exception;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInterface
 {
@@ -68,6 +70,25 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
             ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
             ->whereRaw("DATE_FORMAT(in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth])
             ->get();
+    }
+
+    public function getChatGPT($request)
+    {
+        try {
+            $url = 'http://vf-chat-gpt.vw-dev.com/api/chatGPT';
+            $response = Http::withoutVerifying()->get($url, [
+                'question' => $request->question,
+            ]);
+            $body = json_decode($response->getBody());
+            if($body) {
+                return $body->data;
+            } else {
+                return [];
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+       
     }
 
 }

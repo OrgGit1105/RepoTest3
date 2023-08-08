@@ -38,6 +38,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::apiResource('user', 'UserController');
         Route::get('/role',[RoleController::class, 'index']);
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
+        Route::get('schedule/result-chat-gpt', 'ScheduleController@getChatGPT');
         Route::apiResource('schedule', 'ScheduleController');
 
         Route::group(['prefix' => 'image_face'],function (){
