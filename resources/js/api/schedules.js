@@ -4,6 +4,7 @@ import { template } from './template.js';
 export const urlAPI = {
   urlData: template`/schedule`,
   exportDAta: template`/schedule/export`,
+  chatGPT: template`/schedule/result-chat-gpt`,
 };
 
 export function getAllSchedules(data) {
@@ -12,4 +13,8 @@ export function getAllSchedules(data) {
 
 export function exportSchedules(data) {
   return request.getRequest(urlAPI.exportDAta(), data);
+}
+
+export function resultChatGPT(data) {
+  return request.getRequest(urlAPI.chatGPT(), data);
 }

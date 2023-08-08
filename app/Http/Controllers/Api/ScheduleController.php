@@ -206,4 +206,47 @@ class ScheduleController extends Controller
         $fileName = "Schedule-" . $request->year_month . ".xlsx";
         return Excel::download(new Schedules($request->year_month, $convertData), $fileName, null, ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
     }
+
+    /**
+     * @OA\Get(
+     *   path="/api/schedule/result-chat-gpt",
+     *   tags={"Schedule"},
+     *   summary="List schedule",
+     *   operationId="schedule-chat-gpt",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{{"id": 1,"name": "..........."}}}
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="question",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *      example="Who is the latest to work this month?"
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatGPT(ScheduleRequest $request)
+    {
+        $data = $this->repository->getChatGPT($request);
+        return $this->responseJson(200, $data);
+    }
 }
