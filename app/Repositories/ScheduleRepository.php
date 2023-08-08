@@ -51,11 +51,11 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
         if($yearMonth) {
             $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
                            ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth]) ;
+        } else {
+            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonthNow])
+                ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonthNow]);
         }
-        return $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonthNow])
-                              ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonthNow])
-                              ->get();
-
+        return $arrivingReport->get();
     }
 
     public function scheduleOneDay($request)
