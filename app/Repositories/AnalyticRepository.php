@@ -111,7 +111,7 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
             return  $getEmotions->paginate($perPage);
         }
 
-        $getEmotions->whereBetween('time', [$startMonth, $endMonth]);
+        //$getEmotions->whereBetween('time', [$startMonth, $endMonth]);
         return   $getEmotions->paginate($perPage);
     }
 }

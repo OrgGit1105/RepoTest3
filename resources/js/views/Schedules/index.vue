@@ -50,18 +50,22 @@
         <button class="close close-chart" @click="showModalChat = false"><span>&ndash;</span></button>
       </div>
       <div class="modal-content chart-content">
-        <div class="content-right">
-          <p>Is {{ randomElement }}</p>
-          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
-        </div>
-        <div class="content-left">
-          <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
-          <p>Who comes to work late this month?</p>
+        <div v-for="arrayChart in arrayCharts" :key="arrayChart.id">
+          <div class="content-right">
+            <p> {{ arrayChart.que }}</p>
+            <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+          </div>
+          <div class="content-left">
+            <div><img class="custom-image" :src="logoImage" alt="V-FACE"></div>
+            <p>{{ arrayChart.result }}</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer chart-footer">
-        <input type="text" class="chart-input">
-        <button class="chart-submit">Send</button>
+        <form @submit.prevent="hendaleSubmitChatGPT">
+          <input v-model="questions" type="text" class="chart-input">
+          <button class="chart-submit" type="submit">Send</button>
+        </form>
       </div>
     </div>
   </div>
@@ -92,6 +96,9 @@ export default {
       logo,
       logoImage,
       randomNumber: null,
+      questions: '',
+      result_question: '',
+      arrayCharts: [],
       myArray: [
         'i.kohei',
         'Phạm Thị Trang',
@@ -179,7 +186,8 @@ export default {
         }
       }
       return;
-    }, async exportDataSchedules() {
+    },
+    async exportDataSchedules() {
       const URL = `/api/schedule/export?year_month=${this.year_months}`;
       axios.get(URL, {
         responseType: 'blob',
@@ -191,6 +199,18 @@ export default {
         link.setAttribute('download', fileName);
         document.body.appendChild(link);
         link.click();
+      }).catch((error) => {
+        console.log(error);
+      });
+    },
+    hendaleSubmitChatGPT() {
+      const URL = process.env.MIX_API_CHART_GPT + 'chatGPT?question=' + this.questions;
+      axios.get(URL).then((response) => {
+        const newChart = { que: this.questions, result: response.data.data };
+        if (this.questions !== null) {
+          this.arrayCharts.unshift(newChart);
+        }
+        this.questions = '';
       }).catch((error) => {
         console.log(error);
       });
@@ -324,6 +344,9 @@ export default {
   background-color: #E6E6E6;
   flex-wrap: nowrap;
 }
+.chart-footer form {
+  width: 100%;
+}
 
 .chart-submit {
   background-color: #40729A;
@@ -342,6 +365,7 @@ export default {
 
 .content-right p {
   margin: auto;
+  margin-right: 0px;
 }
 
 .content-left {
@@ -357,6 +381,7 @@ export default {
 
 .modal-content {
   flex-direction: column-reverse !important;
+  overflow: auto;
 }
 .dowload-schedule {
   color: #0070C9;
