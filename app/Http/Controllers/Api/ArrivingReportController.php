@@ -14,6 +14,8 @@ use App\Http\Resources\BaseResource;
 use App\Http\Resources\ArrivingReportResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Exports\workingTimes;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ArrivingReportController extends Controller
 {
@@ -314,28 +316,54 @@ class ArrivingReportController extends Controller
         $this->repository->delete($id);
         return $this->responseJson(200, null, trans('messages.mes.delete_success'));
     }
-  /**
-   * @OA\Post(
-   *   path="/api/arriving_report/download",
-   *   tags={"ArrivingReport"},
-   *   summary="Download ..............",
-   *   operationId="arriving_report_download",
-   *   @OA\Response(
-   *     response=200,
-   *     description="Send request success",
-   *     @OA\MediaType(
-   *      mediaType="application/json",
-   *      example={"code":200,"data":"Send request success"}
-   *     )
-   *   ),
-   *   security={{"auth": {}}},
-   * )
-   * @param int $id
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Exception
-   */
-  public function download()
+    /**
+     * @OA\Get(
+     *   path="/api/arriving_report/download",
+     *   tags={"ArrivingReport"},
+     *   summary="Download ..............",
+     *   operationId="arriving_report_download",
+     *   @OA\Parameter(
+     *     name="start_date",
+     *     in="query",
+     *   description="Y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="end_date",
+     *     in="query",
+     *   description="Y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="key_search",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":"Send request success"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+  public function download(Request $request)
   {
-
+    $data = $this->repository->downloadArrivingreport($request);
+    $fileName= 'demo.xlsx';
+    return Excel::download(new workingTimes($data), $fileName, null, 
+           ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
   }
 }

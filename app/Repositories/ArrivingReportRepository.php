@@ -292,4 +292,48 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
         return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
     }
+
+    public function downloadArrivingreport($request = []) 
+    {
+        $defaulStartWeek = Carbon::now()->startOfWeek();
+        $defaulEndWeek = Carbon::now()->startOfWeek()->addDay(4);
+        $startDate = Arr::get($request, 'start_date', $defaulStartWeek);
+        $endDate = Arr::get($request, 'end_date', $defaulEndWeek);
+        $startDate = date("Y-m-d 00:00", strtotime($startDate));
+        $endDate = date("Y-m-d 23:59", strtotime($endDate));
+        $userId = Arr::get($request, 'user_id', []);
+        $keySearch = Arr::get($request, 'key_search', []);
+
+        $arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
+        if (!empty($userId)) {
+            $arrivings = $arrivings->where('user_id', $userId);
+        }
+        if (!empty($keySearch)) {
+            $arrivings = $arrivings->where(function ($query) use ($keySearch) {
+                $query->orWhereHas('user', function ($q) use ($keySearch) {
+                    $q->where('name', 'like', '%' . $keySearch . '%');
+                });
+            });
+        }
+
+        $data = [];
+        $arrivings = $arrivings->orderBy('in_time', 'desc')->orderBy('type_date', 'asc');
+        $arrivings = $arrivings->get();
+        foreach ($arrivings as $key => $value) {
+            $data[$key]['id'] = $value->id;
+            $data[$key]['user_name'] = $value->user ? $value->user->name : '';
+            $data[$key]['registration_type'] = $value->registration_type;
+            $data[$key]['type_date'] = $value->type_date ? __('analytic.type.' . $value->type_date) : __('analytic.type.1');
+            $data[$key]['remark'] = $value->remark;
+            $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
+            $data[$key]['out_time'] = empty($value['out_time']) ? '' : date("H:i:s", strtotime($value->out_time));
+            $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
+            if ($value->in_time == null || $value->out_time == null) {
+                $data[$key]['warning'] = 'Warning';
+            } else {
+                $data[$key]['warning'] = null;
+            }
+        }
+        return $data;
+    }
 }
