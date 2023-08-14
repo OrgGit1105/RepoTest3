@@ -394,7 +394,7 @@ export default {
     },
     async exportDataSchedules() {
       const URL = '/api/arriving_report/download?start_date=' + this.formSearch.date[0] +
-        '&end_date=' + this.formSearch.date[1] + '&key_search=' + this.formSearch.search;
+        '&end_date=' + this.formSearch.date[1] + '&key_search=' + this.formSearch.search + '&user_id=' + this.employeeValue;
       axios.get(URL, {
         responseType: 'blob',
       }).then((response) => {
