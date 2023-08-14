@@ -29,6 +29,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
     Route::get('schedule/export', 'ScheduleController@export');
     Route::get('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
     Route::get('arriving_report/download', 'ArrivingReportController@download');
+    Route::get('analytic/download', 'AnalyticController@download');
     
     Route::group(['middleware' => ['auth:user','managerRole']], function () {
 

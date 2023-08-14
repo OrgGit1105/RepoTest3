@@ -55,7 +55,7 @@
                   />
                 </el-select>
               </div>
-              <i class="el-icon-download custom-icon-down cursor-pointer" @click="exportDataSchedules" />
+              <i class="el-icon-download custom-icon-down cursor-pointer" @click="exportDataWorkingTime" />
             </div>
           </div>
           <hr class="line">
@@ -392,7 +392,7 @@ export default {
           });
         });
     },
-    async exportDataSchedules() {
+    async exportDataWorkingTime() {
       const URL = '/api/arriving_report/download?start_date=' + this.formSearch.date[0] +
         '&end_date=' + this.formSearch.date[1] + '&key_search=' + this.formSearch.search + '&user_id=' + this.employeeValue;
       axios.get(URL, {

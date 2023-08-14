@@ -2,10 +2,11 @@
 
 namespace App\Exports;
 
+
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
-class workingTimes implements FromView
+class AnalyticExport implements FromView
 {
     protected $data;
     public function __construct($data)
@@ -14,6 +15,6 @@ class workingTimes implements FromView
     }
     public function view(): View
     {
-        return view('excel.working-time', ['data'=> $this->data]);
+        return view('excel.analytic', ['data' => $this->data]);
     }
 }

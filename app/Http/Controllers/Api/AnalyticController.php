@@ -7,12 +7,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\AnalyticExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AnalyticRequest;
 use App\Repositories\Contracts\AnalyticRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\AnalyticResource;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AnalyticController extends Controller
 {
@@ -274,4 +276,60 @@ class AnalyticController extends Controller
         $data = $this->repository->getEmotions($request);
         return $this->responseJson(200, AnalyticResource::collection($data));
     }
+
+    /**
+     * @OA\Get(
+     *   path="/api/analytic/download",
+     *   tags={"Analytic"},
+     *   summary="Download ..............",
+     *   operationId="analytic_download",
+     *   @OA\Parameter(
+     *     name="start_date",
+     *     in="query",
+     *   description="Y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="end_date",
+     *     in="query",
+     *   description="Y-m-d",
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="user_id",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":"Send request success"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function download(Request $request)
+    {
+        $data = $this->repository->getListAnalytic($request);
+        $fileName = 'analytic.xlsx';
+        return Excel::download(
+            new AnalyticExport($data),
+            $fileName,
+            null,
+            ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']
+        );
+    }
+
 }

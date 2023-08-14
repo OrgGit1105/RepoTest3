@@ -345,6 +345,13 @@ class ArrivingReportController extends Controller
      *      type="string",
      *     ),
      *   ),
+     *   @OA\Parameter(
+     *     name="user_id",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -362,7 +369,7 @@ class ArrivingReportController extends Controller
   public function download(Request $request)
   {
     $data = $this->repository->downloadArrivingreport($request);
-    $fileName= 'demo.xlsx';
+    $fileName= 'arrivingreport.xlsx';
     return Excel::download(new workingTimes($data), $fileName, null, 
            ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
   }

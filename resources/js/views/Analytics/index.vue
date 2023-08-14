@@ -44,7 +44,7 @@
                   />
                 </el-select>
               </div>
-              <i class="el-icon-download custom-icon-down cursor-pointer" />
+              <i class="el-icon-download custom-icon-down cursor-pointer" @click="exportDataAnalytic" />
             </div>
           </div>
           <hr class="line">
@@ -90,6 +90,7 @@ import { getAllAnalytic } from '../../api/analytic';
 import { getAllUser } from '../../api/user';
 import moment from 'moment';
 import { MakeToast } from '../../utils/toast_message';
+import axios from 'axios';
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -154,6 +155,23 @@ export default {
     },
     showDetail: function(row, column, event) {
       this.$router.push({ path: `/analytics/detail/${row.user_id}` });
+    },
+    async exportDataAnalytic() {
+      const URL = '/api/analytic/download?start_date=' + this.formSearch.date[0] +
+        '&end_date=' + this.formSearch.date[1] + '&user_id=' + this.employeeValue;
+      axios.get(URL, {
+        responseType: 'blob',
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = 'analytic.xlsx';
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+      }).catch((error) => {
+        console.log(error);
+      });
     },
   },
 };
