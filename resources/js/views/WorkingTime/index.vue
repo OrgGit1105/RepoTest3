@@ -55,7 +55,7 @@
                   />
                 </el-select>
               </div>
-              <i class="el-icon-download custom-icon-down cursor-pointer" />
+              <i class="el-icon-download custom-icon-down cursor-pointer" @click="exportDataWorkingTime" />
             </div>
           </div>
           <hr class="line">
@@ -209,6 +209,7 @@ import { getArrving, createNewWorkingTime } from '../../api/working_time';
 import { getAllUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
+import axios from 'axios';
 export default {
   name: 'WorkingTimeManagement',
   data() {
@@ -390,6 +391,23 @@ export default {
             content: error.message,
           });
         });
+    },
+    async exportDataWorkingTime() {
+      const URL = '/api/arriving_report/download?start_date=' + this.formSearch.date[0] +
+        '&end_date=' + this.formSearch.date[1] + '&key_search=' + this.formSearch.search + '&user_id=' + this.employeeValue;
+      axios.get(URL, {
+        responseType: 'blob',
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = 'working-time.xlsx';
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+      }).catch((error) => {
+        console.log(error);
+      });
     },
   },
 };
