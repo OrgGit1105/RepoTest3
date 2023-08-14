@@ -30,7 +30,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
     Route::get('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
     Route::get('arriving_report/download', 'ArrivingReportController@download');
     Route::get('analytic/download', 'AnalyticController@download');
-    
+    Route::get('analytic/export-emotions', 'AnalyticController@exportEmotions');
+
     Route::group(['middleware' => ['auth:user','managerRole']], function () {
 
         Route::apiResource('arriving_report', 'ArrivingReportController');

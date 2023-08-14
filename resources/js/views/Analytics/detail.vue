@@ -25,7 +25,7 @@
                     <i class="el-icon-arrow-down icon-back-list ml-1" />
                   </p>
                   <p class="back-list cursor-pointer">
-                    <i class="el-icon-download custom-icon-down cursor-pointer ml-3" />
+                    <i class="el-icon-download custom-icon-down cursor-pointer ml-3" @click="exportDataEmotions" />
                   </p>
                 </div>
               </div>
@@ -95,6 +95,7 @@
 <script>
 import { getEmotions } from '../../api/analytic';
 import * as UserApi from '../../api/user';
+import axios from 'axios';
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -153,6 +154,22 @@ export default {
     },
     listAllAnalytic(){
       this.$router.push({ path: `/analytics/index` });
+    },
+    async exportDataEmotions() {
+      const URL = '/api/analytic/export-emotions?user_id=' + this.$route.params.id;
+      axios.get(URL, {
+        responseType: 'blob',
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = 'emotions.xlsx';
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+      }).catch((error) => {
+        console.log(error);
+      });
     },
   },
 };

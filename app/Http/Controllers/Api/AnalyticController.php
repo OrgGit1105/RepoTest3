@@ -8,11 +8,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exports\AnalyticExport;
+use App\Exports\EmotionsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AnalyticRequest;
 use App\Repositories\Contracts\AnalyticRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\AnalyticResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -332,4 +334,45 @@ class AnalyticController extends Controller
         );
     }
 
+    /**
+     * @OA\Get(
+     *   path="/api/analytic/export-emotions",
+     *   tags={"Analytic"},
+     *   summary="Download ..............",
+     *   operationId="export_emotions",
+     *   @OA\Parameter(
+     *     name="user_id",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":"Send request success"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+
+    public function exportEmotions(AnalyticRequest $request)
+    {
+        $param = $request->except([]);
+        $userName = User::where('id', $param['user_id'])->first();
+        $data = $this->repository->exportEmotions($request);
+        $fileName = 'emotions.xlsx';
+        return Excel::download(
+            new EmotionsExport($data, $userName->name),
+            $fileName,
+            null,
+            ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']
+        );
+    }
 }
