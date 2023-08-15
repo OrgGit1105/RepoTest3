@@ -21,8 +21,8 @@ const state = {
   listRetirement: {},
   monthYear: {},
   listRoles: [],
-  startDate: null,
-  endDate: null,
+  startDate: '',
+  endDate: '',
 };
 
 const mutations = {

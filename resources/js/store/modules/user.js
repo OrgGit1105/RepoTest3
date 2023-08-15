@@ -104,6 +104,8 @@ const actions = {
 
     Cookies.set('token', '');
     Cookies.set('userInfo', '');
+    Cookies.set('startDate', '');
+    Cookies.set('endDate', '');
   },
 };
 
