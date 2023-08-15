@@ -21,6 +21,8 @@ const state = {
   listRetirement: {},
   monthYear: {},
   listRoles: [],
+  startDate: null,
+  endDate: null,
 };
 
 const mutations = {
@@ -77,6 +79,14 @@ const mutations = {
   SET_LIST_ROLES: (state, listRoles) => {
     state.listRoles = listRoles;
   },
+  SET_START_DATE: (state, startDate) => {
+    state.startDate = startDate;
+    Cookies.set('startDate', startDate);
+  },
+  SET_END_DATE: (state, endDate) => {
+    state.endDate = endDate;
+    Cookies.set('endDate', endDate);
+  },
 };
 
 const actions = {
@@ -131,6 +141,12 @@ const actions = {
   },
   saveListRoles({ commit }, listRoles) {
     commit('SET_LIST_ROLES', listRoles);
+  },
+  saveStartDate({ commit }, startDate) {
+    commit('SET_START_DATE', startDate);
+  },
+  saveEndtDate({ commit }, endDate) {
+    commit('SET_END_DATE', endDate);
   },
 };
 
