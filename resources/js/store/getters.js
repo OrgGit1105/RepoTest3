@@ -30,6 +30,8 @@ const getters = {
   employeeDetailInfo: state => state.app.employeeDetailInfo,
   listRetirement: state => state.app.listRetirement,
   monthYear: state => state.app.monthYear,
+  startDate: state => state.app.startDate,
+  endDate: state => state.app.endDate,
 };
 
 export default getters;

@@ -210,6 +210,7 @@ import { getAllUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 export default {
   name: 'WorkingTimeManagement',
   data() {
@@ -217,7 +218,7 @@ export default {
       formSearch: {
         search: '',
         userId: '',
-        date: [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')],
+        date: [],
         // date: [ '', '' ],
       },
       pagination: {
@@ -259,6 +260,7 @@ export default {
     };
   },
   created() {
+    this.handleDate();
     this.getWorkingTime();
     this.getListEmployee();
   },
@@ -346,6 +348,8 @@ export default {
       this.getWorkingTime();
     },
     fillDate() {
+      this.$store.dispatch('app/saveStartDate', this.formSearch.date[0]);
+      this.$store.dispatch('app/saveEndtDate', this.formSearch.date[1]);
       this.getWorkingTime();
     },
     async getListEmployee() {
@@ -408,6 +412,13 @@ export default {
       }).catch((error) => {
         console.log(error);
       });
+    },
+    handleDate() {
+      if (Cookies.get('startDate') != null && Cookies.get('endDate') != null) {
+        this.formSearch.date = [Cookies.get('startDate'), Cookies.get('endDate')];
+      } else {
+        this.formSearch.date = [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')];
+      }
     },
   },
 };

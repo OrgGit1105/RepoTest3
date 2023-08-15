@@ -12,7 +12,6 @@
             <tr>
                 <td style="width: 150px;">{{$value['user_name']}}</td>
                 <td style="width: 150px;">{{$value['work_day']}}</td>
-                <td style="width: 150px;">{{$value['user_name']}}</td>
                 <td style="width: 150px;">{{$value['remote_day']}}</td>
                 <td style="width: 150px;">{{$value['off_day']}}</td>
             </tr>

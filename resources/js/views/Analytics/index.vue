@@ -91,20 +91,31 @@ import { getAllUser } from '../../api/user';
 import moment from 'moment';
 import { MakeToast } from '../../utils/toast_message';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 export default {
   name: 'AnalyticsManagement',
   data() {
     return {
       formSearch: {
         userId: '',
-        date: [moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD')],
+        date: [],
       },
       listAnalytic: [],
       listEmployee: [],
       employeeValue: '',
     };
   },
+  computed: {
+    startDate() {
+      console.log(this.$store.getters.startDate);
+      return this.$store.getters.startDate;
+    },
+    endDate() {
+      return this.$store.getters.endDate;
+    },
+  },
   created() {
+    this.handleDate();
     this.getListEmployee();
     this.getListAllAnalytic();
   },
@@ -139,6 +150,8 @@ export default {
       this.getListAllAnalytic();
     },
     fillDate() {
+      this.$store.dispatch('app/saveStartDate', this.formSearch.date[0]);
+      this.$store.dispatch('app/saveEndtDate', this.formSearch.date[1]);
       this.getListAllAnalytic();
     },
     async getListEmployee() {
@@ -172,6 +185,13 @@ export default {
       }).catch((error) => {
         console.log(error);
       });
+    },
+    handleDate() {
+      if (Cookies.get('startDate') != null && Cookies.get('endDate') != null) {
+        this.formSearch.date = [Cookies.get('startDate'), Cookies.get('endDate')];
+      } else {
+        this.formSearch.date = [moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD')];
+      }
     },
   },
 };
