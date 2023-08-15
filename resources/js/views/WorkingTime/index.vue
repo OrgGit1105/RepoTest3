@@ -415,7 +415,6 @@ export default {
     },
     handleDate() {
       if (Cookies.get('startDate') !== '' && Cookies.get('endDate') !== '') {
-        console.log(Cookies.get('startDate'));
         this.formSearch.date = [Cookies.get('startDate'), Cookies.get('endDate')];
       } else {
         this.formSearch.date = [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')];
