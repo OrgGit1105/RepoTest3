@@ -105,15 +105,6 @@ export default {
       employeeValue: '',
     };
   },
-  computed: {
-    startDate() {
-      console.log(this.$store.getters.startDate);
-      return this.$store.getters.startDate;
-    },
-    endDate() {
-      return this.$store.getters.endDate;
-    },
-  },
   created() {
     this.handleDate();
     this.getListEmployee();
@@ -187,7 +178,7 @@ export default {
       });
     },
     handleDate() {
-      if (Cookies.get('startDate') != null && Cookies.get('endDate') != null) {
+      if (Cookies.get('startDate') !== '' && Cookies.get('endDate') !== '') {
         this.formSearch.date = [Cookies.get('startDate'), Cookies.get('endDate')];
       } else {
         this.formSearch.date = [moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD')];
