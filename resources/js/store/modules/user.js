@@ -86,6 +86,8 @@ const actions = {
     commit('SET_TOKEN', userInfo.TOKEN);
     Cookies.set('token', userInfo.TOKEN);
     Cookies.set('userInfo', userInfo.USER);
+    Cookies.set('startDate', '');
+    Cookies.set('endDate', '');
   },
 
   logout({ commit }) {
