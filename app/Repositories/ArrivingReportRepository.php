@@ -88,34 +88,62 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
   {
     $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
     $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
+
+    // Kiểm tra xem có cùng ngày không
+    if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')){
+      return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.must_same_date'), trans('api.arriving_report.must_same_date'));
+    }
+
+    // Kiểm tra xem có check out có phải là tương lai check in không, nếu không báo lỗi
     if ($in_time->getTimestamp() > $out_time->getTimestamp()){
-      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
+      return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
     }
-
-    // Kiểm tra xem hôm nay có đúng ngày hôm nay không đã check in chưa?
-    $dateTimeNow = new DateTime('now');
-    if ($dateTimeNow->format('Y-m-d') != $in_time->format('Y-m-d')){
-      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_must_today'), trans('api.arriving_report.time_must_today'));
-    }
-
-    // Kiểm tra xem hôm nay đã check in chưa?
+    // Kiểm tra ngày này đã check-in chưa
     $arrivingIn_time = $this->model
-      ->whereDate("in_time",$dateTimeNow->format('Y-m-d'))
+      ->whereDate("in_time",$in_time->format('Y-m-d'))
       ->where("user_id",$attributes['user_id'])
       ->first();
-    // Nếu nếu ngày hôm nay đã check in rồi thì báo lỗi
     if ($arrivingIn_time){
-      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+      return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
     }
 
-    // Nếu nếu ngày hôm nay đã check out rồi thì báo lỗi
+    // Kiểm tra ngày này đã check-out chưa
     $arrivingOut_time = $this->model
-      ->whereDate("out_time",$dateTimeNow->format('Y-m-d'))
+      ->whereDate("out_time",$out_time->format('Y-m-d'))
       ->where("user_id",$attributes['user_id'])
       ->first();
     if ($arrivingOut_time){
-      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_out_is_check'), trans('api.arriving_report.time_out_is_check'));
+      return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.time_out_is_check'), trans('api.arriving_report.time_out_is_check'));
     }
+
+//    if ($in_time->getTimestamp() > $out_time->getTimestamp()){
+//      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
+//    }
+//
+//    // Kiểm tra xem hôm nay có đúng ngày hôm nay không đã check in chưa?
+//    $dateTimeNow = new DateTime('now');
+//    if ($dateTimeNow->format('Y-m-d') != $in_time->format('Y-m-d')){
+//      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_must_today'), trans('api.arriving_report.time_must_today'));
+//    }
+//
+//    // Kiểm tra xem hôm nay đã check in chưa?
+//    $arrivingIn_time = $this->model
+//      ->whereDate("in_time",$dateTimeNow->format('Y-m-d'))
+//      ->where("user_id",$attributes['user_id'])
+//      ->first();
+//    // Nếu nếu ngày hôm nay đã check in rồi thì báo lỗi
+//    if ($arrivingIn_time){
+//      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
+//    }
+//
+//    // Nếu nếu ngày hôm nay đã check out rồi thì báo lỗi
+//    $arrivingOut_time = $this->model
+//      ->whereDate("out_time",$dateTimeNow->format('Y-m-d'))
+//      ->where("user_id",$attributes['user_id'])
+//      ->first();
+//    if ($arrivingOut_time){
+//      return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_out_is_check'), trans('api.arriving_report.time_out_is_check'));
+//    }
 
     $attributes['status'] = 1;
     $attributes['created_at'] = Carbon::now();
@@ -135,8 +163,15 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
    {
      $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
      $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
+
+     // Kiểm tra xem có cùng ngày không
+     if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')){
+       return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.must_same_date'), trans('api.arriving_report.must_same_date'));
+     }
+
+     // Kiểm tra xem có check out có phải là tương lai check in không, nếu không báo lỗi
      if ($in_time->getTimestamp() > $out_time->getTimestamp()){
-       return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
+       return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY,trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
      }
 
      $report = $this->model->find($id);
