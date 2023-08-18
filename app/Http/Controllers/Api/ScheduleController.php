@@ -230,6 +230,15 @@ class ScheduleController extends Controller
      *      example="Who is the latest to work this month?"
      *     ),
      *   ),
+     *   @OA\Parameter(
+     *     name="count",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *      example=1
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=401,
      *     description="Login false",
@@ -244,7 +253,7 @@ class ScheduleController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getChatGPT(ScheduleRequest $request)
+    public function getChatGPT(Request $request)
     {
         $data = $this->repository->getChatGPT($request);
         return $this->responseJson(200, $data);
