@@ -100,7 +100,6 @@ Table ‘users’ has columns: id (integer), name (string), email (string), pass
         } catch (Exception $e) {
             return $e->getMessage();
         }
-       
     }
 
 }
