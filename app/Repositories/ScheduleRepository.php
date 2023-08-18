@@ -93,7 +93,7 @@ Table ‘users’ has columns: id (integer), name (string), email (string), pass
             ]);
             $body = json_decode($response->getBody());
             if($body) {
-                return  $question;
+                return  $body->data;
             } else {
                 return [];
             }
