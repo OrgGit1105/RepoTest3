@@ -59,6 +59,7 @@ export default {
       showModalChat: false,
       questions: '',
       result_question: '',
+      count: 0,
       arrayCharts: [],
     };
   },
@@ -72,13 +73,14 @@ export default {
       }
     },
     async hendaleSubmitChatGPT() {
+      this.count = this.count + 1;
       const PARAMS = {
         question: this.questions,
+        count: this.count,
       };
       await resultChatGPT(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            console.log(response.data);
             const newChart = { que: this.questions, result: response.data };
             if (this.questions !== null) {
               this.arrayCharts.unshift(newChart);
