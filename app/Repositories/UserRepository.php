@@ -42,7 +42,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
   public function pagination($request)
   {
         //      $limit = is_null(request('per_page')) ? 15 : request('per_page');
-      $limit = 0;
+      $limit = 10000;
 
       $data = $this->model->query()->with('role')
         ->whereNull('deleted_at')
