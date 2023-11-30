@@ -55,7 +55,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
     private function configRekognitionClient()
     {
-        if (App::environment('production')) {
+        if (!App::environment('local')) {
             // Tạo một đối tượng Credential Provider từ IAM Role
             $credentials = CredentialProvider::defaultProvider();
 
