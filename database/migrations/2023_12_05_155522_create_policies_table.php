@@ -18,6 +18,7 @@ class CreatePoliciesTable extends Migration
             $table->string('name');
             $table->integer('type')->comment('1:V-Face, 2:AWS, 3: Google');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
