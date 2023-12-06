@@ -44,14 +44,14 @@ class UserRequest extends FormRequest
             return [
               'name'     => 'required',
               'email'     => 'required|email',
-              'role_id' => 'required|numeric',
+              'viam_user_id' => 'required|numeric',
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
               'name'     => 'required',
               'email'     => 'required|unique:users|email',
-              'role_id' => 'required|numeric',
+              'viam_user_id' => 'required|numeric',
               'password' => 'required|min:3|confirmed',
             ];
         }

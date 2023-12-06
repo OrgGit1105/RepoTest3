@@ -43,6 +43,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
         Route::get('schedule/result-chat-gpt', 'ScheduleController@getChatGPT');
         Route::apiResource('schedule', 'ScheduleController');
+        Route::apiResource('policy', 'PolicyController');
+        Route::apiResource('viam_user', 'VIAMUserController');
 
         Route::group(['prefix' => 'image_face'],function (){
             Route::get('', [ImageFaceController::class, 'index'])->withoutMiddleware(['auth:user']);

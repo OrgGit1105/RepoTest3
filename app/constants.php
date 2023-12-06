@@ -14,3 +14,19 @@ define('CODE_UNAUTHORIZED', 401);
 
 define('IMAGE', 'upload/image');
 
+const POLICY_TYPE = [
+    "V_FACE" => 1,
+    "AWS" => 2,
+    "Google" => 3
+];
+
+const POLICY_V_FACE_NAME = [
+    "Admin" => "Admin",
+    "Normal" => "Normal"
+];
+
+const POLICY_V_FACE_ID = [
+    "Admin" => 1,
+    "Normal" => 2
+];
+

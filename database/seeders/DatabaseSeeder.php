@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\VIAMUserPolicy;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,6 +15,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(RoleSeeder::class);
+        $this->call(PolicySeeder::class);
+        $this->call(VIAMUserSeeder::class);
         $this->call(UserSeeder::class);
 //        $this->call(WorkingTimeSeed::class);
     }

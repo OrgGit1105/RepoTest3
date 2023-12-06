@@ -85,10 +85,9 @@ class UserController extends Controller
      *   operationId="user_create",
      *   @OA\RequestBody(
      *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string"},
+     *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"name", "email","role_id","password","password_confirmation"},
+     *            required={"name", "email","viam_user_id","password","password_confirmation"},
      *            @OA\Property(
      *              property="name",
      *              format="string",
@@ -98,16 +97,51 @@ class UserController extends Controller
      *              format="string",
      *            ),
      *            @OA\Property(
-     *              property="role_id",
+     *              property="gender",
+     *              format="integer",
+     *              enum={1,2}
+     *            ),
+     *            @OA\Property(
+     *              property="birthday",
+     *              type="date",
+     *              description="YYYY-mm-dd",
+     *            ),
+     *            @OA\Property(
+     *              property="address",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="telephone",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="entry_date",
+     *              type="date",
+     *              description="YYYY-mm-dd",
+     *            ),
+     *            @OA\Property(
+     *              property="slack_id",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="skype_id",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="github_id",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="viam_user_id",
      *              format="integer",
      *            ),
      *            @OA\Property(
      *              property="password",
-     *              format="integer",
+     *              format="string",
      *            ),
      *            @OA\Property(
      *              property="password_confirmation",
-     *              format="integer",
+     *              format="string",
      *            ),
      *         )
      *      )
@@ -117,7 +151,7 @@ class UserController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"viam_user_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
      *     )
      *   ),
      *   security={},
@@ -154,7 +188,7 @@ class UserController extends Controller
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"role_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
+     *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"viam_user_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
      *     )
      *   ),
      *   @OA\Response(
@@ -174,7 +208,7 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->find($id);
+            $data = $this->repository->with(['viam_user', 'policies'])->find($id);
             return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
@@ -198,9 +232,9 @@ class UserController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"name":"string", "email": "string", "role_id": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
+     *          example={"name":"string", "email": "string", "viam_user_id": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
      *          @OA\Schema(
-     *            required={"name", "email","role_id","password","password_confirmation"},
+     *            required={"name", "email","viam_user_id","password","password_confirmation"},
      *            @OA\Property(
      *              property="name",
      *              format="string",
@@ -210,7 +244,7 @@ class UserController extends Controller
      *              format="string",
      *            ),
      *            @OA\Property(
-     *              property="role_id",
+     *              property="viam_user_id",
      *              format="integer",
      *            ),
      *            @OA\Property(
