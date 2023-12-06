@@ -20,15 +20,40 @@ class User extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
+    const NAME = 'name';
+    const EMAIL = 'email';
+    const PASSWORD = 'password';
+    const VIAM_USER_ID = 'viam_user_id';
+    const RETIREMENT_DATE = 'retirement_date';
+    const STATUS = 'status';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT= 'updated_at';
+    const GENDER = 'gender';
+    const BIRTHDAY = 'birthday';
+    const ADDRESS = 'address';
+    const TELEPHONE = 'telephone';
+    const ENTRY_DATE = 'entry_date';
+    const SLACK_ID = 'slack_id';
+    const SKYPE_ID = 'skype_id';
+    const GITHUB_ID = 'github_id';
+
     protected $fillable = [
-      'name',
-      'email',
-      'password',
-      'role_id',
-      'retirement_date',
-      'status',
-      'created_at',
-      'updated_at'
+        self::NAME,
+        self::EMAIL,
+        self::PASSWORD,
+        self::VIAM_USER_ID,
+        self::RETIREMENT_DATE,
+        self::STATUS,
+        self::GENDER,
+        self::BIRTHDAY,
+        self::ADDRESS,
+        self::TELEPHONE,
+        self::ENTRY_DATE,
+        self::SLACK_ID,
+        self::SKYPE_ID,
+        self::GITHUB_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     /**
@@ -49,9 +74,9 @@ class User extends Authenticatable implements JWTSubject
       'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    public function role(){
-      return $this->belongsTo(Role::class,'role_id','id');
-    }
+//    public function role(){
+//      return $this->belongsTo(Role::class,'role_id','id');
+//    }
 
     public function scopeFindByName($query)
     {
@@ -71,10 +96,10 @@ class User extends Authenticatable implements JWTSubject
     return $query;
   }
 
-    public function scopeFindByRole($query)
+    public function scopeFindByVIAMUser($query)
     {
-      if (request()->filled('role_id')) {
-        $query->where('role_id', request()->get('role_id'));
+      if (request()->filled('viam_user_id')) {
+        $query->where(User::VIAM_USER_ID, request()->get(User::VIAM_USER_ID));
       }
       return $query;
     }
@@ -87,5 +112,14 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
       return [];
+    }
+
+    public function viam_user(){
+        return $this->belongsTo(VIAMUser::class,'viam_user_id','id');
+    }
+
+    public function policies()
+    {
+        return $this->hasManyThrough(Policy::class, VIAMUserPolicy::class, 'viam_user_id', 'id', 'viam_user_id', 'id');
     }
 }

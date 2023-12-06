@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-          switch (Route::getCurrentRoute()->getActionMethod()){
+        switch (Route::getCurrentRoute()->getActionMethod()){
                 case 'update':
                     return $this->getCustomRule();
                 case 'store':
@@ -40,18 +40,18 @@ class UserRequest extends FormRequest
     }
 
      public function getCustomRule(){
-        if(Route::getCurrentRoute()->getActionMethod() == 'update'){
+         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
               'name'     => 'required',
               'email'     => 'required|email',
-              'role_id' => 'required|numeric',
+              'viam_user_id' => 'required|numeric',
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
               'name'     => 'required',
               'email'     => 'required|unique:users|email',
-              'role_id' => 'required|numeric',
+              'viam_user_id' => 'required|numeric',
               'password' => 'required|min:3|confirmed',
             ];
         }

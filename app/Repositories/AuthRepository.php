@@ -40,8 +40,14 @@ class AuthRepository implements AuthRepositoryInterface
         $credentials['email'] = $request->email;
         $attempt = JWTAuth::attempt($credentials);
         if ($attempt){
-          $user = User::where('email', $request->email)
+          $user = User::where('email', $request->email)->with(['viam_user', 'policies'])
             ->firstOrFail();
+          foreach ($user->policies as $policy) {
+              if($policy->type == POLICY_TYPE['V_FACE']) {
+                  $user['role_id'] = POLICY_V_FACE_ID[$policy->name];
+                  break;
+              }
+          }
           $this->update(['jwt_active'=>$attempt],$user->id);
           return [
             'user' => $user,

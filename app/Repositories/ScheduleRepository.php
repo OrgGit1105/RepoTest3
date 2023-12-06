@@ -40,20 +40,19 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
     {
         $typDate = [2, 3];
         $yearMonth = $request->get('year_month', null);
-        $firstOfMonthNow = Carbon::now()->startOfMonth()->format('Y-m-d h:i:s');
-        $endOfMonthNow  = Carbon::now()->endOfMonth()->format('Y-m-d h:i:s');
-        $firstOfMonth = Carbon::parse($yearMonth)->startOfMonth()->format('Y-m-d h:i:s');
-        $endOfMonth   = Carbon::parse($yearMonth)->endOfMonth()->format('Y-m-d h:i:s');
+        $firstOfMonthNow = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
+        $endOfMonthNow  = Carbon::now()->endOfMonth()->format('Y-m-d H:i:s');
+        $firstOfMonth = Carbon::parse($yearMonth)->startOfMonth()->format('Y-m-d H:i:s');
+        $endOfMonth   = Carbon::parse($yearMonth)->endOfMonth()->format('Y-m-d H:i:s');
         $arrivingReport = ArrivingReport::selectRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d') AS start, arriving_reports.type_date as title, users.name")
             ->whereIn('arriving_reports.type_date', $typDate)->whereNull('arriving_reports.deleted_at')
             ->join('users', 'users.id', '=' , 'arriving_reports.user_id');
-        
         if($yearMonth) {
-            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonth])
-                           ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonth]) ;
+            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %H:%i:%s') >= ?", [$firstOfMonth])
+                           ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %H:%i:%s') <= ?", [$endOfMonth]) ;
         } else {
-            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') >= ?", [$firstOfMonthNow])
-                ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %h:%i:%s') <= ?", [$endOfMonthNow]);
+            $arrivingReport->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %H:%i:%s') >= ?", [$firstOfMonthNow])
+                ->whereRaw("DATE_FORMAT(arriving_reports.in_time, '%Y-%m-%d %H:%i:%s') <= ?", [$endOfMonthNow]);
         }
         return $arrivingReport->get();
     }
@@ -76,7 +75,7 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
     {
         try {
             $url = 'http://vf-chat-gpt.vw-dev.com/api/chatGPT';
-            if($request->count > 1) 
+            if($request->count > 1)
             {
                 $question = $request->question ;
             } else {
