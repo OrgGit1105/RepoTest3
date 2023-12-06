@@ -31,6 +31,40 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *   path="/api/user/list_all",
+     *   tags={"User"},
+     *   summary="List all employee",
+     *   operationId="all_employee",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{{"id": 1,"name": "..........."}}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllEmployee()
+    {
+        $data = $this->repository->getAll();
+        return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
+    }
+
+    /**
+     * @OA\Get(
      *   path="/api/user",
      *   tags={"User"},
      *   summary="List user",

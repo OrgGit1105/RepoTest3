@@ -38,7 +38,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::get('analytic/emotions', 'AnalyticController@getEmotions');
         Route::apiResource('analytic', 'AnalyticController');
         //Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
-        Route::apiResource('user', 'UserController');
+        Route::get('/user/list_all', 'UserController@getAllEmployee');
+        Route::apiResource('/user', 'UserController');
         Route::get('/role',[RoleController::class, 'index']);
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
         Route::get('schedule/result-chat-gpt', 'ScheduleController@getChatGPT');

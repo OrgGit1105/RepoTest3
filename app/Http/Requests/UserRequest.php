@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-          switch (Route::getCurrentRoute()->getActionMethod()){
+        switch (Route::getCurrentRoute()->getActionMethod()){
                 case 'update':
                     return $this->getCustomRule();
                 case 'store':
@@ -40,7 +40,7 @@ class UserRequest extends FormRequest
     }
 
      public function getCustomRule(){
-        if(Route::getCurrentRoute()->getActionMethod() == 'update'){
+         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
               'name'     => 'required',
               'email'     => 'required|email',

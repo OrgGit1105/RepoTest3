@@ -88,4 +88,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
         return ResponseService::responseJson(200, new BaseResource(parent::update($attributes, $id)));
     }
+
+    public function getAll()
+    {
+        return $this->model->select(['id', 'name'])->get();
+    }
 }
