@@ -134,7 +134,7 @@ class UserController extends Controller
      *              property="gender",
      *              format="integer",
      *              description="0:male, 1:female",
-     *              enum={1,2},
+     *              enum={0,1},
      *            ),
      *            @OA\Property(
      *              property="birthday",
