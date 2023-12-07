@@ -133,7 +133,8 @@ class UserController extends Controller
      *            @OA\Property(
      *              property="gender",
      *              format="integer",
-     *              enum={1,2}
+     *              description="0:male, 1:female",
+     *              enum={1,2},
      *            ),
      *            @OA\Property(
      *              property="birthday",
@@ -176,6 +177,12 @@ class UserController extends Controller
      *            @OA\Property(
      *              property="password_confirmation",
      *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="gender",
+     *              format="integer",
+     *              description="0:male, 1:female",
+     *              enum={1,2},
      *            ),
      *         )
      *      )
