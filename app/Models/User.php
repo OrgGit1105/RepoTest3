@@ -53,7 +53,8 @@ class User extends Authenticatable implements JWTSubject
         self::SKYPE_ID,
         self::GITHUB_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        'jwt_active'
     ];
 
     /**

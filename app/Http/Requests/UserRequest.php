@@ -40,21 +40,38 @@ class UserRequest extends FormRequest
     }
 
      public function getCustomRule(){
-         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
-            return [
-              'name'     => 'required',
-              'email'     => 'required|email',
-              'viam_user_id' => 'required|numeric',
-            ];
-        }
-        if(Route::getCurrentRoute()->getActionMethod() == 'store'){
-            return  [
-              'name'     => 'required',
-              'email'     => 'required|unique:users|email',
-              'viam_user_id' => 'required|numeric',
-              'password' => 'required|min:3|confirmed',
-            ];
-        }
+         if (Route::getCurrentRoute()->getActionMethod() == 'update') {
+             return [
+                 'name' => 'required',
+                 'email' => 'required|email',
+                 'gender' => 'nullable|in:0,1',
+                 'birthday' => 'nullable|date-format:Y-m-d',
+                 'address' => 'nullable|string',
+                 'telephone' => 'nullable|string',
+                 'entry_date' => 'nullable|date-format:Y-m-d',
+                 'slack_id' => 'nullable|string',
+                 'skype_id' => 'nullable|string',
+                 'github_id' => 'nullable|string',
+                 'viam_user_id' => 'required|numeric',
+                 'retirement_date' => 'nullable|date-format:Y-m-d',
+             ];
+         }
+         if (Route::getCurrentRoute()->getActionMethod() == 'store') {
+             return [
+                 'name' => 'required',
+                 'email' => 'required|unique:users,email|email',
+                 'gender' => 'nullable|in:0,1',
+                 'birthday' => 'nullable|date-format:Y-m-d',
+                 'address' => 'nullable|string',
+                 'telephone' => 'nullable|string',
+                 'entry_date' => 'nullable|date-format:Y-m-d',
+                 'slack_id' => 'nullable|string',
+                 'skype_id' => 'nullable|string',
+                 'github_id' => 'nullable|string',
+                 'viam_user_id' => 'required|numeric',
+                 'password' => 'required|min:3|confirmed',
+             ];
+         }
      }
 
     public function messages()

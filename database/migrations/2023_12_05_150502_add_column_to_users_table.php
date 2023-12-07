@@ -14,7 +14,8 @@ class AddColumnToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('gender')->after('email')->nullable()->comment('1:male, 2:female');
+            $table->integer('status')->default(1)->change();
+            $table->integer('gender')->after('email')->nullable()->comment('0:male, 1:female');
             $table->date('birthday')->after('gender')->nullable();
             $table->string('address')->after('birthday')->nullable();
             $table->string('telephone')->after('address')->nullable();
@@ -34,6 +35,7 @@ class AddColumnToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->integer('status')->change();
             $table->renameColumn('viam_user_id', 'role_id');
             $table->dropColumn('gender');
             $table->dropColumn('birthday');
