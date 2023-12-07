@@ -178,12 +178,6 @@ class UserController extends Controller
      *              property="password_confirmation",
      *              format="string",
      *            ),
-     *            @OA\Property(
-     *              property="gender",
-     *              format="integer",
-     *              description="0:male, 1:female",
-     *              enum={1,2},
-     *            ),
      *         )
      *      )
      *   ),
