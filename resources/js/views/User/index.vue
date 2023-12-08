@@ -171,7 +171,7 @@
               name="name"
               rules="required"
             >
-              <label for="nameEmployee">Employee Name</label>
+              <label for="nameEmployee">Name</label>
               <el-input id="nameEmployee" v-model="formCreate.name" />
               <div class="text-error">
                 {{ errors[0] }}
@@ -182,8 +182,96 @@
               name="email"
               rules="required|email"
             >
-              <label for="emailEmployee" class="mt-3">Employee Email</label>
+              <label for="emailEmployee" class="mt-3">Email</label>
               <el-input id="emailEmployee" v-model="formCreate.email" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="gender"
+              rules="required"
+            >
+              <label for="genderEmployee" class="mt-3">Gender</label>
+              <el-input id="genderEmployee" v-model="formCreate.gender" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="birthday"
+              rules="required"
+            >
+              <label for="birthdayEmployee" class="mt-3">Birthday</label>
+              <el-input id="birthdayEmployee" v-model="formCreate.birthday" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="address"
+              rules="required"
+            >
+              <label for="addressEmployee" class="mt-3">Address</label>
+              <el-input id="addressEmployee" v-model="formCreate.address" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="telephone"
+              rules="required"
+            >
+              <label for="telephoneEmployee" class="mt-3">Tel</label>
+              <el-input id="telephoneEmployee" v-model="formCreate.telephone" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="entryDate"
+              rules="required"
+            >
+              <label for="entryDateEmployee" class="mt-3">Entry Date</label>
+              <el-input id="entryDateEmployee" v-model="formCreate.entryDate" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="slackId"
+              rules="required"
+            >
+              <label for="slackIdEmployee" class="mt-3">Slack Id</label>
+              <el-input id="slackIdEmployee" v-model="formCreate.slackId" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="skypeId"
+              rules="required"
+            >
+              <label for="skypeIdEmployee" class="mt-3">Skype Id</label>
+              <el-input id="skypeIdEmployee" v-model="formCreate.skypeId" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="githubId"
+              rules="required"
+            >
+              <label for="githubIdEmployee" class="mt-3">Github Id</label>
+              <el-input id="githubIdEmployee" v-model="formCreate.githubId" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -195,12 +283,17 @@
                 <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
                   <div
                     :class="{check_with_or_without_mask: withoutMask}"
-                    style="display: flex; gap: 1rem;cursor: pointer;border-right: 2px solid"
+                    style="display: flex; gap: 0.5rem;cursor: pointer;border-right: 2px solid"
                     @click="checkWithoutMask()"
                   >
-                    <b-icon-emoji-smile style="margin-top: 5px; height: 1em; width: 1em" />
-                    <div style="margin-right: 20px">
-                      <p>Without mask</p>
+                    <b-icon-emoji-smile style="margin-top: 10px; height: 1.5rem; width: 1.5rem" />
+                    <div style="margin-right: 20px; display: flex; flex-direction: column">
+                      <div style="display: flex;">
+                        <p>Face image</p>
+                      </div>
+                      <div style="display: flex; padding-left: 0.6rem">
+                        <p>Without mask</p>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -216,9 +309,9 @@
                       style="display: inline-block;
                           overflow: visible;
                           vertical-align: -0.15em;
-                          width: 1em;
-                          height: 1em;
-                          margin-top: 3px"
+                          width: 1.5em;
+                          height: 1.5em;
+                          margin-top: 10px"
                     >
                       <g
                         transform="translate(0.000000,460.000000) scale(0.100000,-0.100000)"
@@ -319,7 +412,14 @@
                       </g>
                     </svg>
                     <div style="margin-right: 20px">
-                      <p>With mask</p>
+                      <div style="margin-right: 20px; display: flex; flex-direction: column">
+                        <div style="display: flex;">
+                          <p>Face image</p>
+                        </div>
+                        <div style="display: flex; padding-left: 0.6rem">
+                          <p>Without mask</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -382,10 +482,10 @@
             <hr class="line">
             <ValidationProvider
               v-slot="{ errors }"
-              name="role"
+              name="viamUser"
               rules="required"
             >
-              <label class="title-create-employee" for="roleEmployee">Role</label>
+              <label class="title-create-employee" for="viamUser">VIAM User</label>
               <br>
               <el-radio-group id="roleEmployee" v-model="formCreate.role_id">
                 <el-radio
