@@ -9,6 +9,7 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\EmotionRepositoryInterface;
 use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
+use App\Repositories\Contracts\PolicyRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\ScheduleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -21,6 +22,7 @@ use Repository\AnalyticRepository;
 use Repository\EmotionRepository;
 use Repository\HistoryEditReportRepository;
 use Repository\ImageFaceRepository;
+use Repository\PolicyRepository;
 use Repository\RoleRepository;
 use Repository\ScheduleRepository;
 use Repository\UserRepository;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(EmotionRepositoryInterface::class,EmotionRepository::class);
     $this->app->bind(AnalyticRepositoryInterface::class, AnalyticRepository::class);
     $this->app->bind(ScheduleRepositoryInterface::class, ScheduleRepository::class);
+    $this->app->bind(PolicyRepositoryInterface::class, PolicyRepository::class);
     //Customer
     if ($this->app->environment('local', 'testing')) {
       $this->app->register(DuskServiceProvider::class);

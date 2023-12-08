@@ -27,7 +27,7 @@ class User extends Authenticatable implements JWTSubject
     const RETIREMENT_DATE = 'retirement_date';
     const STATUS = 'status';
     const CREATED_AT = 'created_at';
-    const UPDATED_AT= 'updated_at';
+    const UPDATED_AT = 'updated_at';
     const GENDER = 'gender';
     const BIRTHDAY = 'birthday';
     const ADDRESS = 'address';
@@ -63,7 +63,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-      'password', 'jwt_active',
+        'password', 'jwt_active',
     ];
 
     public $timestamps = false;
@@ -71,8 +71,8 @@ class User extends Authenticatable implements JWTSubject
     protected $dates = ['deleted_at'];
 
     protected $casts = [
-      'created_at' => 'datetime:Y-m-d H:i:s',
-      'updated_at' => 'datetime:Y-m-d H:i:s',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
 //    public function role(){
@@ -81,46 +81,61 @@ class User extends Authenticatable implements JWTSubject
 
     public function scopeFindByName($query)
     {
-      if (request()->filled('name')) {
-        $query
-          ->where('name', 'LIKE', '%' . request()->get('name') . '%');
-      }
-      return $query;
+        if (request()->filled('name')) {
+            $query
+                ->where('name', 'LIKE', '%' . request()->get('name') . '%');
+        }
+        return $query;
     }
 
-  public function scopeFindByEmail($query)
-  {
-    if (request()->filled('email')) {
-      $query
-        ->where('email', 'LIKE', '%' . request()->get('email') . '%');
+    public function scopeFindByEmail($query)
+    {
+        if (request()->filled('email')) {
+            $query
+                ->where('email', 'LIKE', '%' . request()->get('email') . '%');
+        }
+        return $query;
     }
-    return $query;
-  }
 
     public function scopeFindByVIAMUser($query)
     {
-      if (request()->filled('viam_user_id')) {
-        $query->where(User::VIAM_USER_ID, request()->get(User::VIAM_USER_ID));
-      }
-      return $query;
+        if (request()->filled('viam_user_id')) {
+            $query->where(User::VIAM_USER_ID, request()->get(User::VIAM_USER_ID));
+        }
+        return $query;
     }
 
     public function getJWTIdentifier()
     {
-      return $this->getKey();
+        return $this->getKey();
     }
 
     public function getJWTCustomClaims()
     {
-      return [];
+        return [];
     }
 
-    public function viam_user(){
-        return $this->belongsTo(VIAMUser::class,'viam_user_id','id');
+    public function viam_user()
+    {
+        return $this->belongsTo(VIAMUser::class, 'viam_user_id', 'id');
     }
 
     public function policies()
     {
         return $this->hasManyThrough(Policy::class, VIAMUserPolicy::class, 'viam_user_id', 'id', 'viam_user_id', 'id');
+    }
+
+    public function getRoleVFace($user)
+    {
+        $policies = $user->policies;
+        $policy_v_face = [];
+
+        foreach ($policies as $policy)
+        {
+            if($policy->type == POLICY_TYPE['V_FACE']) {
+                $policy_v_face[] = $policy->id;
+            }
+        }
+        return $policy_v_face;
     }
 }

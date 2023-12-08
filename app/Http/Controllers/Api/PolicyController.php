@@ -8,10 +8,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EmotionRequest;
-use App\Repositories\Contracts\EmotionRepositoryInterface;
+use App\Http\Requests\PolicyRequest;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\EmotionResource;
+use App\Repositories\Contracts\PolicyRepositoryInterface;
+use Http\Client\Exception;
 use Illuminate\Http\Request;
 
 class PolicyController extends Controller
@@ -22,7 +23,7 @@ class PolicyController extends Controller
      */
     protected $repository;
 
-    public function __construct(EmotionRepositoryInterface $repository)
+    public function __construct(PolicyRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
@@ -69,10 +70,10 @@ class PolicyController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(EmotionRequest $request)
+    public function index(PolicyRequest $request)
     {
-        $data = $this->repository->paginate($request->per_page);
-        return $this->responseJson(200, BaseResource::collection($data));
+        $data = $this->repository->list($request->all());
+        return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
     }
 
     /**
@@ -81,10 +82,26 @@ class PolicyController extends Controller
      *   tags={"Policy"},
      *   summary="Add new policy",
      *   operationId="policy_create",
-     *   @OA\Parameter(name="name", in="query", required=true,
-     *     @OA\Schema(type="string"),
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\MediaType(
+     *        mediaType="multipart/form-data",
+     *        @OA\Schema(
+     *          required={"name", "type"},
+     *            @OA\Property(
+     *                property="name",
+     *                description="name",
+     *                type="string",
+     *             ),
+     *            @OA\Property(
+     *                property="type",
+     *                type = "integer",
+     *                enum = {1,2,3},
+     *                description="1:V_FACE,2:AWS,3:Google"
+     *            ),
+     *         ),
+     *       ),
      *   ),
-     *
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -98,11 +115,11 @@ class PolicyController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function store(EmotionRequest $request)
+    public function store(PolicyRequest $request)
     {
         try {
             $data = $this->repository->create($request->all());
-            return $this->responseJson(200, new EmotionResource($data));
+            return $this->responseJson(CODE_SUCCESS, new EmotionResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -148,14 +165,14 @@ class PolicyController extends Controller
     {
         try {
             $department = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($department));
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($department));
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *   path="/api/policy/{id}",
      *   tags={"Policy"},
      *   summary="Update policy",
@@ -168,18 +185,25 @@ class PolicyController extends Controller
      *      type="string",
      *     ),
      *   ),
-     *   @OA\RequestBody(
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"name":"string"},
-     *          @OA\Schema(
-     *            required={"name"},
+     *    @OA\RequestBody(
+     *     required=true,
+     *     @OA\MediaType(
+     *        mediaType="multipart/form-data",
+     *        @OA\Schema(
+     *          required={"name", "type"},
      *            @OA\Property(
-     *              property="name",
-     *              format="string",
+     *                property="name",
+     *                description="name",
+     *                type="string",
+     *             ),
+     *            @OA\Property(
+     *                property="type",
+     *                type = "integer",
+     *                enum = {1,2,3},
+     *                description="1:V_FACE,2:AWS,3:Google"
      *            ),
-     *         )
-     *      )
+     *         ),
+     *       ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -203,11 +227,18 @@ class PolicyController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(EmotionRequest $request, $id)
+    public function update(PolicyRequest $request, $id)
     {
-        $attributes = $request->except([]);
-        $data = $this->repository->update($attributes, $id);
-        return $this->responseJson(200, new BaseResource($data));
+        try {
+            $data = $this->repository->update($request->all(), $id);
+            if(!$data) {
+                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.update_fail'));
+            }
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
+        } catch (Exception $exception) {
+            return $exception;
+        }
+
     }
 
     /**
@@ -240,7 +271,16 @@ class PolicyController extends Controller
      */
     public function destroy($id)
     {
+        try {
+            $data = $this->repository->delete($id);
+            if(!$data) {
+                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.delete_fail'));
+            }
+            return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));;
+        } catch (Exception $exception) {
+            return $exception;
+        }
         $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }
 }
