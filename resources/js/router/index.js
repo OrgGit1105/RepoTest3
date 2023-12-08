@@ -299,7 +299,8 @@ export const constantRoutes = [
         },
       },
     ],
-  }, {
+  },
+  {
     path: '/schedules',
     redirect: '/schedules/index',
     component: Layout,
@@ -314,6 +315,36 @@ export const constantRoutes = [
         name: 'SchedulesIndexManagement',
         meta: {
           // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
+  },
+  {
+    path: '/viam',
+    redirect: '/viam/index',
+    component: Layout,
+    meta: {
+      title: 'routes.user',
+      icon: 'icofont-ui-user',
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/Viam/index'),
+        name: 'ViamManagement',
+        meta: {
+          // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('../views/Viam/edit'),
+        name: 'EditViam',
+        hidden: true,
+        meta: {
+          title: 'routes.employee',
           icon: 'icofont-ui-user',
         },
       },

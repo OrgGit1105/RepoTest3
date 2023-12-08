@@ -47,10 +47,12 @@ export default {
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         { name: 'Employee', href: '/user/index' },
+        { name: 'VIAM', href: '/viam/index' },
       ],
       navbarUser: [
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
+        { name: 'VIAM', href: '/viam/index' },
       ],
     };
   },
