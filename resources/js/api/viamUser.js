@@ -1,7 +1,7 @@
 import request from '../utils/request.js';
 import { template } from './template.js';
 const urlAPI = {
-  urlGETRole: template`/role`,
+  urlGETRole: template`/viam_user`,
 };
 
 export function getAllRole() {

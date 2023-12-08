@@ -493,7 +493,7 @@ import * as UserApi from '../../api/user';
 import * as ImageApi from '../../api/image_face';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { getAllRole } from '../../api/role';
+import { getAllRole } from '../../api/viamUser';
 import { deleteOneUser } from '../../api/user';
 import { getImageByUserId } from '../../api/image_face';
 
