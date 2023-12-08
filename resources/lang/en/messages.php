@@ -9,4 +9,6 @@ return [
     'mes.update_error' => 'update error',
     'mes.data_not_found'=>'Data not found',
     'email_not_exist' => 'Email not exist.',
+    'mes.update_fail' => 'cannot update',
+    'mes.delete_fail' => 'cannot delete',
 ];
