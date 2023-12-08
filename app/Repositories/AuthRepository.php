@@ -28,37 +28,43 @@ class AuthRepository implements AuthRepositoryInterface
      */
     public function doLogin($request, $guard = null): array
     {
-      if (request()->has('email') && $request->email){
-        $user=User::where('email',$request->email)->first();
-        if (!$user){
-          return [
+        if (request()->has('email') && $request->email) {
+            $user = User::where('email', $request->email)->first();
+            if (!$user) {
+                return [
+                    'attempt' => false,
+                    'msg' => trans('api.user.login.false')
+                ];
+            }
+            if (!$user->getRoleVFace($user)) {
+                return [
+                    'attempt' => false,
+                    'msg' => trans('api.user.login_not_granted')
+                ];
+            }
+            $credentials['password'] = $request->password;
+            $credentials['email'] = $request->email;
+            $attempt = JWTAuth::attempt($credentials);
+            if ($attempt) {
+                $user = User::where('email', $request->email)->with(['viam_user', 'policies'])
+                    ->firstOrFail();
+                foreach ($user->policies as $policy) {
+                    if ($policy->type == POLICY_TYPE['V_FACE']) {
+                        $user['role_id'] = POLICY_V_FACE_ID[$policy->name];
+                        break;
+                    }
+                }
+                $this->update(['jwt_active' => $attempt], $user->id);
+                return [
+                    'user' => $user,
+                    'attempt' => $attempt
+                ];
+            }
+        }
+        return [
             'attempt' => false,
-            'msg' => trans('api.user.login.false')
-          ];
-        }
-        $credentials['password'] = $request->password;
-        $credentials['email'] = $request->email;
-        $attempt = JWTAuth::attempt($credentials);
-        if ($attempt){
-          $user = User::where('email', $request->email)->with(['viam_user', 'policies'])
-            ->firstOrFail();
-          foreach ($user->policies as $policy) {
-              if($policy->type == POLICY_TYPE['V_FACE']) {
-                  $user['role_id'] = POLICY_V_FACE_ID[$policy->name];
-                  break;
-              }
-          }
-          $this->update(['jwt_active'=>$attempt],$user->id);
-          return [
-            'user' => $user,
-            'attempt' => $attempt
-          ];
-        }
-      }
-      return [
-        'attempt' => false,
-        'msg' => trans('api.login.false')
-      ];
+            'msg' => trans('api.login.false')
+        ];
     }
 
     /**

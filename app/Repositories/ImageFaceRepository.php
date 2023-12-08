@@ -292,6 +292,10 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login.false'));
         }
 
+        if (!$user->getRoleVFace($user)) {
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login_not_granted'));
+        }
+
         // Kiểm tra ngày hôm nay in hay out đã check chưa?
         $dateTimeNow = new DateTime('now');
         // Kiểm tra nhân viên này hôm nay đã check in chưa?
