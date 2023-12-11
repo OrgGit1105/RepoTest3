@@ -13,6 +13,7 @@ use App\Repositories\Contracts\PolicyRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\ScheduleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\VIAMUserRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 use Repository\ArrivingReportRepository;
 use Repository\BaseRepository;
@@ -26,6 +27,7 @@ use Repository\PolicyRepository;
 use Repository\RoleRepository;
 use Repository\ScheduleRepository;
 use Repository\UserRepository;
+use Repository\VIAMUserRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(AnalyticRepositoryInterface::class, AnalyticRepository::class);
     $this->app->bind(ScheduleRepositoryInterface::class, ScheduleRepository::class);
     $this->app->bind(PolicyRepositoryInterface::class, PolicyRepository::class);
+    $this->app->bind(VIAMUserRepositoryInterface::class, VIAMUserRepository::class);
     //Customer
     if ($this->app->environment('local', 'testing')) {
       $this->app->register(DuskServiceProvider::class);
