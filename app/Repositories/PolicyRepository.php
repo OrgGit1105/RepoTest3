@@ -28,7 +28,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
     /**
        * Instantiate model
        *
-       * @param Emotion $model
+       * @param Policy $model
        */
 
     public function model()

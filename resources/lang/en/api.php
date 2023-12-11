@@ -32,5 +32,8 @@ return [
         'time_in_is_check' => 'Employee was check in',
         'time_out_is_check' => 'Employee was check out',
         'time_must_today' => 'Please time_in must today',
+    ],
+    'viam_user' => [
+        'policy_id' => 'Please select only one V-face policy'
     ]
 ];
