@@ -379,17 +379,14 @@
                     name="role"
                     rules="required"
                   >
-                    <el-radio-group id="role_id_create" v-model="formEdit.role_id">
-                      <el-radio
-                        v-for="element in listRoles"
-                        :key="element.id"
-                        :label="element.id"
-                        style="font-weight: 400"
-                      >
-                        {{ element.name }}
-                      </el-radio>
-                    </el-radio-group>
-
+                    <el-select id="viam_user_id" v-model="formEdit.viam_user_id" placeholder="Please select VIAM user">
+                      <el-option
+                        v-for="item in listRoles"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
                     <div class="text-error">
                       {{ errors[0] }}
                     </div>
@@ -405,10 +402,6 @@
                 <hr class="line">
                 <div>
                   <b-input-group>
-                    <!--                    <b-form-input-->
-                    <!--                      v-model="formEdit.retirement_date"-->
-                    <!--                      type="date"-->
-                    <!--                    />-->
                     <b-form-datepicker
                       v-model="formEdit.retirement_date"
                       locale="en"
@@ -513,7 +506,7 @@ export default {
         email: '',
         // password: '',
         // password_confirmation: '',
-        role_id: '',
+        viam_user_id: '',
         retirement_date: '',
       },
       id: this.$route.params.id,

@@ -170,7 +170,8 @@
                 v-model="formCreate.birthday"
                 type="date"
                 placeholder="Pick birthday"
-                format="YYYY/MM/DD"
+                format="yyyy/MM/dd"
+                value-format="yyyy-MM-dd"
               />
             </div>
             <label for="addressEmployee" class="mt-3">Address</label>
@@ -183,7 +184,8 @@
                 v-model="formCreate.entry_date"
                 type="date"
                 placeholder="Pick entry date"
-                format="YYYY/MM/DD"
+                format="yyyy/MM/dd"
+                value-format="yyyy-MM-dd"
               />
             </div>
             <label for="slackIdEmployee" class="mt-3">Slack Id</label>
@@ -403,7 +405,7 @@
             >
               <label class="title-create-employee" for="viamUser">VIAM User</label>
               <div>
-                <el-select id="genderEmployee" v-model="formCreate.viam_user_id" placeholder="Please select VIAM user">
+                <el-select v-model="formCreate.viam_user_id" placeholder="Please select VIAM user">
                   <el-option
                     v-for="item in listRoles"
                     :key="item.id"
