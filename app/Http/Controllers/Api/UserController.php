@@ -108,6 +108,12 @@ class UserController extends Controller
     public function index(UserRequest $request)
     {
         $data = $this->repository->pagination($request);
+        foreach ($data as $item) {
+            $item['retired'] = '';
+            if(Carbon::parse($item->entry_date) >= Carbon::now()) {
+                $item['retired'] = 'Retired';
+            }
+        }
         return $this->responseJson(200, BaseResource::collection($data));
     }
 
