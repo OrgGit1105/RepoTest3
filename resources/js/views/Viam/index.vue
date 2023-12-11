@@ -38,7 +38,7 @@
           </div>
         </div>
 
-        <div class="use-management-pagianation">
+        <!-- <div class="use-management-pagianation">
           <div class="card-body pagianation">
             <el-pagination
               background
@@ -50,7 +50,7 @@
               @current-change="getListAllUser"
             />
           </div>
-        </div>
+        </div> -->
 
         <!-- Modal -->
         <el-dialog class="title-add-working" title="Add VIAM Policy" :visible.sync="openModalAdd" width="40%" @click="hideCreateModal()">
@@ -173,21 +173,22 @@ export default {
       this.$store.dispatch('loading/setLoading', false);
     },
     async getListAllUser() {
-      this.pagination.isDisable = true;
-      const PARAMS = {
-        page: this.pagination.current_page,
-        per_page: this.pagination.per_page,
-      };
-      await getAllUser(PARAMS)
+      const url = `/policy`;
+      // this.pagination.isDisable = true;
+      // const PARAMS = {
+      //   page: this.pagination.current_page,
+      //   per_page: this.pagination.per_page,
+      // };
+      await getAllUser(url)
         .then((response) => {
           if (response.code === 200) {
-            this.listUser = response.data.result;
+            this.listUser = response.data;
             console.log('listUser===>', this.listUser);
             // this.$store.dispatch('app/saveListUSer', listUser);
-            this.pagination.total_records =
-              response.data.pagination.total_records;
-            this.pagination.current_page = response.data.pagination.current_page;
-            this.pagination.isDisable = false;
+            // this.pagination.total_records =
+            //   response.data.pagination.total_records;
+            // this.pagination.current_page = response.data.pagination.current_page;
+            // this.pagination.isDisable = false;
           }
           this.closeLoading();
         })

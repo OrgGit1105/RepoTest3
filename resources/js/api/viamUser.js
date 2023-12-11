@@ -2,11 +2,11 @@ import request from '../utils/request.js';
 import { template } from './template.js';
 import * as RequestApi from './request';
 const urlAPI = {
-  urlGETUser: template`/user`,
-  urlPOSTOneUser: template`/user`,
-  urlGETOneUser: template`/user/${'id'}`,
-  urlPUTOneUser: template`/user/${'id'}`,
-  urlDELETEOneUser: template`/user/${'id'}`,
+  urlGETUser: template`/viam_user`,
+  urlPOSTOneUser: template`/viam_user`,
+  urlGETOneUser: template`/viam_user/${'id'}`,
+  urlPUTOneUser: template`/viam_user/${'id'}`,
+  urlDELETEOneUser: template`/viam_user/${'id'}`,
 };
 
 export function getAllUser(params) {

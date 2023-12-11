@@ -9,12 +9,19 @@ const urlAPI = {
   urlDELETEOneUser: template`/policy/${'id'}`,
 };
 
-export function getAllUser(params) {
-  if (params.url) {
-    return request.getRequest(params.url, params);
-  }
-  return request.getRequest(urlAPI.urlGETUser(), params);
+export function getAllUser(url) {
+  return request.getRequest(url);
 }
+
+export function getAllPolicy(url) {
+  return request.getRequest(url);
+}
+// export function getAllUser(params) {
+//     if (params.url) {
+//       return request.getRequest(params.url, params);
+//     }
+//     return request.getRequest(urlAPI.urlGETUser(), params);
+//   }
 
 export function postOneUser(data) {
   return request.postRequest(urlAPI.urlPOSTOneUser(), data);

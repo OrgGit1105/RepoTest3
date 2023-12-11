@@ -30,7 +30,7 @@
                 align="center"
               />
               <el-table-column
-                prop="user"
+                prop="name"
                 label="User"
                 align="center"
               />
@@ -75,7 +75,11 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <div>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="Policy"
+              rules="required"
+            >
               <label for="emailEmployee" class="mt-3">VIAM Policy</label>
               <div class="form-tag">
                 <!-- <el-tag
@@ -95,7 +99,9 @@
                   @blur="hideDropdownPolicy"
                   @remove="onTagRemoveEdit"
                 />
-
+                <div class="text-error">
+                  {{ errors[0] }}
+                </div>
                 <div v-if="showDropdownPolicy" class="dropdown-menu" style="display:block;">
                   <b-dropdown-item
                     v-for="(tag, index) in availableTags"
@@ -106,20 +112,20 @@
                   </b-dropdown-item>
                 </div>
               </div>
-            </div>
-            <div>
-              <label for="emailEmployee" class="mt-3">Description</label>
-              <div>
-                <el-input
-                  v-model="form.description"
-                  type="textarea"
-                  :rows="2"
-                  placeholder=""
-                  class="no-resize"
-                />
-              </div>
-            </div>
+            </ValidationProvider>
           </ValidationObserver>
+          <div>
+            <label for="emailEmployee" class="mt-3">Description</label>
+            <div>
+              <el-input
+                v-model="form.description"
+                type="textarea"
+                :rows="2"
+                placeholder=""
+                class="no-resize"
+              />
+            </div>
+          </div>
           <span slot="footer" class="dialog-footer mt-3">
             <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
             <template v-if="!waitCreate">
@@ -141,6 +147,7 @@ import { deleteOneUser, getAllUser, postOneUser } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
+import { getAllPolicy } from '../../api/viampolicy';
 
 export default {
   name: 'ViamUserManagement',
@@ -159,22 +166,9 @@ export default {
       },
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
-      listViamUser: [
-        { id: 1, user: 'izumi', viam_policy: 'A, B, C' },
-        { id: 2, user: 'izumi', viam_policy: 'A, B, C' },
-        { id: 3, user: 'izumi', viam_policy: 'A, B, C' },
-        { id: 4, user: 'izumi', viam_policy: 'A, B, C' },
-      ],
+      listViamUser: [],
       role_id_selected: '',
       name_search: null,
-      formCreate: {
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        role_id: '',
-        status: 1,
-      },
       form: {
         name: '',
         description: '',
@@ -185,11 +179,7 @@ export default {
         { id: 2, name: 'AWS' },
         { id: 3, name: 'Google' },
       ],
-      availableTags: [
-        { id: 1, name: 'Tag 1' },
-        { id: 2, name: 'Tag 2' },
-        { id: 3, name: 'Tag 3' },
-      ],
+      availableTags: [],
       selectedTagPolicy: [],
       selectedTagPolicy_id: [],
       showDropdownPolicy: false,
@@ -232,8 +222,8 @@ export default {
     },
   },
   created() {
-    this.getListRole();
     this.getListAllUser();
+    this.getListPolicy();
   },
   methods: {
     addTagPolicy(tag) {
@@ -274,23 +264,17 @@ export default {
       const PARAMS = {
         page: this.pagination.current_page,
         per_page: this.pagination.per_page,
-        role_id: this.role_id_selected,
-        email: this.name_search,
       };
       await getAllUser(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            const listUser = response.data.result;
-            // console.log('listUser===>', listUser);
-            this.$store.dispatch('app/saveListUSer', listUser);
+            this.listViamUser = response.data.result;
+            console.log('listUser===>', this.listViamUser);
+            // this.$store.dispatch('app/saveListUSer', listUser);
             this.pagination.total_records =
                 response.data.pagination.total_records;
             this.pagination.current_page = response.data.pagination.current_page;
             this.pagination.isDisable = false;
-            // listUser.forEach((element) => {
-            //   element.roles.name = this.convertRoles(
-            //     element.roles.name);
-            // });
           }
           this.closeLoading();
         })
@@ -318,20 +302,12 @@ export default {
       this.$bvModal.show('bv-modal-delete');
     },
     hideCreateModal(){
-      this.formCreate = {
+      this.form = {
         name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        role_id: '',
-        status: 1,
+        description: '',
       };
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-      }
+      this.selectedTagPolicy = [];
+      this.selectedTagPolicy_id = [];
       this.openModalAdd = false;
     },
     hideModal() {
@@ -354,21 +330,22 @@ export default {
       }
     },
     async submitCreate() {
-      this.checkNumImage();
       const isValid = await this.$refs.obsAddEmployee.validate();
       if (isValid) {
         this.waitCreate = true;
         const DATA = {
           name: this.form.name,
           description: this.form.description,
+          policy_id: this.selectedTagPolicy_id,
         };
         await postOneUser(DATA).then(async(response) => {
           if (response.code === 200) {
-            // Kiểm tra selectedWithoutMaskFiles
             this.form = {
               name: '',
               description: '',
             };
+            this.selectedTagPolicy_id = [];
+            this.selectedTagPolicy = [];
             this.waitCreate = false;
             this.openModalAdd = false;
 
@@ -408,6 +385,32 @@ export default {
     // copy cua Yen
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
+    },
+    async getListPolicy() {
+      const url = `/policy`;
+      await getAllPolicy(url)
+        .then((response) => {
+          if (response.code === 200) {
+            const data = response.data;
+            if (data.length > 0) {
+              const TEM = [];
+              data.map(item => {
+                TEM.push({
+                  id: item.id,
+                  name: item.name,
+                });
+              });
+              this.availableTags.push(...TEM);
+            }
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
     },
   },
 };
