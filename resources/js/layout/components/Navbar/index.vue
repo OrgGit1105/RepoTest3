@@ -11,7 +11,16 @@
         <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px">
           <b-nav-item class="custom-item-nav" :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
         </b-navbar-nav>
-
+        <b-navbar-nav>
+          <b-nav-item-dropdown right class="custom-icon-viam">
+            <!-- Using 'button-content' slot -->
+            <template #button-content>
+              <span class="viam-custom"> VIAM </span>
+            </template>
+            <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
+            <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
+          </b-nav-item-dropdown>
+        </b-navbar-nav>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
           <b-nav-item-dropdown right class="custom-icon">
@@ -47,12 +56,12 @@ export default {
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         { name: 'Employee', href: '/user/index' },
-        { name: 'VIAM', href: '/viam/index' },
+        // { name: 'VIAM', href: '/viam/index' },
       ],
       navbarUser: [
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
-        { name: 'VIAM', href: '/viam/index' },
+        // { name: 'VIAM', href: '/viam/index' },
       ],
     };
   },
@@ -281,12 +290,27 @@ li.nav-item.custom-item-nav a {
   color: #0070C9;
   margin-right: 10px;
 }
+.viam-custom {
+  font-size: 20px;
+  margin-right: 5px;
+  margin-left: 80px;
+}
 ::v-deep .custom-icon .dropdown-toggle::after {
   display: inline-block;
   margin-left: 0.255em;
   vertical-align: 0.255em;
   content: "";
   border-top: 0.3em solid #0070C9;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+}
+::v-deep .custom-icon-viam .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid #54575a;
   border-right: 0.3em solid transparent;
   border-bottom: 0;
   border-left: 0.3em solid transparent;
