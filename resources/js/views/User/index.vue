@@ -43,7 +43,7 @@
                 >
                   <el-option
                     class="el-option-custom"
-                    label="All VIAM user"
+                    label="All Role"
                     value=""
                   />
                   <el-option
@@ -70,7 +70,7 @@
                 align="center"
               />
               <el-table-column
-                label="Name"
+                label="Employee name"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -93,12 +93,12 @@
               </el-table-column>
               <el-table-column
                 prop="email"
-                label="Email"
+                label="ID"
                 align="center"
               />
               <el-table-column
-                prop="role.name"
-                label="VIAM user"
+                prop="viam_user.name"
+                label="Role"
                 align="center"
               />
             </el-table>
@@ -170,6 +170,7 @@
                 v-model="formCreate.birthday"
                 type="date"
                 placeholder="Pick birthday"
+                format="YYYY/MM/DD"
               />
             </div>
             <label for="addressEmployee" class="mt-3">Address</label>
@@ -179,17 +180,18 @@
             <label for="entryDateEmployee" class="mt-3">Entry Date</label>
             <div>
               <el-date-picker
-                v-model="formCreate.entryDate"
+                v-model="formCreate.entry_date"
                 type="date"
                 placeholder="Pick entry date"
+                format="YYYY/MM/DD"
               />
             </div>
             <label for="slackIdEmployee" class="mt-3">Slack Id</label>
-            <el-input id="slackIdEmployee" v-model="formCreate.slackId" />
+            <el-input id="slackIdEmployee" v-model="formCreate.slack_id" />
             <label for="skypeIdEmployee" class="mt-3">Skype Id</label>
-            <el-input id="skypeIdEmployee" v-model="formCreate.skypeId" />
+            <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
             <label for="githubIdEmployee" class="mt-3">Github Id</label>
-            <el-input id="githubIdEmployee" v-model="formCreate.githubId" />
+            <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
             <hr class="line">
             <p class="title-create-employee mb-3">Face Data</p>
             <div style="margin-bottom: 15px;">
@@ -401,9 +403,9 @@
             >
               <label class="title-create-employee" for="viamUser">VIAM User</label>
               <div>
-                <el-select id="genderEmployee" v-model="formCreate.role_id" placeholder="Please select VIAM user">
+                <el-select id="genderEmployee" v-model="formCreate.viam_user_id" placeholder="Please select VIAM user">
                   <el-option
-                    v-for="item in listViam"
+                    v-for="item in listRoles"
                     :key="item.id"
                     :label="item.name"
                     :value="item.id"
@@ -528,20 +530,19 @@ export default {
         birthday: '',
         address: '',
         telephone: '',
-        entryDate: '',
-        slackId: '',
-        skypeId: '',
-        githubId: '',
+        entry_date: '',
+        slack_id: '',
+        skype_id: '',
+        github_id: '',
         password: '',
         password_confirmation: '',
-        role_id: '',
+        viam_user_id: '',
         status: 1,
       },
       listGender: [
         { id: 0, name: 'male' },
         { id: 1, name: 'female' },
       ],
-      listViam: [],
       selectedWithMaskFiles: [],
       selectedWithoutMaskFiles: [],
       withoutMask: true,
@@ -559,7 +560,6 @@ export default {
       return this.$store.getters.role_id;
     },
     listRoles() {
-      console.log('log ========111>', this.$store.getters.listRoles);
       return this.$store.getters.listRoles;
     },
     listUser() {
@@ -588,27 +588,26 @@ export default {
     async getListRole() {
       this.openLoading();
       const list = [];
-      await getAllRole().then((response) => {
+      try {
+        const response = await getAllRole();
         if (response.code === 200) {
-          this.$store.dispatch('app/saveListRoles', response.data);
-          console.log('res====', response.data);
-          response.data.result.map(item => {
+          response.data?.map(item => {
             list.push({
               id: item.id,
               name: item.name,
             });
           });
-          this.listViam.push(...list);
+          await this.$store.dispatch('app/saveListRoles', list);
           this.closeLoading();
         }
-      }).catch((error) => {
+      } catch (error) {
         this.closeLoading();
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: error.message,
         });
-      });
+      }
     },
     async getListAllUser() {
       this.pagination.isDisable = true;
