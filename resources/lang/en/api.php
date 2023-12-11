@@ -34,6 +34,7 @@ return [
         'time_must_today' => 'Please time_in must today',
     ],
     'viam_user' => [
-        'policy_id' => 'Please select only one V-face policy'
+        'policy_id' => 'Please select only one V-face policy',
+        'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user'
     ]
 ];

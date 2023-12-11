@@ -9,6 +9,7 @@ namespace Repository;
 
 use App\Http\Resources\BaseResource;
 use App\Models\Emotion;
+use App\Models\User;
 use App\Models\VIAMUser;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\VIAMUserRepositoryInterface;
@@ -16,6 +17,7 @@ use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
+use function Clue\StreamFilter\fun;
 
 class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInterface
 {
@@ -37,12 +39,23 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
         return VIAMUser::class;
     }
 
-    public function list($attributes)
+    public function list()
     {
-        if(@$attributes['page'] || @$attributes['per_page']) {
-            return $this->model->paginate($attributes['per_page']);
+        $items = $this->model->with('policies')->get();
+        $dataItems = [];
+        foreach ($items as $item) {
+            $policyName = '';
+            foreach ($item->policies as $policy) {
+                $policyName .= $policy->name . ', ';
+            }
+            $dataItems[] = [
+                'id' => $item->id,
+                'name' => $item->name,
+                'description' => $item->description,
+                'policy_list' => trim($policyName, ', '),
+            ];
         }
-        return $this->model->select('id', 'name')->get();
+        return collect($dataItems);
     }
 
     public function create(array $attributes)
@@ -78,5 +91,17 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
         }
         $model->load('policies');
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
+    }
+
+    public function delete($id)
+    {
+        $user = User::where(User::VIAM_USER_ID, $id)->count();
+        if($user > 0) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.cannot_delete'));
+        }
+
+        VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
+        parent::delete($id);
+        return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }
 }

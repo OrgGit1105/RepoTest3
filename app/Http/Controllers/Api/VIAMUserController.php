@@ -270,7 +270,10 @@ class VIAMUserController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
-        return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
+        try {
+            return $this->repository->delete($id);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 }
