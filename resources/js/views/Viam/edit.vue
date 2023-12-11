@@ -13,7 +13,7 @@
         </div>
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
-          <p class="back-list cursor-pointer" @click="listEmployees()"> <i class="el-icon-arrow-left icon-back-list" /> All VIAM Policies </p>
+          <p class="back-list cursor-pointer" @click="listPolicy()"> <i class="el-icon-arrow-left icon-back-list" /> All VIAM Policies </p>
           <div class="card-body p-card-body">
             <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
@@ -59,16 +59,17 @@
                     <div class="header-employee-edit">
                       <ValidationProvider
                         v-slot="{ errors }"
-                        name="email"
-                        rules="required|email"
+                        name="type"
+                        rules="required"
                       >
-                        <b-input-group>
-                          <b-form-input
-                            id="emailEmployee"
-                            v-model="formEdit.email"
-                            class="border-0 pl-2"
+                        <el-select id="typeEmployee" v-model="formEdit.type" placeholder="Please select Type">
+                          <el-option
+                            v-for="item in listType"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id"
                           />
-                        </b-input-group>
+                        </el-select>
                         <div class="text-error">
                           {{ errors[0] }}
                         </div>
@@ -77,7 +78,7 @@
                   </div>
                 </div>
               </h4>
-              <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete Employee </p>
+              <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete Policy </p>
             </ValidationObserver>
           </div>
         </div>
@@ -101,11 +102,10 @@
 
 <script>
 import * as CONFIGS from '../../configs/index';
-import * as UserApi from '../../api/user';
-import * as ImageApi from '../../api/image_face';
+import * as UserApi from '../../api/viampolicy';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { deleteOneUser } from '../../api/user';
+import { deleteOneUser } from '../../api/viampolicy';
 
 export default {
   name: 'EditViam',
@@ -120,25 +120,18 @@ export default {
       branchList: [],
       formEdit: {
         name: '',
-        email: '',
-        // password: '',
-        // password_confirmation: '',
-        role_id: '',
-        retirement_date: '',
+        type: '',
       },
+      listType: [
+        { id: 1, name: 'V-Face' },
+        { id: 2, name: 'AWS' },
+        { id: 3, name: 'Google' },
+      ],
       id: this.$route.params.id,
       userInfo: {},
       author: true,
-      selectedWithMaskFiles: [],
-      selectedWithoutMaskFiles: [],
       withoutMask: true,
       withMask: false,
-      nameEmployee: '',
-      linkFilesWithoutMask: [],
-      linkFilesWithMask: [],
-      linkFileDelete: [],
-      validateFile: false,
-      messageErrorFile: [],
       showModalDelete: false,
       waitEdit: false,
     };
@@ -149,9 +142,6 @@ export default {
     },
     companyBranch() {
       return this.$store.getters.listBranch;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
     },
   },
   watch: {
@@ -173,19 +163,10 @@ export default {
       this.openLoading();
       await UserApi.getOneUser(this.id)
         .then((response) => {
-          // MakeToast({
-          //   variant: 'success',
-          //   title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-          //   content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_GET_USER_INFO_SUCCESSFULLY'),
-          // });
-          this.nameEmployee = response.data.name;
+          console.log('response', response);
           this.formEdit = {
             name: response.data.name,
-            email: response.data.email,
-            // password: '',
-            // password_confirmation: '',
-            role_id: response.data.role_id,
-            retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
+            type: response.data.type,
           };
           this.closeLoading();
         })
@@ -210,106 +191,10 @@ export default {
               MakeToast({
                 variant: 'success',
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                content: 'Edit employee success',
+                content: 'Edit policy success',
               });
-              if (this.linkFileDelete.length !== 0){
-                for (const element of this.linkFileDelete) {
-                  await ImageApi.deleteImageByUserId(element.id)
-                    .then((response) => {
-                      if (response.code === 200){
-                        MakeToast({
-                          variant: 'success',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                          content: `Delete image employee with link ${element.file} success`,
-                        });
-                      } else {
-                        MakeToast({
-                          variant: 'warning',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                          content: response.message,
-                        });
-                      }
-                    })
-                    .catch((error) => {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: error.message,
-                      });
-                    });
-                }
-              }
-              // Kiểm tra selectedWithoutMaskFiles
-              if (this.selectedWithoutMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
-                  const file = this.selectedWithoutMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithoutMask');
-                image.append('user_id', this.id);
-
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
-                    });
-                  });
-              }
-
-              // Kiểm tra selectedWithMaskFiles
-              if (this.selectedWithMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
-                  const file = this.selectedWithMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithMask');
-                image.append('user_id', this.id);
-
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
-                    });
-                  });
-              }
               this.waitEdit = false;
-              await this.$router.push('/user/index');
+              await this.$router.push('/viam/index');
             } else {
               // this.closeLoading();
               MakeToast({
@@ -354,11 +239,11 @@ export default {
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
             content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
           });
-          this.$router.push('/user/index');
+          this.$router.push('/viam/index');
         });
       }
     },
-    listEmployees(){
+    listPolicy(){
       this.$router.push({ path: `/viam/index` });
     },
   },
@@ -527,17 +412,20 @@ export default {
     text-align: left;
   }
   ::v-deep .header-employee-edit {
-    width: calc(100% / 2);
+    width: 100%;
     height: 40px;
     margin: 0px;
     font-size: 20px;
   }
   ::v-deep .header-employee-edit-name{
-    width: calc(100% / 2);
+    width: 100%;
     height: 40px;
     /* margin: 0; */
     margin-top: 30px;
     font-size: 20px;
+  }
+  ::v-deep .el-select {
+    width: 100%;
   }
   </style>
 

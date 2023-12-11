@@ -30,7 +30,7 @@
                 align="center"
               />
               <el-table-column
-                prop="policy"
+                prop="name"
                 label="policy"
                 align="center"
               />
@@ -70,9 +70,13 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <div>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="type"
+              rules="required"
+            >
               <label for="emailEmployee" class="mt-3">Type</label>
-              <div>
+              <div style="width: 100%;">
                 <el-select id="emailEmployee" v-model="form.type" placeholder="Please select Type">
                   <el-option
                     v-for="item in listType"
@@ -81,9 +85,11 @@
                     :value="item.id"
                   />
                 </el-select>
-
+                <div class="text-error">
+                  {{ errors[0] }}
+                </div>
               </div>
-            </div>
+            </ValidationProvider>
           </ValidationObserver>
           <span slot="footer" class="dialog-footer mt-3">
             <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
@@ -102,11 +108,9 @@
 </template>
 
 <script>
-import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
+import { deleteOneUser, getAllUser, postOneUser } from '../../api/viampolicy';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
-import { getAllRole } from '../../api/role';
-import * as ImageApi from '../../api/image_face';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
 export default {
@@ -126,24 +130,11 @@ export default {
       },
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
-      listUser: [
-        { id: 1, policy: 'izumi' },
-        { id: 2, policy: 'daisei' },
-        { id: 3, policy: 'veho_face' },
-      ],
-      role_id_selected: '',
-      name_search: null,
-      formCreate: {
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        role_id: '',
-        status: 1,
-      },
+      listUser: [],
+
       form: {
-        type: '',
         name: '',
+        type: '',
       },
       listType: [
         { id: 1, name: 'V-Face' },
@@ -158,20 +149,10 @@ export default {
       messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
-      displayBoxSearch: 'd-none',
-      displaySearch: 'd-block',
+
     };
   },
   computed: {
-    role_id() {
-      return this.$store.getters.role_id;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
-    },
-    // listUser() {
-    //   return this.$store.getters.listUser;
-    // },
     currChange() {
       return this.pagination.current_page;
     },
@@ -182,7 +163,6 @@ export default {
     },
   },
   created() {
-    this.getListRole();
     this.getListAllUser();
   },
   methods: {
@@ -192,44 +172,22 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListRole(){
-      this.openLoading();
-      await getAllRole().then((response) => {
-        if (response.code === 200){
-          this.$store.dispatch('app/saveListRoles', response.data);
-          this.closeLoading();
-        }
-      }).catch((error) => {
-        this.closeLoading();
-        MakeToast({
-          variant: 'warning',
-          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: error.message,
-        });
-      });
-    },
     async getListAllUser() {
       this.pagination.isDisable = true;
       const PARAMS = {
         page: this.pagination.current_page,
         per_page: this.pagination.per_page,
-        role_id: this.role_id_selected,
-        email: this.name_search,
       };
       await getAllUser(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            const listUser = response.data.result;
-            // console.log('listUser===>', listUser);
-            this.$store.dispatch('app/saveListUSer', listUser);
+            this.listUser = response.data.result;
+            console.log('listUser===>', this.listUser);
+            // this.$store.dispatch('app/saveListUSer', listUser);
             this.pagination.total_records =
               response.data.pagination.total_records;
             this.pagination.current_page = response.data.pagination.current_page;
             this.pagination.isDisable = false;
-            // listUser.forEach((element) => {
-            //   element.roles.name = this.convertRoles(
-            //     element.roles.name);
-            // });
           }
           this.closeLoading();
         })
@@ -243,6 +201,7 @@ export default {
         });
     },
     goToEditScreen(val) {
+      console.log('vall', val);
       this.$router.push({ path: `/viam/edit/${val.id}` }, (onAbort) => {});
     },
     toCreatePage() {
@@ -257,20 +216,10 @@ export default {
       this.$bvModal.show('bv-modal-delete');
     },
     hideCreateModal(){
-      this.formCreate = {
+      this.form = {
         name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        role_id: '',
-        status: 1,
+        type: '',
       };
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-      }
       this.openModalAdd = false;
     },
     hideModal() {
@@ -292,99 +241,19 @@ export default {
         });
       }
     },
-    convertRoles(roles) {
-      switch (roles) {
-        case 'Headquater_Role':
-          return this.$t('LANGUAGES.TEXT_HEAD_QUARTER_ROLE');
-        case 'Department_Role':
-          return this.$t('LANGUAGES.TEXT_HEAD_DEPARTMENT_ROLE');
-        default:
-      }
-    },
     async submitCreate() {
-      this.checkNumImage();
       const isValid = await this.$refs.obsAddEmployee.validate();
-      if (!isValid && this.validateFile) {
-        MakeToast({
-          variant: 'warning',
-          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: 'Still error',
-        });
-      } else {
+      if (isValid) {
         this.waitCreate = true;
-        await postOneUser(this.formCreate).then(async(response) => {
-          const toastSuccessMessage = [];
-          const toastFalseMessage = [];
+        await postOneUser(this.form).then(async(response) => {
           if (response.code === 200) {
             // Kiểm tra selectedWithoutMaskFiles
-            if (this.selectedWithoutMaskFiles.length !== 0){
-              const image = new FormData();
-              for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
-                const file = this.selectedWithoutMaskFiles[i];
-                image.append('file[]', file);
-              }
-              image.append('type', 'WithoutMask');
-              image.append('user_id', response.data.id);
-
-              await ImageApi.createImage(image)
-                .then((response) => {
-                  if (response.code === 200){
-                    toastSuccessMessage.push('Add image without mask employee success');
-                  } else {
-                    toastFalseMessage.push(response.message);
-                  }
-                })
-                .catch((error) => {
-                  toastFalseMessage.push(error.message);
-                });
-            }
-
-            // Kiểm tra selectedWithMaskFiles
-            if (this.selectedWithMaskFiles.length !== 0){
-              const image = new FormData();
-              for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
-                const file = this.selectedWithMaskFiles[i];
-                image.append('file[]', file);
-              }
-              image.append('type', 'WithMask');
-              image.append('user_id', response.data.id);
-
-              await ImageApi.createImage(image)
-                .then((response) => {
-                  if (response.code === 200){
-                    toastSuccessMessage.push('Add image with mask employee success');
-                  } else {
-                    toastFalseMessage.push(response.message);
-                  }
-                })
-                .catch((error) => {
-                  toastFalseMessage.push(error.message);
-                });
-            }
-            this.formCreate = {
+            this.form = {
               name: '',
-              email: '',
-              password: '',
-              password_confirmation: '',
-              role_id: '',
-              status: 1,
+              type: '',
             };
             this.waitCreate = false;
             this.openModalAdd = false;
-            toastSuccessMessage.forEach((element) => {
-              MakeToast({
-                variant: 'success',
-                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                content: element,
-              });
-            });
-            toastFalseMessage.forEach((element) => {
-              MakeToast({
-                variant: 'success',
-                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                content: element,
-              });
-            });
             await this.getListAllUser();
           } else {
             MakeToast({
@@ -403,168 +272,9 @@ export default {
         });
       }
     },
-    checkDateRetired(date){
-      if (date == null){
-        return false;
-      }
-      const dateRetired = new Date(this.formatTimeStamp(date)).getTime();
-      const dateNow = new Date().getTime();
-      return dateRetired > dateNow;
-    },
-    formatTimeStamp(date){
-      const datePart = date.split(' ')[0]; // Extract the date part from the received value
-      const parts = datePart.split('-');
-      const year = parts[0];
-      const month = parts[1];
-      const day = parts[2];
-      return `${year}-${month}-${day}`;
-    },
-    checkWithoutMask(){
-      this.withoutMask = true;
-      this.withMask = false;
-    },
-    checkWithMask(){
-      this.withoutMask = false;
-      this.withMask = true;
-    },
-    handleDrop(event) {
-      event.preventDefault();
-      const files = event.dataTransfer.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // const fileURL = URL.createObjectURL(file);
-        if (this.withoutMask){
-          this.selectedWithoutMaskFiles.push(file);
-        }
-        if (this.withMask){
-          this.selectedWithMaskFiles.push(file);
-        }
-      }
-      this.validateFile = false;
-      this.checkNumImage();
-      this.checkImage();
-    },
-    openFilePicker() {
-      this.$refs.fileInput.click();
-    },
-    handleFileSelect(event) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (this.isImageFile(file)) {
-          if (this.withoutMask){
-            this.selectedWithoutMaskFiles.push(file);
-          }
-          if (this.withMask){
-            this.selectedWithMaskFiles.push(file);
-          }
-        }
-      }
-      this.validateFile = false;
-      this.checkNumImage();
-      this.checkImage();
-    },
-    isImageFile(file) {
-      const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
-      return allowedExtensions.test(file.name);
-    },
-    convertFileToUrl(file){
-      return URL.createObjectURL(file);
-    },
-    removeFile(index) {
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(index, 1);
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(index, 1);
-      }
-      this.checkNumImage();
-      this.checkImage();
-    },
-    chooseFiles() {
-      this.$refs.fileInput.click();
-    },
-    removeFileAll(){
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-      }
-      this.checkNumImage();
-    },
-    checkNumImage(){
-      this.messageErrorFile = [];
-      if (this.selectedWithoutMaskFiles.length === 0){
-        this.validateFile = true;
-        this.messageErrorFile.push('Image without mask must one image');
-      }
-
-      if (this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0){
-        this.validateFile = true;
-        this.messageErrorFile.push('Pleas choose image');
-      }
-      if (this.messageErrorFile.length === 0){
-        this.validateFile = false;
-      }
-    },
-    async checkImage() {
-      let dem = 0;
-      this.waitCreate = true;
-      for (const item of this.selectedWithoutMaskFiles) {
-        const file = new FormData();
-        file.append('file', item);
-        await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
-              this.messageErrorFile.push('Image must only one person');
-              dem++;
-            }
-          } else {
-            this.messageErrorFile.push(response.message);
-            this.validateFile = true;
-          }
-        }).catch((error) => {
-          this.messageErrorFile.push(error.getMessage());
-          this.validateFile = true;
-        });
-      }
-      for (const item of this.selectedWithMaskFiles) {
-        const file = new FormData();
-        file.append('file', item);
-        await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
-              this.messageErrorFile.push('Image must only one person');
-              dem++;
-            }
-          } else {
-            this.messageErrorFile.push(response.message);
-            this.validateFile = true;
-          }
-        }).catch((error) => {
-          this.messageErrorFile.push(error.getMessage());
-          this.validateFile = true;
-        });
-      }
-      if (dem > 0){
-        this.validateFile = true;
-      } else {
-        this.validateFile = false;
-      }
-      this.waitCreate = false;
-    },
     // copy cua Yen
     rowWorkingStyle({ row, rowIndex }) {
       return { 'cursor': 'pointer' };
-    },
-    openInputSearch() {
-      this.displayBoxSearch = 'd-flex';
-      this.displaySearch = 'd-none';
-    },
-    closeInputSearch() {
-      this.displayBoxSearch = 'd-none';
-      this.displaySearch = 'd-block';
     },
   },
 };
