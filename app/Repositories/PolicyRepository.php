@@ -38,10 +38,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     public function list($attributes)
     {
-        if(@$attributes['page'] || @$attributes['per_page']) {
-            return $this->model->paginate($attributes['per_page']);
-        }
-        return $this->model->select('id', 'name')->get();
+        return $this->model->get();
     }
 
     public function update(array $attributes, $id)
