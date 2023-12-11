@@ -9,9 +9,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmotionRequest;
-use App\Repositories\Contracts\EmotionRepositoryInterface;
+use App\Http\Requests\VIAMUserRequest;
 use App\Http\Resources\BaseResource;
-use App\Http\Resources\EmotionResource;
+use App\Repositories\Contracts\VIAMUserRepositoryInterface;
 use Illuminate\Http\Request;
 
 class VIAMUserController extends Controller
@@ -22,7 +22,7 @@ class VIAMUserController extends Controller
      */
     protected $repository;
 
-    public function __construct(EmotionRepositoryInterface $repository)
+    public function __construct(VIAMUserRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
@@ -69,10 +69,10 @@ class VIAMUserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(EmotionRequest $request)
+    public function index(VIAMUserRequest $request)
     {
-        $data = $this->repository->paginate($request->per_page);
-        return $this->responseJson(200, BaseResource::collection($data));
+        $data = $this->repository->list($request->all());
+        return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
     }
 
     /**
@@ -81,10 +81,29 @@ class VIAMUserController extends Controller
      *   tags={"VIamUser"},
      *   summary="Add new viam_user",
      *   operationId="viam_user_create",
-     *   @OA\Parameter(name="name", in="query", required=true,
-     *     @OA\Schema(type="string"),
+     *   @OA\RequestBody(
+     *     @OA\MediaType(
+     *        mediaType="application/json",
+     *        @OA\Schema(
+     *          required={"name", "policy_id"},
+     *            @OA\Property(
+     *                property="name",
+     *                format="string",
+     *                example="VIAM_USER 1"
+     *             ),
+     *            @OA\Property(
+     *                property="policy_id",
+     *                format="string",
+     *                example="[1,3]"
+     *            ),
+     *          @OA\Property(
+     *                property="description",
+     *                example="description",
+     *                format="string",
+     *             ),
+     *         ),
+     *       ),
      *   ),
-     *
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -98,11 +117,10 @@ class VIAMUserController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function store(EmotionRequest $request)
+    public function store(VIAMUserRequest $request)
     {
         try {
-            $data = $this->repository->create($request->all());
-            return $this->responseJson(200, new EmotionResource($data));
+            return $this->repository->create($request->all());
         } catch (\Exception $e) {
             throw $e;
         }
@@ -147,15 +165,15 @@ class VIAMUserController extends Controller
     public function show($id)
     {
         try {
-            $department = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($department));
+            $data = $this->repository->with('policies')->find($id);
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *   path="/api/viam_user/{id}",
      *   tags={"VIamUser"},
      *   summary="Update viam_user",
@@ -169,17 +187,27 @@ class VIAMUserController extends Controller
      *     ),
      *   ),
      *   @OA\RequestBody(
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"name":"string"},
-     *          @OA\Schema(
-     *            required={"name"},
+     *     @OA\MediaType(
+     *        mediaType="application/json",
+     *        @OA\Schema(
+     *          required={"name", "policy_id"},
      *            @OA\Property(
-     *              property="name",
-     *              format="string",
+     *                property="name",
+     *                format="string",
+     *                example="VIAM_USER 1"
+     *             ),
+     *            @OA\Property(
+     *                property="policy_id",
+     *                format="string",
+     *                example="[1,3]"
      *            ),
-     *         )
-     *      )
+     *          @OA\Property(
+     *                property="description",
+     *                example="description",
+     *                format="string",
+     *             ),
+     *         ),
+     *       ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -203,11 +231,13 @@ class VIAMUserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(EmotionRequest $request, $id)
+    public function update(VIAMUserRequest $request, $id)
     {
-        $attributes = $request->except([]);
-        $data = $this->repository->update($attributes, $id);
-        return $this->responseJson(200, new BaseResource($data));
+        try {
+            return $this->repository->update($request->all(), $id);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -241,6 +271,6 @@ class VIAMUserController extends Controller
     public function destroy($id)
     {
         $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }
 }

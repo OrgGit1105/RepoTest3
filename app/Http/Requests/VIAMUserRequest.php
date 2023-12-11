@@ -10,7 +10,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
-class PolicyRequest extends FormRequest
+class VIAMUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -40,24 +40,21 @@ class PolicyRequest extends FormRequest
     }
 
      public function getCustomRule(){
-        if(Route::getCurrentRoute()->getActionMethod() == 'update'){
+        if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return [
-                'name' => 'required|unique:policies,name,' . $this->route('policy'). '|max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:viam_users,name,max:255',
+                'policy_id' => 'required|array',
+                'policy_id.*' => 'required|exists:policies,id',
+                'description' => 'nullable|string'
             ];
         }
-        if(Route::getCurrentRoute()->getActionMethod() == 'store'){
+        if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return  [
-                'name' => 'required|unique:policies,name,max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:viam_users,name,' . $this->route('viam_user'). '|max:255',
+                'policy_id' => 'required|array',
+                'policy_id.*' => 'required|exists:policies,id',
+                'description' => 'nullable|string'
             ];
         }
      }
-
-    public function messages()
-    {
-        return [
-            'required' => ':attribute not null'
-        ];
-    }
 }
