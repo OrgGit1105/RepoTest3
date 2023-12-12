@@ -110,7 +110,7 @@ class UserController extends Controller
         $data = $this->repository->pagination($request);
         foreach ($data as $item) {
             $item['retired'] = '';
-            if(Carbon::parse($item->entry_date) >= Carbon::now()) {
+            if(Carbon::parse($item->retirement_date) >= Carbon::now()) {
                 $item['retired'] = 'Retired';
             }
         }
