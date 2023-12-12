@@ -1,13 +1,5 @@
 import request from '../utils/request.js';
 import { template } from './template.js';
-const urlAPI = {
-  urlGETRole: template`/viam_user`,
-};
-
-export function getAllRole() {
-  return request.getRequest(urlAPI.urlGETRole());
-}
-
 import * as RequestApi from './request';
 const urlAPI = {
   urlGETUser: template`/viam_user`,
@@ -17,6 +9,9 @@ const urlAPI = {
   urlDELETEOneUser: template`/viam_user/${'id'}`,
 };
 
+export function getAllRole() {
+  return request.getRequest(urlAPI.urlGETUser());
+}
 export function getAllUser(params) {
   if (params.url) {
     return request.getRequest(params.url, params);

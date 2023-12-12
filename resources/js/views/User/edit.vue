@@ -409,56 +409,54 @@
                   </b-input-group>
                 </div>
               </h4>
+              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="basic">
+                    <h1 class="title-face">Password</h1>
+                  </div>
+                </div>
+                <hr class="line">
+                <div>
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="password"
+                    vid="password"
+                    rules="required"
+                  >
+                    <label for="password" style="font-size: 16px;">Password:</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="password"
+                        v-model="formEdit.password"
+                        type="password"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <ValidationProvider
+                    v-slot="{ errors }"
+                    name="password_confirm"
+                    rules="required|confirmed:password"
+                  >
+                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>
+                    <b-input-group>
+                      <b-form-input
+                        id="password_confirm"
+                        v-model="formEdit.password_confirmation"
+                        type="password"
+                      />
+                    </b-input-group>
+                    <div class="text-error">
+                      {{ errors[0] }}
+                    </div>
+                  </ValidationProvider>
+                </div>
+              </h4>
               <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete Employee </p>
-              <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 35px;">-->
-              <!--                <header>-->
-              <!--                  <h4 class="text-error" style="font-size: 20px; cursor: pointer" @click="showModalDelete()">Delete Employee</h4>-->
-              <!--                </header>-->
-              <!--              </h4>-->
-              <!--              <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">-->
-              <!--                <header>-->
-              <!--                  <h4>Password</h4>-->
-              <!--                </header>-->
-              <!--                <div>-->
-              <!--                  <ValidationProvider-->
-              <!--                    v-slot="{ errors }"-->
-              <!--                    name="password"-->
-              <!--                    vid="password"-->
-              <!--                    rules="required"-->
-              <!--                  >-->
-              <!--                    <label for="password" style="font-size: 16px;">Password:</label>-->
-              <!--                    <b-input-group>-->
-              <!--                      <b-form-input-->
-              <!--                        id="password"-->
-              <!--                        v-model="formEdit.password"-->
-              <!--                        type="password"-->
-              <!--                      />-->
-              <!--                    </b-input-group>-->
-              <!--                    <div class="text-error">-->
-              <!--                      {{ errors[0] }}-->
-              <!--                    </div>-->
-              <!--                  </ValidationProvider>-->
-              <!--                </div>-->
-              <!--                <div style="margin-bottom: 15px;">-->
-              <!--                  <ValidationProvider-->
-              <!--                    v-slot="{ errors }"-->
-              <!--                    name="password_confirm"-->
-              <!--                    rules="required|confirmed:password"-->
-              <!--                  >-->
-              <!--                    <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>-->
-              <!--                    <b-input-group>-->
-              <!--                      <b-form-input-->
-              <!--                        id="password_confirm"-->
-              <!--                        v-model="formEdit.password_confirmation"-->
-              <!--                        type="password"-->
-              <!--                      />-->
-              <!--                    </b-input-group>-->
-              <!--                    <div class="text-error">-->
-              <!--                      {{ errors[0] }}-->
-              <!--                    </div>-->
-              <!--                  </ValidationProvider>-->
-              <!--                </div>-->
-              <!--              </h4>-->
             </ValidationObserver>
           </div>
         </div>
@@ -504,8 +502,8 @@ export default {
       formEdit: {
         name: '',
         email: '',
-        // password: '',
-        // password_confirmation: '',
+        password: '',
+        password_confirmation: '',
         viam_user_id: '',
         retirement_date: '',
       },
@@ -566,38 +564,33 @@ export default {
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: error.message,
+          content: '1. ' + error.message,
         });
       });
     },
     async getUserInfo() {
       this.openLoading();
-      await UserApi.getOneUser(this.id)
-        .then((response) => {
-          // MakeToast({
-          //   variant: 'success',
-          //   title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-          //   content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_GET_USER_INFO_SUCCESSFULLY'),
-          // });
-          this.nameEmployee = response.data.name;
-          this.formEdit = {
-            name: response.data.name,
-            email: response.data.email,
-            // password: '',
-            // password_confirmation: '',
-            role_id: response.data.role_id,
-            retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
-          };
-          this.closeLoading();
-        })
-        .catch((error) => {
-          this.closeLoading();
-          MakeToast({
-            variant: 'warning',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: error.message,
-          });
+      try {
+        const response = await UserApi.getOneUser(this.id);
+        console.log(response);
+        this.nameEmployee = response.data.name;
+        this.formEdit = {
+          name: response.data.name,
+          email: response.data.email,
+          password: '',
+          password_confirmation: '',
+          role_id: response.data.role_id,
+          retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
+        };
+        this.closeLoading();
+      } catch (error) {
+        this.closeLoading();
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: '2. ' + error.message,
         });
+      }
     },
     async getImageByUserId(){
       this.openLoading();
@@ -627,7 +620,7 @@ export default {
           MakeToast({
             variant: 'warning',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: error.message,
+            content: '3. ' + error.message,
           });
         });
     },
@@ -688,7 +681,7 @@ export default {
                       MakeToast({
                         variant: 'warning',
                         title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: error.message,
+                        content: '4. ' + error.message,
                       });
                     });
                 }
@@ -723,7 +716,7 @@ export default {
                     MakeToast({
                       variant: 'warning',
                       title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
+                      content: '5. ' + error.message,
                     });
                   });
               }
@@ -758,7 +751,7 @@ export default {
                     MakeToast({
                       variant: 'warning',
                       title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
+                      content: '6. ' + error.message,
                     });
                   });
               }
@@ -778,7 +771,7 @@ export default {
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-              content: error.message,
+              content: '7. ' + error.message,
             });
           });
         this.waitEdit = false;
