@@ -86,7 +86,7 @@
                 width="90"
               >
                 <template slot-scope="scope">
-                  <span v-if="checkDateRetired(scope.retirement_date)" style="color: red;">
+                  <span v-if="scope.row.retired" style="color: red;">
                     Retired
                   </span>
                 </template>
@@ -801,14 +801,6 @@ export default {
           });
         });
       }
-    },
-    checkDateRetired(date) {
-      if (date == null) {
-        return false;
-      }
-      const dateRetired = new Date(this.formatTimeStamp(date)).getTime();
-      const dateNow = new Date().getTime();
-      return dateRetired > dateNow;
     },
     formatTimeStamp(date) {
       const datePart = date.split(' ')[0]; // Extract the date part from the received value
