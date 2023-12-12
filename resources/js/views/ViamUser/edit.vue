@@ -221,7 +221,6 @@ export default {
         });
     },
     async onSubmit(e) {
-      console.log('this.selectedTagPolicy_id: 2222222', this.selectedTagPolicy_id);
       e.preventDefault();
       this.openLoading();
       const isValid = await this.$refs.obsEditEmployee.validate();
