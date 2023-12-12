@@ -13,19 +13,14 @@
         </div>
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
-          <p class="back-list cursor-pointer" @click="listEmployees()"> <i class="el-icon-arrow-left icon-back-list" /> All VIAM User </p>
+          <p class="back-list cursor-pointer" @click="listUserViam()"> <i class="el-icon-arrow-left icon-back-list" /> All VIAM User </p>
           <div class="card-body p-card-body">
             <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
                 <h1 class="title-record m-0">User</h1>
               </div>
               <div class="basic">
-                <template v-if="!waitEdit">
-                  <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
-                </template>
-                <template v-if="waitEdit">
-                  <el-button class="btn-add-custom" type="primary">...</el-button>
-                </template>
+                <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
               </div>
             </div>
             <hr class="line">
@@ -115,12 +110,12 @@
 </template>
 
 <script>
-import * as CONFIGS from '../../configs/index';
-import * as UserApi from '../../api/user';
-import * as ImageApi from '../../api/image_face';
+
+import * as UserApi from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { deleteOneUser } from '../../api/user';
+import { deleteOneUser } from '../../api/viamUser';
+import { getAllPolicy } from '../../api/viampolicy';
 
 export default {
   name: 'EditViamUser',
@@ -130,66 +125,43 @@ export default {
   },
   data() {
     return {
-      headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
-      authorityOption: CONFIGS.AuthorityList,
-      branchList: [],
       formEdit: {
         name: '',
         description: '',
       },
       id: this.$route.params.id,
-      userInfo: {},
-      author: true,
-      selectedWithMaskFiles: [],
-      selectedWithoutMaskFiles: [],
-      withoutMask: true,
-      withMask: false,
-      nameEmployee: '',
-      linkFilesWithoutMask: [],
-      linkFilesWithMask: [],
-      linkFileDelete: [],
-      validateFile: false,
-      messageErrorFile: [],
       showModalDelete: false,
-      waitEdit: false,
 
       selectedTagPolicy: [],
       selectedTagPolicy_id: [],
       showDropdownPolicy: false,
-      availableTags: [
-        { id: 1, name: 'Tag 1' },
-        { id: 2, name: 'Tag 2' },
-        { id: 3, name: 'Tag 3' },
-      ],
+      availableTags: [],
     };
   },
   computed: {
-    roleId() {
-      return this.$store.getters.role_id;
-    },
-    companyBranch() {
-      return this.$store.getters.listBranch;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
-    },
+
   },
   watch: {
-    companyBranch() {
-    },
     selectedTagPolicy(newTags) {
-      // Cập nhật selectedTagsId dựa trên newTags
+      console.log('this.selectedTagPolicy_id: 444444', this.selectedTagPolicy_id);
       this.selectedTagPolicy_id = newTags.map(tagName => {
         const foundTag = this.availableTags.find(tag => tag.name === tagName);
         return foundTag ? foundTag.id : null;
       }).filter(id => id !== null);
+      console.log('this.selectedTagPolicy_id: 444', this.selectedTagPolicy_id);
     },
   },
   created() {
-    this.getUserInfo();
+    this.initData();
+    // this.getListPolicy();
+    // this.getUserInfo();
   },
 
   methods: {
+    async initData() {
+      await this.getListPolicy();
+      this.getUserInfo();
+    },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
     },
@@ -200,7 +172,6 @@ export default {
       if (!this.selectedTagPolicy.includes(tag)) {
         this.selectedTagPolicy.push(tag.name);
         this.selectedTagPolicy_id.push(tag.id);
-        console.log('this.selectedTagPolicy_id1111111', this.selectedTagPolicy_id);
       }
       this.showDropdownPolicy = false;
     },
@@ -210,37 +181,27 @@ export default {
       }, 200);
     },
     onTagRemoveEdit(removedTagName) {
-      // Tìm đối tượng tag trong availableTags dựa trên tên
       const tagToRemove = this.availableTags.find(tag => tag.name === removedTagName);
-
-      // Nếu tìm thấy, xóa id của nó khỏi selectedTagPolicy_id
       if (tagToRemove) {
         const indexToRemove = this.selectedTagPolicy_id.indexOf(tagToRemove.id);
         if (indexToRemove !== -1) {
           this.selectedTagPolicy_id.splice(indexToRemove, 1);
         }
       }
-
-      console.log('Tag removed:', removedTagName);
     },
     async getUserInfo() {
       this.openLoading();
       await UserApi.getOneUser(this.id)
         .then((response) => {
-          // MakeToast({
-          //   variant: 'success',
-          //   title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-          //   content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_GET_USER_INFO_SUCCESSFULLY'),
-          // });
-          this.nameEmployee = response.data.name;
+          console.log('res', response);
           this.formEdit = {
             name: response.data.name,
-            email: response.data.email,
-            // password: '',
-            // password_confirmation: '',
-            role_id: response.data.role_id,
-            retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
+            description: response.data.description,
           };
+          this.selectedTagPolicy_id = response.data.policies.map(item => item.id);
+          this.selectedTagPolicy = response.data.policies.map(item => item.name);
+          console.log('this.selectedTagPolicy_id', this.selectedTagPolicy_id);
+          console.log('this.selectedTagPolicy 333', this.selectedTagPolicy);
           this.closeLoading();
         })
         .catch((error) => {
@@ -253,125 +214,35 @@ export default {
         });
     },
     async onSubmit(e) {
+      console.log('this.selectedTagPolicy_id: 2222222', this.selectedTagPolicy_id);
       e.preventDefault();
+      this.openLoading();
       const isValid = await this.$refs.obsEditEmployee.validate();
-      if (isValid === true && !this.validateFile) {
-        this.waitEdit = true;
-        await UserApi.putOneUser(this.id, this.formEdit)
+      if (isValid) {
+        console.log('this.selectedTagPolicy_id: 1111', this.selectedTagPolicy_id);
+        const DATA = {
+          name: this.formEdit.name,
+          policy_id: this.selectedTagPolicy_id,
+          description: this.formEdit.description,
+        };
+        console.log('data', DATA);
+        await UserApi.putOneUser(this.id, DATA)
           .then(async(response) => {
             if (response.code === 200) {
-              // this.closeLoading();
+              this.closeLoading();
               MakeToast({
                 variant: 'success',
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                content: 'Edit employee success',
+                content: 'Edit viam user success',
               });
-              if (this.linkFileDelete.length !== 0){
-                for (const element of this.linkFileDelete) {
-                  await ImageApi.deleteImageByUserId(element.id)
-                    .then((response) => {
-                      if (response.code === 200){
-                        MakeToast({
-                          variant: 'success',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                          content: `Delete image employee with link ${element.file} success`,
-                        });
-                      } else {
-                        MakeToast({
-                          variant: 'warning',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                          content: response.message,
-                        });
-                      }
-                    })
-                    .catch((error) => {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: error.message,
-                      });
-                    });
-                }
-              }
-              // Kiểm tra selectedWithoutMaskFiles
-              if (this.selectedWithoutMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
-                  const file = this.selectedWithoutMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithoutMask');
-                image.append('user_id', this.id);
-
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
-                    });
-                  });
-              }
-
-              // Kiểm tra selectedWithMaskFiles
-              if (this.selectedWithMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
-                  const file = this.selectedWithMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithMask');
-                image.append('user_id', this.id);
-
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: error.message,
-                    });
-                  });
-              }
-              this.waitEdit = false;
-              await this.$router.push('/user/index');
+              await this.$router.push('/viam-user/index');
             } else {
-              // this.closeLoading();
+              this.closeLoading();
               MakeToast({
                 variant: 'warning',
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
                 content: response.message,
               });
-              this.waitEdit = false;
             }
           })
           .catch((error) => {
@@ -381,24 +252,13 @@ export default {
               content: error.message,
             });
           });
-        this.waitEdit = false;
       } else {
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: 'Still error',
         });
-        this.waitEdit = false;
       }
-    },
-
-    checkWithoutMask(){
-      this.withoutMask = true;
-      this.withMask = false;
-    },
-    checkWithMask(){
-      this.withoutMask = false;
-      this.withMask = true;
     },
     async submitDelete() {
       if (this.id) {
@@ -408,12 +268,38 @@ export default {
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
             content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
           });
-          this.$router.push('/user/index');
+          this.$router.push('/viam-user/index');
         });
       }
     },
-    listEmployees(){
+    listUserViam(){
       this.$router.push({ path: `/viam-user/index` });
+    },
+    async getListPolicy() {
+      const url = `/policy`;
+      await getAllPolicy(url)
+        .then((response) => {
+          if (response.code === 200) {
+            const data = response.data;
+            if (data.length > 0) {
+              const TEM = [];
+              data.map(item => {
+                TEM.push({
+                  id: item.id,
+                  name: item.name,
+                });
+              });
+              this.availableTags.push(...TEM);
+            }
+          }
+        })
+        .catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
     },
   },
 };
@@ -436,6 +322,9 @@ export default {
     }
     .form-tag {
         position: relative;
+    }
+    ::v-deep .b-form-tags-button {
+        display: none;
     }
     ::v-deep .dropdown-menu {
         position: absolute;
