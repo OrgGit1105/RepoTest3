@@ -20,12 +20,7 @@
                 <h1 class="title-record m-0">Policy</h1>
               </div>
               <div class="basic">
-                <template v-if="!waitEdit">
-                  <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
-                </template>
-                <template v-if="waitEdit">
-                  <el-button class="btn-add-custom" type="primary">...</el-button>
-                </template>
+                <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
               </div>
             </div>
             <hr class="line">
@@ -91,7 +86,7 @@
       width="30%"
       center
     >
-      <span class="text-align-center">Are you sure to delete this Viam?</span>
+      <span class="text-align-center">Are you sure to delete this Policy?</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="showModalDelete= false">Cancel</el-button>
         <el-button type="danger" @click="submitDelete()">Confirm</el-button>
@@ -133,7 +128,6 @@ export default {
       withoutMask: true,
       withMask: false,
       showModalDelete: false,
-      waitEdit: false,
     };
   },
   computed: {
@@ -182,8 +176,7 @@ export default {
     async onSubmit(e) {
       e.preventDefault();
       const isValid = await this.$refs.obsEditEmployee.validate();
-      if (isValid === true && !this.validateFile) {
-        this.waitEdit = true;
+      if (isValid === true) {
         await UserApi.putOneUser(this.id, this.formEdit)
           .then(async(response) => {
             if (response.code === 200) {
@@ -193,7 +186,6 @@ export default {
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
                 content: 'Edit policy success',
               });
-              this.waitEdit = false;
               await this.$router.push('/viam/index');
             } else {
               // this.closeLoading();
@@ -202,7 +194,6 @@ export default {
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
                 content: response.message,
               });
-              this.waitEdit = false;
             }
           })
           .catch((error) => {
@@ -212,14 +203,12 @@ export default {
               content: error.message,
             });
           });
-        this.waitEdit = false;
       } else {
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: 'Still error',
         });
-        this.waitEdit = false;
       }
     },
 
