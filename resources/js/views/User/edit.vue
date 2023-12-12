@@ -421,7 +421,7 @@
                     v-slot="{ errors }"
                     name="password"
                     vid="password"
-                    rules="required"
+                    rules="min:8"
                   >
                     <label for="password" style="font-size: 16px;">Password:</label>
                     <b-input-group>
@@ -440,7 +440,7 @@
                   <ValidationProvider
                     v-slot="{ errors }"
                     name="password_confirm"
-                    rules="required|confirmed:password"
+                    rules="confirmed:password|min:8"
                   >
                     <label for="password_confirm" style="font-size: 16px;">Password(Confirm) :</label>
                     <b-input-group>
