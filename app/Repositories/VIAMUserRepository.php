@@ -8,7 +8,6 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Models\Emotion;
 use App\Models\User;
 use App\Models\VIAMUser;
 use App\Models\VIAMUserPolicy;
@@ -17,7 +16,6 @@ use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
-use function Clue\StreamFilter\fun;
 
 class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInterface
 {

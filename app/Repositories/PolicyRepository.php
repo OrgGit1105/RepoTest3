@@ -7,14 +7,11 @@
 
 namespace Repository;
 
-use App\Models\Emotion;
 use App\Models\Policy;
 use App\Models\VIAMUserPolicy;
-use App\Repositories\Contracts\EmotionRepositoryInterface;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 
 class PolicyRepository extends BaseRepository implements PolicyRepositoryInterface
 {

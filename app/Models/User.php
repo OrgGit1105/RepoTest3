@@ -120,14 +120,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(VIAMUser::class, 'viam_user_id', 'id');
     }
 
-    public function policies()
-    {
-        return $this->hasManyThrough(Policy::class, VIAMUserPolicy::class, 'viam_user_id', 'id', 'viam_user_id', 'id');
-    }
-
     public function getRoleVFace($user)
     {
-        $policies = $user->policies;
+        $policies = $user->viam_user->policies;
         $policy_v_face = [];
 
         foreach ($policies as $policy)
