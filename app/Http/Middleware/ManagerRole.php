@@ -18,7 +18,7 @@ class ManagerRole
     public function handle(Request $request, Closure $next)
     {
         $user = Auth()->user();
-        $policies = $user->policies;
+        $policies = $user->viam_user->policies;
         foreach ($policies as $policy) {
             if ($policy->type == POLICY_TYPE['V_FACE'] && $policy->name == POLICY_V_FACE_NAME['Admin']) {
                 return $next($request);

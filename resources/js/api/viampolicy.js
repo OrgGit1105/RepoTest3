@@ -1,28 +1,27 @@
 import request from '../utils/request.js';
 import { template } from './template.js';
-const urlAPI = {
-  urlGETRole: template`/viam_user`,
-};
-
-export function getAllRole() {
-  return request.getRequest(urlAPI.urlGETRole());
-}
-
 import * as RequestApi from './request';
 const urlAPI = {
-  urlGETUser: template`/viam_user`,
-  urlPOSTOneUser: template`/viam_user`,
-  urlGETOneUser: template`/viam_user/${'id'}`,
-  urlPUTOneUser: template`/viam_user/${'id'}`,
-  urlDELETEOneUser: template`/viam_user/${'id'}`,
+  urlGETUser: template`/policy`,
+  urlPOSTOneUser: template`/policy`,
+  urlGETOneUser: template`/policy/${'id'}`,
+  urlPUTOneUser: template`/policy/${'id'}`,
+  urlDELETEOneUser: template`/policy/${'id'}`,
 };
 
-export function getAllUser(params) {
-  if (params.url) {
-    return request.getRequest(params.url, params);
-  }
-  return request.getRequest(urlAPI.urlGETUser(), params);
+export function getAllUser(url) {
+  return request.getRequest(url);
 }
+
+export function getAllPolicy(url) {
+  return request.getRequest(url);
+}
+// export function getAllUser(params) {
+//     if (params.url) {
+//       return request.getRequest(params.url, params);
+//     }
+//     return request.getRequest(urlAPI.urlGETUser(), params);
+//   }
 
 export function postOneUser(data) {
   return request.postRequest(urlAPI.urlPOSTOneUser(), data);
