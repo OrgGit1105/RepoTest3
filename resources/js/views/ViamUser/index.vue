@@ -244,7 +244,6 @@ export default {
       if (!this.selectedTagPolicy.includes(tag)) {
         this.selectedTagPolicy.push(tag.name);
         this.selectedTagPolicy_id.push(tag.id);
-        console.log('this.selectedTagPolicy_id1111111', this.selectedTagPolicy_id);
       }
       this.showDropdownPolicy = false;
       await this.$refs.obsAddEmployeeTagsPolicy.validate();

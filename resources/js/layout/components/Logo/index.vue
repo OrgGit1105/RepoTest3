@@ -1,9 +1,7 @@
 <template>
   <div class="logo">
-    <a :href="href">
-      <img class="custom-image" :src="logo" alt="V-FACE">
-      <span>V-Face</span>
-    </a>
+    <img class="custom-image" :src="logo" alt="V-FACE">
+    <span>V-Face</span>
   </div>
 </template>
 
@@ -11,13 +9,13 @@
 const logo = require('@/assets/images/logo.png');
 export default {
   name: 'Logo',
-  props: {
-    href: {
-      required: true,
-      type: String,
-      default: '#',
-    },
-  },
+  // props: {
+  //   href: {
+  //     required: true,
+  //     type: String,
+  //     default: '#',
+  //   },
+  // },
   data() {
     return {
       logo,
@@ -31,7 +29,7 @@ export default {
   display: flex;
   justify-content: center;
 }
-.logo a {
+.logo {
   display: flex;
   align-items: center;
   color: #000;
