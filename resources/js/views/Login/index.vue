@@ -4,7 +4,7 @@
     <section>
       <div id="loginArea">
         <Logo />
-        <div id="login-form">
+        <div id="login-form mt-3">
           <div class="form-login-dx">
             <div class="zone-login">
               <b-form>

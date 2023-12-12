@@ -1,7 +1,7 @@
 /* eslint-disable vue/max-attributes-per-line */
 <template>
   <div>
-    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-2 px-5">
+    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-3 px-5">
       <b-navbar-brand href="#" class="logo">
         <Logo :href="'#'" />
       </b-navbar-brand>
@@ -12,7 +12,7 @@
           <b-nav-item class="custom-item-nav" :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
         </b-navbar-nav>
         <b-navbar-nav>
-          <b-nav-item-dropdown right class="custom-icon-viam">
+          <b-nav-item-dropdown v-if="!checkViam" right class="custom-icon-viam">
             <!-- Using 'button-content' slot -->
             <template #button-content>
               <span class="viam-custom"> VIAM </span>
@@ -85,6 +85,14 @@ export default {
     },
     currentPage() {
       return window.location.pathname;
+    },
+    checkViam() {
+      let check = false;
+      const roles = this.$store.getters.role_id;
+      if (roles === 1){
+        check = true;
+      }
+      return !check;
     },
   },
   created() {

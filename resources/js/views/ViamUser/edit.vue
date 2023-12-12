@@ -24,33 +24,41 @@
               </div>
             </div>
             <hr class="line">
-            <ValidationObserver
-              ref="obsEditEmployee"
-              tag="div"
-            >
-              <h4 class="mb-0 font-weight-normal">
-                <div class="cover-employee-edit">
-                  <div class="employee-edit">
-                    <p class="header-employee-edit-name fw-5">User name</p>
-                    <div class="header-employee-edit">
-                      <ValidationProvider
-                        v-slot="{ errors }"
-                        name="name"
-                        rules="required"
-                      >
-                        <b-input-group>
-                          <b-form-input
-                            id="nameEmployee"
-                            v-model="formEdit.name"
-                            class="border-0 pl-2"
-                          />
-                        </b-input-group>
-                        <div class="text-error">
-                          {{ errors[0] }}
-                        </div>
-                      </ValidationProvider>
-                    </div>
-                    <div>
+            <h4 class="mb-0 font-weight-normal">
+              <div class="cover-employee-edit">
+                <div class="employee-edit">
+                  <p class="header-employee-edit-name fw-5">User name</p>
+                  <ValidationObserver
+                    ref="obsEditEmployee"
+                    tag="div"
+                    class="header-employee-edit"
+                  >
+                    <ValidationProvider
+                      v-slot="{ errors }"
+                      name="name"
+                      rules="required"
+                    >
+                      <b-input-group>
+                        <b-form-input
+                          id="nameEmployee"
+                          v-model="formEdit.name"
+                          class="border-0 pl-2"
+                        />
+                      </b-input-group>
+                      <div class="text-error">
+                        {{ errors[0] }}
+                      </div>
+                    </ValidationProvider>
+                  </ValidationObserver>
+                  <validation-observer
+                    ref="obsEditpolicy"
+                    tag="div"
+                  >
+                    <ValidationProvider
+                      v-slot="{ errors }"
+                      name="policy"
+                      rules="required"
+                    >
                       <p class="header-employee-edit-name fw-5">VIAM Policy</p>
                       <div class="form-tag">
                         <b-form-tags
@@ -70,25 +78,28 @@
                             {{ tag.name }}
                           </b-dropdown-item>
                         </div>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
                       </div>
-                    </div>
+                    </ValidationProvider>
+                  </validation-observer>
+                  <div>
+                    <p class="header-employee-edit-name fw-5">Description</p>
                     <div>
-                      <p class="header-employee-edit-name fw-5">Description</p>
-                      <div>
-                        <el-input
-                          v-model="formEdit.description"
-                          type="textarea"
-                          :rows="2"
-                          placeholder=""
-                          class="no-resize"
-                        />
-                      </div>
+                      <el-input
+                        v-model="formEdit.description"
+                        type="textarea"
+                        :rows="2"
+                        placeholder=""
+                        class="no-resize"
+                      />
                     </div>
                   </div>
                 </div>
-              </h4>
-              <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete User </p>
-            </ValidationObserver>
+              </div>
+            </h4>
+            <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete User </p>
           </div>
         </div>
       </div>
@@ -143,12 +154,10 @@ export default {
   },
   watch: {
     selectedTagPolicy(newTags) {
-      console.log('this.selectedTagPolicy_id: 444444', this.selectedTagPolicy_id);
       this.selectedTagPolicy_id = newTags.map(tagName => {
         const foundTag = this.availableTags.find(tag => tag.name === tagName);
         return foundTag ? foundTag.id : null;
       }).filter(id => id !== null);
-      console.log('this.selectedTagPolicy_id: 444', this.selectedTagPolicy_id);
     },
   },
   created() {
@@ -168,11 +177,12 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    addTagPolicy(tag) {
+    async addTagPolicy(tag) {
       if (!this.selectedTagPolicy.includes(tag)) {
         this.selectedTagPolicy.push(tag.name);
         this.selectedTagPolicy_id.push(tag.id);
       }
+      await this.$refs.obsEditpolicy.validate();
       this.showDropdownPolicy = false;
     },
     hideDropdownPolicy() {
@@ -193,15 +203,12 @@ export default {
       this.openLoading();
       await UserApi.getOneUser(this.id)
         .then((response) => {
-          console.log('res', response);
           this.formEdit = {
             name: response.data.name,
             description: response.data.description,
           };
           this.selectedTagPolicy_id = response.data.policies.map(item => item.id);
           this.selectedTagPolicy = response.data.policies.map(item => item.name);
-          console.log('this.selectedTagPolicy_id', this.selectedTagPolicy_id);
-          console.log('this.selectedTagPolicy 333', this.selectedTagPolicy);
           this.closeLoading();
         })
         .catch((error) => {
@@ -218,8 +225,8 @@ export default {
       e.preventDefault();
       this.openLoading();
       const isValid = await this.$refs.obsEditEmployee.validate();
-      if (isValid) {
-        console.log('this.selectedTagPolicy_id: 1111', this.selectedTagPolicy_id);
+      const isValidpolicy = await this.$refs.obsEditpolicy.validate();
+      if (isValid && isValidpolicy) {
         const DATA = {
           name: this.formEdit.name,
           policy_id: this.selectedTagPolicy_id,
