@@ -163,7 +163,7 @@ export default {
       this.openLoading();
       await UserApi.getOneUser(this.id)
         .then((response) => {
-          console.log('response', response);
+          // console.log('response', response);
           this.formEdit = {
             name: response.data.name,
             type: response.data.type,
