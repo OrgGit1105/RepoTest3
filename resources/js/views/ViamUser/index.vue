@@ -35,7 +35,7 @@
                 align="center"
               />
               <el-table-column
-                prop="viam_policy"
+                prop="policy_list"
                 label="Viam Policy"
                 align="center"
               />
@@ -43,7 +43,7 @@
           </div>
         </div>
 
-        <div class="use-management-pagianation">
+        <!-- <div class="use-management-pagianation">
           <div class="card-body pagianation">
             <el-pagination
               background
@@ -55,7 +55,7 @@
               @current-change="getListAllUser"
             />
           </div>
-        </div>
+        </div> -->
 
         <!-- Modal -->
         <el-dialog class="title-add-working" title="Add VIAM User" :visible.sync="openModalAdd" width="40%" @click="hideCreateModal()">
@@ -75,33 +75,21 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <ValidationProvider
+            <!-- <ValidationProvider
               v-slot="{ errors }"
-              name="Policy"
+              name="policy"
               rules="required"
             >
-              <label for="emailEmployee" class="mt-3">VIAM Policy</label>
-              <div class="form-tag">
-                <!-- <el-tag
-                  v-for="tag in dynamicTags"
-                  :key="tag"
-                  closable
-                  :disable-transitions="false"
-                  @close="handleClose(tag)"
-                >
-                  {{ tag }}
-                </el-tag>
-                <i class="el-icon-arrow-down" /> -->
+              <label for="tagsPolicy" class="mt-3">VIAM Policy</label>
+              <div id="tagsPolicy" class="form-tag">
                 <b-form-tags
+                  id="tagsPolicy-tags"
                   v-model="selectedTagPolicy"
                   placeholder="入力してください"
                   @focus="showDropdownPolicy = true"
                   @blur="hideDropdownPolicy"
                   @remove="onTagRemoveEdit"
                 />
-                <div class="text-error">
-                  {{ errors[0] }}
-                </div>
                 <div v-if="showDropdownPolicy" class="dropdown-menu" style="display:block;">
                   <b-dropdown-item
                     v-for="(tag, index) in availableTags"
@@ -110,6 +98,44 @@
                   >
                     {{ tag.name }}
                   </b-dropdown-item>
+                </div>
+                <div class="text-error">
+                  {{ errors[0] }}
+                </div>
+              </div>
+            </ValidationProvider> -->
+          </ValidationObserver>
+
+          <ValidationObserver
+            ref="obsAddEmployeeTagsPolicy"
+            tag="div"
+          >
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="policy"
+              rules="required"
+            >
+              <label for="tagsPolicy" class="mt-3">VIAM Policy</label>
+              <div class="form-tag">
+                <b-form-tags
+                  id="tagsPolicy"
+                  v-model="selectedTagPolicy"
+                  placeholder="入力してください"
+                  @focus="showDropdownPolicy = true"
+                  @blur="hideDropdownPolicy"
+                  @remove="onTagRemoveEdit"
+                />
+                <div v-if="showDropdownPolicy" class="dropdown-menu" style="display:block;">
+                  <b-dropdown-item
+                    v-for="(tag, index) in availableTags"
+                    :key="index"
+                    @click="addTagPolicy(tag)"
+                  >
+                    {{ tag.name }}
+                  </b-dropdown-item>
+                </div>
+                <div class="text-error">
+                  {{ errors[0] }}
                 </div>
               </div>
             </ValidationProvider>
@@ -172,7 +198,6 @@ export default {
       form: {
         name: '',
         description: '',
-
       },
       listType: [
         { id: 1, name: 'V-Face' },
@@ -186,9 +211,6 @@ export default {
       selectedWithMaskFiles: [],
       selectedWithoutMaskFiles: [],
       withoutMask: true,
-      withMask: false,
-      validateFile: false,
-      messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
       displayBoxSearch: 'd-none',
@@ -196,15 +218,7 @@ export default {
     };
   },
   computed: {
-    role_id() {
-      return this.$store.getters.role_id;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
-    },
-    // listUser() {
-    //   return this.$store.getters.listUser;
-    // },
+
     currChange() {
       return this.pagination.current_page;
     },
@@ -226,13 +240,14 @@ export default {
     this.getListPolicy();
   },
   methods: {
-    addTagPolicy(tag) {
+    async addTagPolicy(tag) {
       if (!this.selectedTagPolicy.includes(tag)) {
         this.selectedTagPolicy.push(tag.name);
         this.selectedTagPolicy_id.push(tag.id);
         console.log('this.selectedTagPolicy_id1111111', this.selectedTagPolicy_id);
       }
       this.showDropdownPolicy = false;
+      await this.$refs.obsAddEmployeeTagsPolicy.validate();
     },
     hideDropdownPolicy() {
       setTimeout(() => {
@@ -260,21 +275,23 @@ export default {
       this.$store.dispatch('loading/setLoading', false);
     },
     async getListAllUser() {
-      this.pagination.isDisable = true;
-      const PARAMS = {
-        page: this.pagination.current_page,
-        per_page: this.pagination.per_page,
-      };
-      await getAllUser(PARAMS)
+      this.openLoading();
+      const URL = '/viam_user';
+      //   this.pagination.isDisable = true;
+      //   const PARAMS = {
+      //     page: this.pagination.current_page,
+      //     per_page: this.pagination.per_page,
+      //   };
+      await getAllUser(URL)
         .then((response) => {
           if (response.code === 200) {
-            this.listViamUser = response.data.result;
+            this.listViamUser = response.data;
             console.log('listUser===>', this.listViamUser);
             // this.$store.dispatch('app/saveListUSer', listUser);
-            this.pagination.total_records =
-                response.data.pagination.total_records;
-            this.pagination.current_page = response.data.pagination.current_page;
-            this.pagination.isDisable = false;
+            // this.pagination.total_records =
+            //     response.data.pagination.total_records;
+            // this.pagination.current_page = response.data.pagination.current_page;
+            // this.pagination.isDisable = false;
           }
           this.closeLoading();
         })
@@ -294,6 +311,12 @@ export default {
       this.$router.push('/user/create');
     },
     createForm(){
+      this.form = {
+        name: '',
+        description: '',
+      };
+      this.selectedTagPolicy = [];
+      this.selectedTagPolicy_id = [];
       this.openModalAdd = true;
       // this.$bvModal.show('bv-modal-create');
     },
@@ -331,7 +354,9 @@ export default {
     },
     async submitCreate() {
       const isValid = await this.$refs.obsAddEmployee.validate();
-      if (isValid) {
+      const isValidTagsPolicy = await this.$refs.obsAddEmployeeTagsPolicy.validate();
+      console.log('isValid', isValid);
+      if (isValid && isValidTagsPolicy) {
         this.waitCreate = true;
         const DATA = {
           name: this.form.name,
@@ -437,6 +462,9 @@ export default {
     ::v-deep .el-tag + .el-tag {
     margin-left: 10px;
   }
+  ::v-deep .b-form-tags-button {
+  display: none;
+}
     ::v-deep .el-select {
       width: 100%;
     }
