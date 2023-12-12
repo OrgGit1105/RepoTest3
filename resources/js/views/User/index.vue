@@ -8,13 +8,7 @@
               <div class="basic">
                 <h1 class="title">{{ $t('LANGUAGES.TEXT_EMPLOYEE_MANAGEMENT') }}</h1>
               </div>
-              <div class="basic">
-                <!--                <button class="btn btn-date d-flex align-items-center" @click="toCreatePage">-->
-                <!--                  <b-icon class="text-btn" icon="chevron-left" />-->
-                <!--                  <span class="text-btn">3月20日 -  4月18日</span>-->
-                <!--                  <b-icon class="text-btn" icon="chevron-right" />-->
-                <!--                </button>-->
-              </div>
+              <div class="basic" />
             </div>
           </div>
         </div>
@@ -32,9 +26,21 @@
               <i class="el-icon-close cursor-pointer" @click="closeInputSearch()" />
             </div>
             <div class="d-flex justify-content-end align-items-center">
-              <img :class="displaySearch" class="icon-search cursor-pointer" :src="require(`../../assets/images/icon-search.png`)" @click="openInputSearch()">
+              <img
+                :class="displaySearch"
+                class="icon-search cursor-pointer"
+                :src="require(`../../assets/images/icon-search.png`)"
+                alt="icon-search"
+                @click="openInputSearch()"
+              >
               <div class="select-custom">
-                <el-select v-model="role_id_selected" placeholder="Select" class="el-select-custom" value="" @change="getListAllUser()">
+                <el-select
+                  v-model="role_id_selected"
+                  placeholder="Select"
+                  class="el-select-custom"
+                  value=""
+                  @change="getListAllUser()"
+                >
                   <el-option
                     class="el-option-custom"
                     label="All Role"
@@ -64,7 +70,7 @@
                 align="center"
               />
               <el-table-column
-                label="Name"
+                label="Employee name"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -80,58 +86,22 @@
                 width="90"
               >
                 <template slot-scope="scope">
-                  <span v-if="checkDateRetired(scope.retirement_date)" style="color: red;">
+                  <span v-if="scope.row.retired" style="color: red;">
                     Retired
                   </span>
                 </template>
               </el-table-column>
               <el-table-column
                 prop="email"
-                label="Email"
+                label="ID"
                 align="center"
               />
               <el-table-column
-                prop="role.name"
+                prop="viam_user.name"
                 label="Role"
                 align="center"
               />
             </el-table>
-            <!--            <b-table-->
-            <!--              id="my-table"-->
-            <!--              class="text-center w-100 mb-0"-->
-            <!--              :items="listUser ? listUser : []"-->
-            <!--              :fields="fields"-->
-            <!--              responsive="sm"-->
-            <!--              :current-page="pagination.current_page"-->
-            <!--              show-empty-->
-            <!--            >-->
-            <!--              <template #cell(retirement_date)="row">-->
-            <!--                <span v-if="checkDateRetired(row.item.retirement_date)" style="color: red;">-->
-            <!--                  Retirement-->
-            <!--                </span>-->
-            <!--              </template>-->
-            <!--              <template #cell(email)="row">-->
-            <!--                <div class="email-link" @click="goToEditScreen(row.item.id)">{{ row.item.email }}</div>-->
-            <!--              </template>-->
-            <!--              &lt;!&ndash;              <template #cell(edit)="edit">&ndash;&gt;-->
-            <!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  :id="'btn-edit-'+ edit.item.id"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  class="btn btn-edit fs-14"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  dusk="btn-edit"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  @click="goToEditScreen(edit.item.id)"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_EDIT') }}</b-button>&ndash;&gt;-->
-            <!--              &lt;!&ndash;              </template>&ndash;&gt;-->
-            <!--              &lt;!&ndash;              <template #cell(delete)="info">&ndash;&gt;-->
-            <!--              &lt;!&ndash;                <b-button&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  :id="'btn-remove-'+ info.item.id"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  class="btn btn-delete fs-14"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                  @click="confirmationForm(info.item)"&ndash;&gt;-->
-            <!--              &lt;!&ndash;                >{{ $t('LANGUAGES.TEXT_DELETE') }}</b-button>&ndash;&gt;-->
-            <!--              &lt;!&ndash;              </template>&ndash;&gt;-->
-            <!--              <template #empty="">-->
-            <!--                {{ $t('LANGUAGES.TEXT_NO_DATA') }}-->
-            <!--              </template>-->
-            <!--            </b-table>-->
           </div>
         </div>
 
@@ -148,20 +118,15 @@
             />
           </div>
         </div>
-        <!--        <div class="use-management-pagianation">-->
-        <!--          <div class="card-body pagianation">-->
-        <!--            <b-pagination-->
-        <!--              v-model="pagination.current_page"-->
-        <!--              :per-page="pagination.per_page"-->
-        <!--              :total-rows="pagination.total_records"-->
-        <!--              aria-controls="my-table"-->
-        <!--              :disabled="pagination.isDisable"-->
-        <!--            />-->
-        <!--          </div>-->
-        <!--        </div>-->
 
         <!-- Modal -->
-        <el-dialog class="title-add-working" title="Add Employee" :visible.sync="openModalAdd" width="50%" @click="hideCreateModal()">
+        <el-dialog
+          class="title-add-working"
+          title="Add Employee"
+          :visible.sync="openModalAdd"
+          width="50%"
+          @click="hideCreateModal()"
+        >
           <ValidationObserver
             ref="obsAddEmployee"
             tag="div"
@@ -188,94 +153,47 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="gender"
-              rules="required"
-            >
-              <label for="genderEmployee" class="mt-3">Gender</label>
-              <el-input id="genderEmployee" v-model="formCreate.gender" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="birthday"
-              rules="required"
-            >
-              <label for="birthdayEmployee" class="mt-3">Birthday</label>
-              <el-input id="birthdayEmployee" v-model="formCreate.birthday" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="address"
-              rules="required"
-            >
-              <label for="addressEmployee" class="mt-3">Address</label>
-              <el-input id="addressEmployee" v-model="formCreate.address" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="telephone"
-              rules="required"
-            >
-              <label for="telephoneEmployee" class="mt-3">Tel</label>
-              <el-input id="telephoneEmployee" v-model="formCreate.telephone" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="entryDate"
-              rules="required"
-            >
-              <label for="entryDateEmployee" class="mt-3">Entry Date</label>
-              <el-input id="entryDateEmployee" v-model="formCreate.entryDate" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="slackId"
-              rules="required"
-            >
-              <label for="slackIdEmployee" class="mt-3">Slack Id</label>
-              <el-input id="slackIdEmployee" v-model="formCreate.slackId" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="skypeId"
-              rules="required"
-            >
-              <label for="skypeIdEmployee" class="mt-3">Skype Id</label>
-              <el-input id="skypeIdEmployee" v-model="formCreate.skypeId" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="githubId"
-              rules="required"
-            >
-              <label for="githubIdEmployee" class="mt-3">Github Id</label>
-              <el-input id="githubIdEmployee" v-model="formCreate.githubId" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
+            <label for="genderEmployee" class="mt-3">Gender</label>
+            <div>
+              <el-select id="genderEmployee" v-model="formCreate.gender" placeholder="Please select gender">
+                <el-option
+                  v-for="item in listGender"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </div>
+            <label for="birthdayEmployee" class="mt-3">Birthday</label>
+            <div>
+              <el-date-picker
+                v-model="formCreate.birthday"
+                type="date"
+                placeholder="Pick birthday"
+                format="yyyy/MM/dd"
+                value-format="yyyy-MM-dd"
+              />
+            </div>
+            <label for="addressEmployee" class="mt-3">Address</label>
+            <el-input id="addressEmployee" v-model="formCreate.address" />
+            <label for="telephoneEmployee" class="mt-3">Tel</label>
+            <el-input id="telephoneEmployee" v-model="formCreate.telephone" />
+            <label for="entryDateEmployee" class="mt-3">Entry Date</label>
+            <div>
+              <el-date-picker
+                v-model="formCreate.entry_date"
+                type="date"
+                placeholder="Pick entry date"
+                format="yyyy/MM/dd"
+                value-format="yyyy-MM-dd"
+              />
+            </div>
+            <label for="slackIdEmployee" class="mt-3">Slack Id</label>
+            <el-input id="slackIdEmployee" v-model="formCreate.slack_id" />
+            <label for="skypeIdEmployee" class="mt-3">Skype Id</label>
+            <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
+            <label for="githubIdEmployee" class="mt-3">Github Id</label>
+            <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
             <hr class="line">
             <p class="title-create-employee mb-3">Face Data</p>
             <div style="margin-bottom: 15px;">
@@ -437,7 +355,7 @@
                   <div class="image-preview">
                     <template v-if="withoutMask">
                       <div v-for="(file, index) in selectedWithoutMaskFiles" :key="index" class="preview-item">
-                        <img :src="convertFileToUrl(file)">
+                        <img :src="convertFileToUrl(file)" alt="convertFileToUrl">
                         <b-icon-x-circle
                           style="display: block;
                                   float: right;
@@ -453,7 +371,7 @@
                     </template>
                     <template v-if="withMask">
                       <div v-for="(file, index) in selectedWithMaskFiles" :key="index" class="preview-item">
-                        <img :src="convertFileToUrl(file)">
+                        <img :src="convertFileToUrl(file)" alt="convertFileToUrl">
                         <b-icon-x-circle
                           style="display: block;
                                   float: right;
@@ -486,17 +404,16 @@
               rules="required"
             >
               <label class="title-create-employee" for="viamUser">VIAM User</label>
-              <br>
-              <el-radio-group id="roleEmployee" v-model="formCreate.role_id">
-                <el-radio
-                  v-for="element in listRoles"
-                  :key="element.id"
-                  :label="element.id"
-                  style="font-weight: 400"
-                >
-                  {{ element.name }}
-                </el-radio>
-              </el-radio-group>
+              <div>
+                <el-select v-model="formCreate.viam_user_id" placeholder="Please select VIAM user">
+                  <el-option
+                    v-for="item in listRoles"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
+                </el-select>
+              </div>
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -521,7 +438,12 @@
               rules="required|confirmed:password|min:8"
             >
               <label for="password_confirmationEmployee" class="mt-3">Password (Confirm)</label>
-              <el-input id="password_confirmationEmployee" v-model="formCreate.password_confirmation" type="password" show-password />
+              <el-input
+                id="password_confirmationEmployee"
+                v-model="formCreate.password_confirmation"
+                type="password"
+                show-password
+              />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -556,12 +478,14 @@
               class="mt-3 w-25 fs-12 btn btn-accept"
               squared
               @click="submitDelete(infoModel.id)"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}</b-button>
+            >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}
+            </b-button>
             <b-button
               class="mt-3 ml-3 w-25 fs-12 btn btn-close"
               squared
               @click="hideModal()"
-            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}</b-button>
+            >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}
+            </b-button>
           </div>
         </b-modal>
       </div>
@@ -573,7 +497,7 @@
 import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
-import { getAllRole } from '../../api/role';
+import { getAllRole } from '../../api/viamUser';
 import * as ImageApi from '../../api/image_face';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
@@ -585,7 +509,6 @@ export default {
   },
   data() {
     return {
-      // userList: [],
       pagination: {
         current_page: 1,
         per_page: 20,
@@ -599,20 +522,29 @@ export default {
         { key: 'retirement_date', label: '', class: 'col-1' },
         { key: 'email', label: this.$t('LANGUAGES.TEXT_EMAIL') },
         { key: 'role.name', label: 'Role' },
-        // { key: 'company_branchs.name', label: this.$t('LANGUAGES.TEXT_BRANCH') },
-        // { key: 'edit', label: this.$t('LANGUAGES.TEXT_EDIT') },
-        // { key: 'delete', label: this.$t('LANGUAGES.TEXT_DELETE') },
       ],
       role_id_selected: '',
       name_search: null,
       formCreate: {
         name: '',
         email: '',
+        gender: '',
+        birthday: '',
+        address: '',
+        telephone: '',
+        entry_date: '',
+        slack_id: '',
+        skype_id: '',
+        github_id: '',
         password: '',
         password_confirmation: '',
-        role_id: '',
+        viam_user_id: '',
         status: 1,
       },
+      listGender: [
+        { id: 0, name: 'male' },
+        { id: 1, name: 'female' },
+      ],
       selectedWithMaskFiles: [],
       selectedWithoutMaskFiles: [],
       withoutMask: true,
@@ -655,21 +587,29 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListRole(){
+    async getListRole() {
       this.openLoading();
-      await getAllRole().then((response) => {
-        if (response.code === 200){
-          this.$store.dispatch('app/saveListRoles', response.data);
+      const list = [];
+      try {
+        const response = await getAllRole();
+        if (response.code === 200) {
+          response.data?.map(item => {
+            list.push({
+              id: item.id,
+              name: item.name,
+            });
+          });
+          await this.$store.dispatch('app/saveListRoles', list);
           this.closeLoading();
         }
-      }).catch((error) => {
+      } catch (error) {
         this.closeLoading();
         MakeToast({
           variant: 'warning',
           title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
           content: error.message,
         });
-      });
+      }
     },
     async getListAllUser() {
       this.pagination.isDisable = true;
@@ -683,16 +623,11 @@ export default {
         .then((response) => {
           if (response.code === 200) {
             const listUser = response.data.result;
-            // console.log('listUser===>', listUser);
             this.$store.dispatch('app/saveListUSer', listUser);
             this.pagination.total_records =
-            response.data.pagination.total_records;
+              response.data.pagination.total_records;
             this.pagination.current_page = response.data.pagination.current_page;
             this.pagination.isDisable = false;
-            // listUser.forEach((element) => {
-            //   element.roles.name = this.convertRoles(
-            //     element.roles.name);
-            // });
           }
           this.closeLoading();
         })
@@ -706,12 +641,13 @@ export default {
         });
     },
     goToEditScreen(val) {
-      this.$router.push({ path: `/user/edit/${val.id}` }, (onAbort) => {});
+      this.$router.push({ path: `/user/edit/${val.id}` }, (onAbort) => {
+      });
     },
     toCreatePage() {
       this.$router.push('/user/create');
     },
-    createForm(){
+    createForm() {
       this.openModalAdd = true;
       // this.$bvModal.show('bv-modal-create');
     },
@@ -719,7 +655,7 @@ export default {
       this.infoModel = item;
       this.$bvModal.show('bv-modal-delete');
     },
-    hideCreateModal(){
+    hideCreateModal() {
       this.formCreate = {
         name: '',
         email: '',
@@ -728,10 +664,10 @@ export default {
         role_id: '',
         status: 1,
       };
-      if (this.withoutMask){
+      if (this.withoutMask) {
         this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
       }
-      if (this.withMask){
+      if (this.withMask) {
         this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
       }
       this.openModalAdd = false;
@@ -739,7 +675,7 @@ export default {
     hideModal() {
       this.$bvModal.hide('bv-modal-delete');
     },
-    changePage(page){
+    changePage(page) {
       // console.log('Page ban vua chon', page);
     },
     submitDelete(id) {
@@ -780,7 +716,7 @@ export default {
           const toastFalseMessage = [];
           if (response.code === 200) {
             // Kiểm tra selectedWithoutMaskFiles
-            if (this.selectedWithoutMaskFiles.length !== 0){
+            if (this.selectedWithoutMaskFiles.length !== 0) {
               const image = new FormData();
               for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
                 const file = this.selectedWithoutMaskFiles[i];
@@ -791,7 +727,7 @@ export default {
 
               await ImageApi.createImage(image)
                 .then((response) => {
-                  if (response.code === 200){
+                  if (response.code === 200) {
                     toastSuccessMessage.push('Add image without mask employee success');
                   } else {
                     toastFalseMessage.push(response.message);
@@ -803,7 +739,7 @@ export default {
             }
 
             // Kiểm tra selectedWithMaskFiles
-            if (this.selectedWithMaskFiles.length !== 0){
+            if (this.selectedWithMaskFiles.length !== 0) {
               const image = new FormData();
               for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
                 const file = this.selectedWithMaskFiles[i];
@@ -814,7 +750,7 @@ export default {
 
               await ImageApi.createImage(image)
                 .then((response) => {
-                  if (response.code === 200){
+                  if (response.code === 200) {
                     toastSuccessMessage.push('Add image with mask employee success');
                   } else {
                     toastFalseMessage.push(response.message);
@@ -866,15 +802,7 @@ export default {
         });
       }
     },
-    checkDateRetired(date){
-      if (date == null){
-        return false;
-      }
-      const dateRetired = new Date(this.formatTimeStamp(date)).getTime();
-      const dateNow = new Date().getTime();
-      return dateRetired > dateNow;
-    },
-    formatTimeStamp(date){
+    formatTimeStamp(date) {
       const datePart = date.split(' ')[0]; // Extract the date part from the received value
       const parts = datePart.split('-');
       const year = parts[0];
@@ -882,11 +810,11 @@ export default {
       const day = parts[2];
       return `${year}-${month}-${day}`;
     },
-    checkWithoutMask(){
+    checkWithoutMask() {
       this.withoutMask = true;
       this.withMask = false;
     },
-    checkWithMask(){
+    checkWithMask() {
       this.withoutMask = false;
       this.withMask = true;
     },
@@ -896,10 +824,10 @@ export default {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         // const fileURL = URL.createObjectURL(file);
-        if (this.withoutMask){
+        if (this.withoutMask) {
           this.selectedWithoutMaskFiles.push(file);
         }
-        if (this.withMask){
+        if (this.withMask) {
           this.selectedWithMaskFiles.push(file);
         }
       }
@@ -915,10 +843,10 @@ export default {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (this.isImageFile(file)) {
-          if (this.withoutMask){
+          if (this.withoutMask) {
             this.selectedWithoutMaskFiles.push(file);
           }
-          if (this.withMask){
+          if (this.withMask) {
             this.selectedWithMaskFiles.push(file);
           }
         }
@@ -931,14 +859,14 @@ export default {
       const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
       return allowedExtensions.test(file.name);
     },
-    convertFileToUrl(file){
+    convertFileToUrl(file) {
       return URL.createObjectURL(file);
     },
     removeFile(index) {
-      if (this.withoutMask){
+      if (this.withoutMask) {
         this.selectedWithoutMaskFiles.splice(index, 1);
       }
-      if (this.withMask){
+      if (this.withMask) {
         this.selectedWithMaskFiles.splice(index, 1);
       }
       this.checkNumImage();
@@ -947,27 +875,27 @@ export default {
     chooseFiles() {
       this.$refs.fileInput.click();
     },
-    removeFileAll(){
-      if (this.withoutMask){
+    removeFileAll() {
+      if (this.withoutMask) {
         this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
       }
-      if (this.withMask){
+      if (this.withMask) {
         this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
       }
       this.checkNumImage();
     },
-    checkNumImage(){
+    checkNumImage() {
       this.messageErrorFile = [];
-      if (this.selectedWithoutMaskFiles.length === 0){
+      if (this.selectedWithoutMaskFiles.length === 0) {
         this.validateFile = true;
         this.messageErrorFile.push('Image without mask must one image');
       }
 
-      if (this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0){
+      if (this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0) {
         this.validateFile = true;
         this.messageErrorFile.push('Pleas choose image');
       }
-      if (this.messageErrorFile.length === 0){
+      if (this.messageErrorFile.length === 0) {
         this.validateFile = false;
       }
     },
@@ -978,8 +906,8 @@ export default {
         const file = new FormData();
         file.append('file', item);
         await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
+          if (response.code === 200) {
+            if (response.data.checkImage === false) {
               this.messageErrorFile.push('Image must only one person');
               dem++;
             }
@@ -996,8 +924,8 @@ export default {
         const file = new FormData();
         file.append('file', item);
         await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
+          if (response.code === 200) {
+            if (response.data.checkImage === false) {
               this.messageErrorFile.push('Image must only one person');
               dem++;
             }
@@ -1010,11 +938,7 @@ export default {
           this.validateFile = true;
         });
       }
-      if (dem > 0){
-        this.validateFile = true;
-      } else {
-        this.validateFile = false;
-      }
+      this.validateFile = dem > 0;
       this.waitCreate = false;
     },
     // copy cua Yen
@@ -1035,7 +959,7 @@ export default {
 
 <style scoped>
 #screen-title {
-  position: flex;
+  display: flex;
   text-align: center;
   margin-top: 50px;
 }
@@ -1046,9 +970,11 @@ export default {
   color: #3189bb;
   font-size: 25px;
 }
+
 .btn-action {
   min-width: 85px;
 }
+
 .btn-sign {
   background-color: #fb9a09;
   border: 1px solid #fb9a09;
@@ -1056,26 +982,33 @@ export default {
   color: white;
   /*padding: 13px 100px;*/
 }
+
 .btn-sign:hover {
   background-color: #d57700;
   border-color: #c87000;
 }
+
 ::v-deep table .b-table {
   width: 100% !important;
 }
+
 table#__BVID__46 {
   width: 100% !important;
 }
+
 ::v-deep table#__BVID__15 {
   width: 100% !important;
   border-left: 0.9px solid #888888;
 }
+
 ::v-deep .table {
   width: 100%;
 }
+
 ::v-deep .table thead {
   background: none;
 }
+
 /* ::v-deep .table tbody {
   border: 0.9px solid #888888;
 } */
@@ -1089,24 +1022,31 @@ table#__BVID__46 {
   /*border-top: 0.9px solid #888888;*/
   line-height: 30px;
 }
+
 .btn {
   border: 0 !important;
 }
+
 .btn:hover {
   color: #ffffff;
 }
+
 .btn-secondary:hover {
   border: none !important;
 }
+
 .btn-edit {
   background: #fb8c00;
 }
+
 .btn-delete {
   background: #e9240a;
 }
+
 .btn-edit:hover {
   background-color: #dd7f04;
 }
+
 .btn-delete:hover {
   background-color: #cc1800;
 }
@@ -1114,6 +1054,7 @@ table#__BVID__46 {
 .style-modal {
   border-bottom: 1px solid #dee2e6;
 }
+
 .buttons-control {
   text-align: center;
   margin-top: 20px;
@@ -1127,15 +1068,19 @@ table#__BVID__46 {
   margin-top: 20px;
   margin-bottom: 10px;
 }
+
 ::v-deep .page-link {
   padding: 3px 10px;
 }
+
 ::v-deep .page-item {
   cursor: pointer;
 }
+
 .btn-danger:hover {
   color: #fff !important;
 }
+
 ::v-deep .page-link:hover {
   border: 1px solid #0f68b1 !important;
 }
@@ -1143,17 +1088,20 @@ table#__BVID__46 {
 .btn-close {
   background: #0f68b1;
 }
+
 ::v-deep .btn-accept {
   background-color: transparent !important;
   color: #0f68b1;
   border: 1px solid #0f68b1 !important;
 }
+
 .btn-accept:hover {
   box-shadow: 0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%);
   background: #0f68b1 !important;
   transition: all 0.2s ease-in-out;
 
 }
+
 .btn-close:hover {
   box-shadow: 0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%);
   background-color: transparent !important;
@@ -1161,34 +1109,42 @@ table#__BVID__46 {
   color: #0f68b1;
   border: 1px solid #0f68b1 !important;
 }
+
 ::v-deep #bv-modal-delete___BV_modal_body_ {
   padding: 0 !important;
 }
+
 ::v-deep #bv-modal-delete___BV_modal_content_ {
   border: 0 !important;
   border-radius: 0 !important;
 }
+
 .style-modal h4 {
   font-weight: 300 !important;
   margin-bottom: 0px !important;
 }
+
 ::v-deep thead {
-    background: #e5e5e5;
+  background: #e5e5e5;
 }
+
 /* ::v-deep #my-table th {
   background: #e5e5e5;
 } */
 ::v-deep .style-title-modal {
   background: #0f68b1;
 }
+
 .style-title-modal h4 {
   font-size: 18px;
 }
+
 .style-modal h2 {
   margin: 25px 0px;
   color: red;
   font-size: 23px;
 }
+
 .text-error {
   line-height: normal;
   word-break: break-word;
@@ -1200,6 +1156,7 @@ table#__BVID__46 {
   color: red;
   font-size: 12px;
 }
+
 .email-link {
   text-decoration: none;
   transition: color 0.3s ease;
@@ -1242,7 +1199,8 @@ table#__BVID__46 {
 .preview-item button {
   margin-top: 5px;
 }
-.check_with_or_without_mask{
+
+.check_with_or_without_mask {
   border-bottom: 4px solid;
 }
 
@@ -1254,12 +1212,14 @@ table#__BVID__46 {
   color: #000000;
   margin: 0;
 }
+
 .line-bottom {
   width: 95%;
   height: 1px;
   color: rgba(63, 63, 63, 0.4);
   margin: 0 auto;
 }
+
 .fill {
   display: flex;
   justify-content: space-between;
@@ -1267,47 +1227,58 @@ table#__BVID__46 {
   width: 90%;
   margin: 0 auto;
 }
+
 .custom-icon-down {
   color: #0070C9;
   font-size: 26px;
   font-weight: 600;
 }
-.box-search{
+
+.box-search {
   margin-left: 214px;
 }
+
 ::v-deep .box-search .el-input__inner {
   border: 1px solid rgba(63, 63, 63, 0.4);
   border-radius: 5px;
   padding-left: 40px;
 }
+
 ::v-deep .box-search .el-icon-search {
   color: #3F3F3F;
   font-weight: bolder;
   font-size: 20px;
 }
+
 ::v-deep .box-search ::placeholder {
   color: #8A8A8A;
 }
+
 ::v-deep .box-search .el-icon-close {
   margin-left: 10px;
   font-size: 25px;
   color: #8A8A8A;
 }
+
 .use-management-title-table {
   padding: 0 45px;
 }
+
 .cursor-pointer {
   cursor: pointer;
 }
+
 .custom-icon-add {
   color: #0070C9;
   font-size: 30px;
   font-weight: bolder;
 }
+
 .el-select-custom {
   width: 175px;
   margin: 0 20px;
 }
+
 ::v-deep .el-select-custom .el-input__inner {
   border: unset;
   border-radius: unset;
@@ -1316,28 +1287,41 @@ table#__BVID__46 {
   font-weight: 500;
   text-align: center;
 }
-.select-custom .el-select-custom{
+
+.select-custom .el-select-custom {
   color: #0070C9;
 }
+
 ::v-deep .el-select-custom .el-input .el-select__caret {
   color: #0070C9;
   font-weight: bolder;
   font-size: 20px;
   margin-top: 3px;
 }
+
 ::v-deep .el-select-custom .b-form-select .el-select__caret {
   color: #0070C9;
   font-weight: bolder;
   font-size: 20px;
   margin-top: 3px;
 }
-el-select{
+
+el-select {
   color: #0070C9 !important;
 }
+
 ::v-deep .title-add-working .el-dialog__title, .title-create-employee {
   font-weight: 600;
   font-size: 32px;
   line-height: 48px;
   color: #000000;
+}
+
+::v-deep .el-select {
+  width: 100%;
+}
+
+::v-deep .el-date-editor {
+  width: 100%;
 }
 </style>
