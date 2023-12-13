@@ -34,11 +34,10 @@
               tag="div"
             >
               <h4 class="mb-0 font-weight-normal">
-                <div class="cover-employee-edit" style="display: flex; gap: 40px; flex-direction: column">
+                <div class="cover-employee-edit">
                   <div class="employee-edit">
-                    <p class="header-employee-edit fw-5">Employee name</p>
-                    <p class="header-employee-edit fw-5">Email</p>
                     <div class="header-employee-edit">
+                      <p>Employee name</p>
                       <ValidationProvider
                         v-slot="{ errors }"
                         name="name"
@@ -57,6 +56,7 @@
                       </ValidationProvider>
                     </div>
                     <div class="header-employee-edit">
+                      <p>Email</p>
                       <ValidationProvider
                         v-slot="{ errors }"
                         name="email"
@@ -76,112 +76,96 @@
                     </div>
                   </div>
                   <div class="employee-edit">
-                    <p class="header-employee-edit fw-5">Gender</p>
-                    <p class="header-employee-edit fw-5">Birthday</p>
                     <div class="header-employee-edit">
-                      <div>
-                        <el-select
-                          id="genderEmployee"
-                          v-model="formEdit.gender"
-                          placeholder="Please select gender"
-                        >
-                          <el-option
-                            v-for="item in listGender"
-                            :key="item.id"
-                            :label="item.name"
-                            :value="item.id"
-                          />
-                        </el-select>
-                      </div>
-                    </div>
-                    <div class="header-employee-edit">
-                      <div>
-                        <el-date-picker
-                          v-model="formEdit.birthday"
-                          type="date"
-                          placeholder="Pick birthday"
-                          format="yyyy/MM/dd"
-                          value-format="yyyy-MM-dd"
+                      <p>Gender</p>
+                      <el-select
+                        id="genderEmployee"
+                        v-model="formEdit.gender"
+                        placeholder="Please select gender"
+                      >
+                        <el-option
+                          v-for="item in listGender"
+                          :key="item.id"
+                          :label="item.name"
+                          :value="item.id"
                         />
-                      </div>
+                      </el-select>
+                    </div>
+                    <div class="header-employee-edit">
+                      <p>Birthday</p>
+                      <el-date-picker
+                        v-model="formEdit.birthday"
+                        type="date"
+                        placeholder="Pick birthday"
+                        format="yyyy/MM/dd"
+                        value-format="yyyy-MM-dd"
+                      />
                     </div>
                   </div>
                   <div class="employee-edit">
-                    <p class="header-employee-edit fw-5">Address</p>
-                    <p class="header-employee-edit fw-5">Telephone</p>
                     <div class="header-employee-edit">
-                      <div>
-                        <b-input-group>
-                          <b-form-input
-                            id="address"
-                            v-model="formEdit.address"
-                            class="border-0 p-0"
-                          />
-                        </b-input-group>
-                      </div>
-                    </div>
-                    <div class="header-employee-edit">
-                      <div>
-                        <b-input-group>
-                          <b-form-input
-                            id="telephone"
-                            v-model="formEdit.telephone"
-                            class="border-0 p-0"
-                          />
-                        </b-input-group>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="employee-edit">
-                    <p class="header-employee-edit fw-5">Entry Date</p>
-                    <p class="header-employee-edit fw-5">Slack Id</p>
-                    <div class="header-employee-edit">
-                      <div>
-                        <el-date-picker
-                          v-model="formEdit.entry_date"
-                          type="date"
-                          placeholder="Pick entry date"
-                          format="yyyy/MM/dd"
-                          value-format="yyyy-MM-dd"
+                      <p>Address</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="address"
+                          v-model="formEdit.address"
+                          class="border-0 p-0"
                         />
-                      </div>
+                      </b-input-group>
                     </div>
                     <div class="header-employee-edit">
-                      <div>
-                        <b-input-group>
-                          <b-form-input
-                            id="slack_id"
-                            v-model="formEdit.slack_id"
-                            class="border-0 p-0"
-                          />
-                        </b-input-group>
-                      </div>
+                      <p>Telephone</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="telephone"
+                          v-model="formEdit.telephone"
+                          class="border-0 p-0"
+                        />
+                      </b-input-group>
                     </div>
                   </div>
                   <div class="employee-edit">
-                    <p class="header-employee-edit fw-5">Skype Id</p>
-                    <p class="header-employee-edit fw-5">Github Id</p>
                     <div class="header-employee-edit">
-                      <div>
-                        <b-input-group>
-                          <b-form-input
-                            id="skype_id"
-                            v-model="formEdit.skype_id"
-                            class="border-0 p-0"
-                          />
-                        </b-input-group>
-                      </div>
+                      <p class="header-employee-edit fw-5">Entry Date</p>
+                      <el-date-picker
+                        v-model="formEdit.entry_date"
+                        type="date"
+                        placeholder="Pick entry date"
+                        format="yyyy/MM/dd"
+                        value-format="yyyy-MM-dd"
+                      />
                     </div>
                     <div class="header-employee-edit">
-                      <div>
-                        <b-input-group>
-                          <b-form-input
-                            id="github_id"
-                            v-model="formEdit.github_id"
-                            class="border-0 p-0"
-                          />
-                        </b-input-group>
-                      </div>
+                      <p class="header-employee-edit fw-5">Slack Id</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="slack_id"
+                          v-model="formEdit.slack_id"
+                          class="border-0 p-0"
+                        />
+                      </b-input-group>
+                    </div>
+                  </div>
+                  <div class="employee-edit">
+                    <div class="header-employee-edit">
+                      <p class="header-employee-edit fw-5">Skype Id</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="skype_id"
+                          v-model="formEdit.skype_id"
+                          class="border-0 p-0"
+                        />
+                      </b-input-group>
+                    </div>
+                    <div class="header-employee-edit">
+                      <p class="header-employee-edit fw-5">Github Id</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="github_id"
+                          v-model="formEdit.github_id"
+                          class="border-0 p-0"
+                        />
+                      </b-input-group>
                     </div>
                   </div>
                 </div>
@@ -429,7 +413,7 @@
                     name="role"
                     rules="required"
                   >
-                    <el-select id="viam_user_id" v-model="formEdit.viam_user_id" placeholder="Please select VIAM user">
+                    <el-select id="viam_user_id" v-model="userInfo.viam_user" placeholder="Please select VIAM user">
                       <el-option
                         v-for="item in listRoles"
                         :key="item.id"
@@ -576,7 +560,6 @@ export default {
       selectedWithoutMaskFiles: [],
       withoutMask: true,
       withMask: false,
-      nameEmployee: '',
       linkFilesWithoutMask: [],
       linkFilesWithMask: [],
       linkFileDelete: [],
@@ -634,8 +617,10 @@ export default {
       this.openLoading();
       try {
         const response = await UserApi.getOneUser(this.id);
-        console.log(response);
-        this.nameEmployee = response.data.name;
+        console.log('response', response.data);
+        this.userInfo = {
+          viam_user: response.data.viam_user.name,
+        };
         this.formEdit = {
           name: response.data.name,
           email: response.data.email,
@@ -649,9 +634,11 @@ export default {
           github_id: response.data.github_id,
           password: '',
           password_confirmation: '',
+          viam_user: response.data.viam_user.name,
           role_id: response.data.role_id,
           retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
         };
+        console.log('formEdit', this.formEdit);
         this.closeLoading();
       } catch (error) {
         this.closeLoading();
@@ -1194,16 +1181,22 @@ select:required:invalid { color: #6f737c; }
 ::v-deep .employee-edit {
   display: flex;
   width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-direction: row;
   justify-content: space-around;
   text-align: left;
+  gap: 10px;
 }
 ::v-deep .header-employee-edit {
   width: calc(100% / 2);
   height: 40px;
   margin: 0;
   font-size: 20px;
+}
+.cover-employee-edit {
+  display: flex;
+  gap: 60px;
+  flex-direction: column;
 }
 </style>
 
