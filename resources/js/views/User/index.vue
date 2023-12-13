@@ -43,7 +43,7 @@
                 >
                   <el-option
                     class="el-option-custom"
-                    label="All Role"
+                    label="All VIAM User"
                     value=""
                   />
                   <el-option
@@ -98,7 +98,7 @@
               />
               <el-table-column
                 prop="viam_user.name"
-                label="Role"
+                label="VIAM User"
                 align="center"
               />
             </el-table>

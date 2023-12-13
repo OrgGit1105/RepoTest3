@@ -87,7 +87,7 @@
 
 <script>
 import { getAllAnalytic } from '../../api/analytic';
-import { getAllUser } from '../../api/user';
+import { getAllUserWithoutPagination } from '../../api/user';
 import moment from 'moment';
 import { MakeToast } from '../../utils/toast_message';
 import axios from 'axios';
@@ -146,11 +146,10 @@ export default {
       this.getListAllAnalytic();
     },
     async getListEmployee() {
-      const PARAMS = {};
-      await getAllUser(PARAMS)
+      await getAllUserWithoutPagination()
         .then((response) => {
           if (response.code === 200) {
-            this.listEmployee = response.data.result;
+            this.listEmployee = response.data;
           }
         })
         .catch(() => {

@@ -8,7 +8,7 @@
 
       <b-navbar-toggle target="nav-collapse" />
       <b-collapse id="nav-collapse" style="display: none;" is-nav>
-        <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px">
+        <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px; white-space: nowrap;">
           <b-nav-item class="custom-item-nav" :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
         </b-navbar-nav>
         <b-navbar-nav>
