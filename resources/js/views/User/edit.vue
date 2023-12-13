@@ -370,7 +370,7 @@
                 <div>
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="basic">
-                      <h1 class="title-face">Role</h1>
+                      <h1 class="title-face">VIAM User</h1>
                     </div>
                   </div>
                   <hr class="line">
