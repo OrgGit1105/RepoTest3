@@ -34,33 +34,7 @@
               tag="div"
             >
               <h4 class="mb-0 font-weight-normal">
-                <!--                <div>-->
-                <!--                  <a href="/user/index" style="display: flex;width: 12%;"><b-icon-chevron-left /><h4>All Employee</h4></a>-->
-                <!--                </div>-->
-
-                <!--                <div>-->
-                <!--                  <ValidationProvider-->
-                <!--                    v-slot="{ errors }"-->
-                <!--                    name="name"-->
-                <!--                    rules="required"-->
-                <!--                  >-->
-                <!--                    <b-input-group>-->
-                <!--                      <b-form-input-->
-                <!--                        id="nameEmployee"-->
-                <!--                        v-model="formEdit.name"-->
-                <!--                        class="border-0"-->
-                <!--                        style="font-size: 40px"-->
-                <!--                      />-->
-                <!--                      <span class="col-1">-->
-                <!--                        <b-button variant="primary" class="submit_button" style="width: 110px" @click="onSubmit($event)">Save</b-button>-->
-                <!--                      </span>-->
-                <!--                    </b-input-group>-->
-                <!--                    <div class="text-error">-->
-                <!--                      {{ errors[0] }}-->
-                <!--                    </div>-->
-                <!--                  </ValidationProvider>-->
-                <!--                </div>-->
-                <div class="cover-employee-edit">
+                <div class="cover-employee-edit" style="display: flex; gap: 40px; flex-direction: column">
                   <div class="employee-edit">
                     <p class="header-employee-edit fw-5">Employee name</p>
                     <p class="header-employee-edit fw-5">Email</p>
@@ -101,26 +75,116 @@
                       </ValidationProvider>
                     </div>
                   </div>
+                  <div class="employee-edit">
+                    <p class="header-employee-edit fw-5">Gender</p>
+                    <p class="header-employee-edit fw-5">Birthday</p>
+                    <div class="header-employee-edit">
+                      <div>
+                        <el-select
+                          id="genderEmployee"
+                          v-model="formEdit.gender"
+                          placeholder="Please select gender"
+                        >
+                          <el-option
+                            v-for="item in listGender"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id"
+                          />
+                        </el-select>
+                      </div>
+                    </div>
+                    <div class="header-employee-edit">
+                      <div>
+                        <el-date-picker
+                          v-model="formEdit.birthday"
+                          type="date"
+                          placeholder="Pick birthday"
+                          format="yyyy/MM/dd"
+                          value-format="yyyy-MM-dd"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="employee-edit">
+                    <p class="header-employee-edit fw-5">Address</p>
+                    <p class="header-employee-edit fw-5">Telephone</p>
+                    <div class="header-employee-edit">
+                      <div>
+                        <b-input-group>
+                          <b-form-input
+                            id="address"
+                            v-model="formEdit.address"
+                            class="border-0 p-0"
+                          />
+                        </b-input-group>
+                      </div>
+                    </div>
+                    <div class="header-employee-edit">
+                      <div>
+                        <b-input-group>
+                          <b-form-input
+                            id="telephone"
+                            v-model="formEdit.telephone"
+                            class="border-0 p-0"
+                          />
+                        </b-input-group>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="employee-edit">
+                    <p class="header-employee-edit fw-5">Entry Date</p>
+                    <p class="header-employee-edit fw-5">Slack Id</p>
+                    <div class="header-employee-edit">
+                      <div>
+                        <el-date-picker
+                          v-model="formEdit.entry_date"
+                          type="date"
+                          placeholder="Pick entry date"
+                          format="yyyy/MM/dd"
+                          value-format="yyyy-MM-dd"
+                        />
+                      </div>
+                    </div>
+                    <div class="header-employee-edit">
+                      <div>
+                        <b-input-group>
+                          <b-form-input
+                            id="slack_id"
+                            v-model="formEdit.slack_id"
+                            class="border-0 p-0"
+                          />
+                        </b-input-group>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="employee-edit">
+                    <p class="header-employee-edit fw-5">Skype Id</p>
+                    <p class="header-employee-edit fw-5">Github Id</p>
+                    <div class="header-employee-edit">
+                      <div>
+                        <b-input-group>
+                          <b-form-input
+                            id="skype_id"
+                            v-model="formEdit.skype_id"
+                            class="border-0 p-0"
+                          />
+                        </b-input-group>
+                      </div>
+                    </div>
+                    <div class="header-employee-edit">
+                      <div>
+                        <b-input-group>
+                          <b-form-input
+                            id="github_id"
+                            v-model="formEdit.github_id"
+                            class="border-0 p-0"
+                          />
+                        </b-input-group>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <!--                <div>-->
-                <!--                  <ValidationProvider-->
-                <!--                    v-slot="{ errors }"-->
-                <!--                    name="email"-->
-                <!--                    rules="required|email"-->
-                <!--                  >-->
-                <!--                    <label for="emailEmployee" style="font-size: 16px;">Email:</label>-->
-                <!--                    <b-input-group>-->
-                <!--                      <b-form-input-->
-                <!--                        id="emailEmployee"-->
-                <!--                        v-model="formEdit.email"-->
-                <!--                        class="border-0 col-11"-->
-                <!--                      />-->
-                <!--                    </b-input-group>-->
-                <!--                    <div class="text-error">-->
-                <!--                      {{ errors[0] }}-->
-                <!--                    </div>-->
-                <!--                  </ValidationProvider>-->
-                <!--                </div>-->
               </h4>
               <h4 class="mb-0 font-weight-normal">
                 <div class="d-flex justify-content-between align-items-center">
@@ -130,15 +194,6 @@
                   <div class="basic" />
                 </div>
                 <hr class="line">
-                <!--                <div style="margin-bottom: 15px;">-->
-                <!--                  <label for="linkFace" style="font-size: 16px;">Link:</label>-->
-                <!--                  <b-input-group>-->
-                <!--                    <b-form-input-->
-                <!--                      id="linkFace"-->
-                <!--                      class="border-0"-->
-                <!--                    />-->
-                <!--                  </b-input-group>-->
-                <!--                </div>-->
                 <div>
                   <div class="image-dropzone" @dragover.prevent @drop="handleDrop">
                     <div style="border-bottom: 2px solid;display: flex; gap: 1rem">
@@ -157,11 +212,6 @@
                         style="display: flex; gap: 1rem;cursor: pointer"
                         @click="checkWithMask()"
                       >
-                        <!--                        <b-icon-emoji-frown style="margin-top: 10px; height: 55%" />-->
-                        <!--                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">-->
-                        <!--                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>-->
-                        <!--                          <path d="M9.146 5.146a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zm-5 0a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 1 1 .708.708l-.647.646.647.646a.5.5 0 1 1-.708.708L5.5 7.207l-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708zM10 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>-->
-                        <!--                        </svg>-->
 
                         <svg
                           version="1.0"
@@ -502,11 +552,23 @@ export default {
       formEdit: {
         name: '',
         email: '',
+        gender: '',
+        birthday: '',
+        address: '',
+        telephone: '',
+        entry_date: '',
+        slack_id: '',
+        skype_id: '',
+        github_id: '',
         password: '',
         password_confirmation: '',
         viam_user_id: '',
         retirement_date: '',
       },
+      listGender: [
+        { id: 0, name: 'male' },
+        { id: 1, name: 'female' },
+      ],
       id: this.$route.params.id,
       userInfo: {},
       author: true,
@@ -577,6 +639,14 @@ export default {
         this.formEdit = {
           name: response.data.name,
           email: response.data.email,
+          gender: response.data.gender,
+          birthday: response.data.birthday,
+          address: response.data.address,
+          telephone: response.data.telephone,
+          entry_date: response.data.entry_date,
+          slack_id: response.data.slack_id,
+          skype_id: response.data.skype_id,
+          github_id: response.data.github_id,
           password: '',
           password_confirmation: '',
           role_id: response.data.role_id,
