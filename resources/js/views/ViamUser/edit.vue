@@ -168,8 +168,10 @@ export default {
 
   methods: {
     async initData() {
+      this.openLoading();
       await this.getListPolicy();
-      this.getUserInfo();
+      await this.getUserInfo();
+      this.closeLoading();
     },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
