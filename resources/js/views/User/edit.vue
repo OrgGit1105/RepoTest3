@@ -133,6 +133,7 @@
                         placeholder="Pick entry date"
                         format="yyyy/MM/dd"
                         value-format="yyyy-MM-dd"
+                        disabled="disabled"
                       />
                     </div>
                     <div class="header-employee-edit">
