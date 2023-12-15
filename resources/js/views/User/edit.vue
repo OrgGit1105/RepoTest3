@@ -618,7 +618,6 @@ export default {
       this.openLoading();
       try {
         const response = await UserApi.getOneUser(this.id);
-        console.log('response', response.data);
         this.userInfo = {
           viam_user: response.data.viam_user.name,
         };
@@ -639,7 +638,6 @@ export default {
           role_id: response.data.role_id,
           retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
         };
-        console.log('formEdit', this.formEdit);
         this.closeLoading();
       } catch (error) {
         this.closeLoading();

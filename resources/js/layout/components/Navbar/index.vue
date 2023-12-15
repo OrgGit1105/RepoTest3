@@ -7,7 +7,7 @@
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" style="display: none; font-size: 23px; white-space: nowrap;" is-nav>
+      <b-collapse id="nav-collapse" style="display: none; font-size: 22px; white-space: nowrap;" is-nav>
         <div style="display: flex; flex: 1; justify-content: space-between">
           <div style="margin-left: 3rem; display: flex; flex-direction: row; justify-content: space-evenly">
             <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
