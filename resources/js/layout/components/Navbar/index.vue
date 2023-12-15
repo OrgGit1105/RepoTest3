@@ -7,31 +7,34 @@
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" style="display: none;" is-nav>
-        <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px; white-space: nowrap;">
-          <b-nav-item class="custom-item-nav" :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
-        </b-navbar-nav>
-        <b-navbar-nav>
-          <b-nav-item-dropdown v-if="!checkViam" right class="custom-icon-viam">
-            <!-- Using 'button-content' slot -->
-            <template #button-content>
-              <span class="viam-custom"> VIAM </span>
-            </template>
-            <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
-            <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
-        <!-- Right aligned nav items -->
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right class="custom-icon">
-            <!-- Using 'button-content' slot -->
-            <template #button-content>
-              <span class="user-login-custom">{{ auth ? auth.name : '' }}</span>
-            </template>
-            <b-dropdown-item :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
-            <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
+      <b-collapse id="nav-collapse" style="display: none; font-size: 23px; white-space: nowrap;" is-nav>
+        <div style="display: flex; flex: 1; justify-content: space-between">
+          <div style="margin-left: 3rem; display: flex; flex-direction: row; justify-content: space-evenly">
+            <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
+              <b-nav-item :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
+            </b-navbar-nav>
+            <b-navbar-nav>
+              <b-nav-item-dropdown v-if="!checkViam" right>
+                <template #button-content>
+                  <span :class="{ 'font-weight-bold': currentPage.includes('/viam') }">VIAM</span>
+                </template>
+                <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
+                <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
+              </b-nav-item-dropdown>
+            </b-navbar-nav>
+          </div>
+          <div>
+            <b-navbar-nav>
+              <b-nav-item-dropdown right>
+                <template #button-content>
+                  <span :style="{ color: auth ? '#0070C9' : '' }">{{ auth ? auth.name : '' }}</span>
+                </template>
+                <b-dropdown-item v-if="auth.role_id === 1" :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
+                <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
+              </b-nav-item-dropdown>
+            </b-navbar-nav>
+          </div>
+        </div>
       </b-collapse>
     </b-navbar>
   </div>
@@ -59,6 +62,7 @@ export default {
         // { name: 'VIAM', href: '/viam/index' },
       ],
       navbarUser: [
+        { name: 'Schedules', href: '/schedules/index' },
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         // { name: 'VIAM', href: '/viam/index' },
@@ -288,20 +292,6 @@ button.navbar-toggler > svg {
 
 button.navbar-toggler:focus {
   outline: none;
-}
-li.nav-item.custom-item-nav a {
-  padding-top: unset;
-  padding-bottom: unset;
-}
-.user-login-custom {
-  font-size: 20px;
-  color: #0070C9;
-  margin-right: 10px;
-}
-.viam-custom {
-  font-size: 20px;
-  margin-right: 5px;
-  margin-left: 80px;
 }
 ::v-deep .custom-icon .dropdown-toggle::after {
   display: inline-block;
