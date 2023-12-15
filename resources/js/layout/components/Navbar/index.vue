@@ -7,31 +7,34 @@
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" style="display: none;" is-nav>
-        <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes" style="font-size: 23px; gap: 2rem; margin-left: 100px; white-space: nowrap;">
-          <b-nav-item class="custom-item-nav" :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
-        </b-navbar-nav>
-        <b-navbar-nav>
-          <b-nav-item-dropdown v-if="!checkViam" right class="custom-icon-viam">
-            <!-- Using 'button-content' slot -->
-            <template #button-content>
-              <span class="viam-custom"> VIAM </span>
-            </template>
-            <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
-            <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
-        <!-- Right aligned nav items -->
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right class="custom-icon">
-            <!-- Using 'button-content' slot -->
-            <template #button-content>
-              <span class="user-login-custom">{{ auth ? auth.name : '' }}</span>
-            </template>
-            <b-dropdown-item :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
-            <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
+      <b-collapse id="nav-collapse" style="display: none; font-size: 22px; white-space: nowrap;" is-nav>
+        <div style="display: flex; flex: 1; justify-content: space-between">
+          <div style="margin-left: 3rem; display: flex; flex-direction: row; justify-content: space-evenly">
+            <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
+              <b-nav-item :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
+            </b-navbar-nav>
+            <b-navbar-nav>
+              <b-nav-item-dropdown v-if="!checkViam" right>
+                <template #button-content>
+                  <span :class="{ 'font-weight-bold': currentPage.includes('/viam') }">VIAM</span>
+                </template>
+                <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
+                <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
+              </b-nav-item-dropdown>
+            </b-navbar-nav>
+          </div>
+          <div>
+            <b-navbar-nav>
+              <b-nav-item-dropdown right>
+                <template #button-content>
+                  <span :style="{ color: auth ? '#0070C9' : '' }">{{ auth ? auth.name : '' }}</span>
+                </template>
+                <b-dropdown-item v-if="auth.role_id === 1" :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
+                <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
+              </b-nav-item-dropdown>
+            </b-navbar-nav>
+          </div>
+        </div>
       </b-collapse>
     </b-navbar>
   </div>
@@ -59,6 +62,7 @@ export default {
         // { name: 'VIAM', href: '/viam/index' },
       ],
       navbarUser: [
+        { name: 'Schedules', href: '/schedules/index' },
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         // { name: 'VIAM', href: '/viam/index' },
@@ -237,12 +241,6 @@ nav.navbar.navbar-dark.navbar-expand-lg {
   border: 1px solid #0f68b1;
 }
 
-@media (max-width: 768px) {
-  .navbar-dark .navbar-toggler {
-    border-color: transparent;
-  }
-}
-
 .dropdown-content {
   display: none;
   position: absolute;
@@ -289,20 +287,6 @@ button.navbar-toggler > svg {
 button.navbar-toggler:focus {
   outline: none;
 }
-li.nav-item.custom-item-nav a {
-  padding-top: unset;
-  padding-bottom: unset;
-}
-.user-login-custom {
-  font-size: 20px;
-  color: #0070C9;
-  margin-right: 10px;
-}
-.viam-custom {
-  font-size: 20px;
-  margin-right: 5px;
-  margin-left: 80px;
-}
 ::v-deep .custom-icon .dropdown-toggle::after {
   display: inline-block;
   margin-left: 0.255em;
@@ -324,50 +308,4 @@ li.nav-item.custom-item-nav a {
   border-left: 0.3em solid transparent;
 }
 .navbar-brand {padding: 0 !important;}
-@media only screen and (max-width: 1365px) and (min-width: 1023px) {
- #app {
-    width: 100% !important;
-  }
-  .menu .li1 {
-    min-width: 160px !important;
-    font-size: 13px !important;
-  }
-  .menu li ul {
-    min-width: 160px !important;
-  }
-  .btn-logout[data-v-ca3569b6] { font-size: 0.6rem !important;}
-  .navbar-brand img {width: 80%;}
-  .navbar-brand { margin-right: 0px !important;}
-  .ul1 > li > a { font-size: 12px !important;}
-  .navbar-nav > div { padding-right: 0px !important;}
-  .menu {padding-left: 0 !important;}
-  .menu li ul {
-  position: absolute;
-  left: 0;
-  min-width: 220px;
-  top: calc(100%);
-  margin: 0;
-  padding: 0;
-  background: #fff;
-  text-align: center;
-  box-shadow: 0 1px 2px 2px rgb(0 0 0 / 20%);
-  z-index: 999999;
-  width: 100%;
-}
-::v-deep .dropdown-toggle {
-  font-size: 12px !important;
-}
-}
-@media only screen and (max-width: 1366px) and (min-width: 1024px) {
-  #app {
-    width: 100% !important;
-  }
-  .menu .li1 {
-    // min-width: auto !important;
-    letter-spacing: 1px;
-  }
-  .menu-li1 {
-    font-size: 16px;
-  }
-}
 </style>
