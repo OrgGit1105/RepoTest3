@@ -241,12 +241,6 @@ nav.navbar.navbar-dark.navbar-expand-lg {
   border: 1px solid #0f68b1;
 }
 
-@media (max-width: 768px) {
-  .navbar-dark .navbar-toggler {
-    border-color: transparent;
-  }
-}
-
 .dropdown-content {
   display: none;
   position: absolute;
@@ -314,50 +308,4 @@ button.navbar-toggler:focus {
   border-left: 0.3em solid transparent;
 }
 .navbar-brand {padding: 0 !important;}
-@media only screen and (max-width: 1365px) and (min-width: 1023px) {
- #app {
-    width: 100% !important;
-  }
-  .menu .li1 {
-    min-width: 160px !important;
-    font-size: 13px !important;
-  }
-  .menu li ul {
-    min-width: 160px !important;
-  }
-  .btn-logout[data-v-ca3569b6] { font-size: 0.6rem !important;}
-  .navbar-brand img {width: 80%;}
-  .navbar-brand { margin-right: 0px !important;}
-  .ul1 > li > a { font-size: 12px !important;}
-  .navbar-nav > div { padding-right: 0px !important;}
-  .menu {padding-left: 0 !important;}
-  .menu li ul {
-  position: absolute;
-  left: 0;
-  min-width: 220px;
-  top: calc(100%);
-  margin: 0;
-  padding: 0;
-  background: #fff;
-  text-align: center;
-  box-shadow: 0 1px 2px 2px rgb(0 0 0 / 20%);
-  z-index: 999999;
-  width: 100%;
-}
-::v-deep .dropdown-toggle {
-  font-size: 12px !important;
-}
-}
-@media only screen and (max-width: 1366px) and (min-width: 1024px) {
-  #app {
-    width: 100% !important;
-  }
-  .menu .li1 {
-    // min-width: auto !important;
-    letter-spacing: 1px;
-  }
-  .menu-li1 {
-    font-size: 16px;
-  }
-}
 </style>
