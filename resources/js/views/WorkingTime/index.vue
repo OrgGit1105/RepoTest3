@@ -329,7 +329,6 @@ export default {
         .then((response) => {
           if (response.code === 200) {
             this.listWorkingTimes = response.data.result;
-            console.log('list', this.listWorkingTimes);
             this.pagination = response.data.pagination;
           }
         })
