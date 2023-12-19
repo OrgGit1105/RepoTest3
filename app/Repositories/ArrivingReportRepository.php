@@ -84,7 +84,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             } else {
                 $data[$key]['warning'] = null;
             }
-            
+
 		}
 
 		return (new Common)->myPaginate($data);
@@ -205,6 +205,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $messages = explode(',',str_replace(', ', ',', $input['text']));
 
         $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
+        $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
+        $dateOff = Carbon::parse($messages['1']);
 
         if(!$user) {
             return __('analytic.no_user');
@@ -213,7 +215,6 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         if(count($messages) != 3 && count($messages) != 4) {
             return __('analytic.err_format');
         }
-
         if(count($messages) == 3) {
             if(!$this->validateDate($messages['1'])) {
                 return __('analytic.err_format_one_date');
@@ -222,17 +223,26 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
             //     return __('analytic.check_date');
             // }
-
             if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
             } else {
+                $type_date = Str::contains($messages['0'], 'remote') ? config('analytic.type.remote') : config('analytic.type.'.$messages[0]);
                 ArrivingReport::create([
                     'user_id' => $user->id,
                     'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
                     'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
-                    'type_date' => Str::contains($messages['0'], 'remote') ? config('analytic.type.remote') : config('analytic.type.off'),
+                    'type_date' => $type_date,
                     'status' => 1,
                 ]);
+                if($type_date == config('analytic.type.take off') && $dateOff > $official_staff) {
+                    if(Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
+                        $paid_off = 0.5;
+                    } else {
+                        $paid_off = 1;
+                    }
+                     $user->paid_off = $user->paid_off -$paid_off;
+                     $user->save();
+                }
             }
 
             return response()->json([
@@ -261,20 +271,28 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
             $index = 0;
             $dataInsert = [];
+            $paid_off = 0;
+            $type_date = $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.'.$messages[0]);
             for ($i=0; $i < $diffInDays; $i++) {
-				if ($this->holiday(Carbon::parse($messages['1'])->addDays($index))) {
+                $dateOff = Carbon::parse($messages['1'])->addDays($index);
+                if ($this->holiday($dateOff)) {
 					$dataInsert = [
 						'user_id' => $user->id,
-						'in_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 08:30:00'),
-						'out_time' => Carbon::parse($messages['1'])->addDays($index)->format('Y-m-d 18:00:00'),
-						'type_date' => $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.off'),
+						'in_time' => $dateOff->format('Y-m-d 08:30:00'),
+						'out_time' => $dateOff->format('Y-m-d 18:00:00'),
+						'type_date' => $type_date,
 						'status' => 1,
 					];
 					ArrivingReport::create($dataInsert);
+
+                    if($type_date == config('analytic.type.take off') && $dateOff > $official_staff) {
+                        $paid_off++;
+                    }
 				}
 
                 $index++;
             }
+            $user->paid_off = $user->paid_off - $paid_off;
         }
 
         return response()->json([
@@ -328,7 +346,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         return $outTime = Carbon::parse($date)->format('Y-m-d 18:00:00');
     }
 
-    public function downloadArrivingreport($request = []) 
+    public function downloadArrivingreport($request = [])
     {
         $defaulStartWeek = Carbon::now()->startOfWeek();
         $defaulEndWeek = Carbon::now()->startOfWeek()->addDay(4);

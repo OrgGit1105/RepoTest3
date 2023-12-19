@@ -127,7 +127,7 @@ class UserController extends Controller
      *       @OA\MediaType(
      *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"name", "email","viam_user_id","password","password_confirmation"},
+     *            required={"name", "email","viam_user_id","entry_date","password","password_confirmation"},
      *            @OA\Property(
      *              property="name",
      *              format="string",
@@ -159,6 +159,10 @@ class UserController extends Controller
      *              property="entry_date",
      *              type="date",
      *              description="YYYY-mm-dd",
+     *            ),
+     *            @OA\Property(
+     *              property="paid_off",
+     *              type="float",
      *            ),
      *            @OA\Property(
      *              property="slack_id",
@@ -318,7 +322,7 @@ class UserController extends Controller
         if ($request->has('password')){
           $request->validate(['password' => 'required|min:3|confirmed']);
         }
-        $attributes = $request->except([]);
+        $attributes = $request->except(['entry_date']);
 //        $data = $this->repository->update($attributes, $id);
         return $this->repository->update($attributes, $id);
     }
