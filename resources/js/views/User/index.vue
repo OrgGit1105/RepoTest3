@@ -201,8 +201,17 @@
             <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
             <label for="githubIdEmployee" class="mt-3">Github Id</label>
             <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
-            <label for="paidOff" class="mt-3">Paid off</label>
-            <el-input id="paidOff" v-model="formCreate.paidOff" />
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="paid_off"
+              :rules=" { regex: /^(\d+(\.\d+)?|)$/ }"
+            >
+              <label for="paid_off" class="mt-3">Paid off</label>
+              <el-input id="paid_off" v-model="formCreate.paid_off" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
             <hr class="line">
             <p class="title-create-employee mb-3">Face Data</p>
             <div style="margin-bottom: 15px;">
@@ -545,7 +554,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
-        paidOff: '',
+        paid_off: '',
         password: '',
         password_confirmation: '',
         viam_user_id: '',
@@ -669,9 +678,18 @@ export default {
       this.formCreate = {
         name: '',
         email: '',
+        gender: '',
+        birthday: '',
+        address: '',
+        telephone: '',
+        entry_date: '',
+        slack_id: '',
+        skype_id: '',
+        github_id: '',
+        paid_off: '',
         password: '',
         password_confirmation: '',
-        role_id: '',
+        viam_user_id: '',
         status: 1,
       };
       if (this.withoutMask) {
@@ -773,9 +791,18 @@ export default {
             this.formCreate = {
               name: '',
               email: '',
+              gender: '',
+              birthday: '',
+              address: '',
+              telephone: '',
+              entry_date: '',
+              slack_id: '',
+              skype_id: '',
+              github_id: '',
+              paid_off: '',
               password: '',
               password_confirmation: '',
-              role_id: '',
+              viam_user_id: '',
               status: 1,
             };
             this.waitCreate = false;
