@@ -178,8 +178,12 @@
             <el-input id="addressEmployee" v-model="formCreate.address" />
             <label for="telephoneEmployee" class="mt-3">Tel</label>
             <el-input id="telephoneEmployee" v-model="formCreate.telephone" />
-            <label for="entryDateEmployee" class="mt-3">Entry Date</label>
-            <div>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="email"
+              rules="required"
+            >
+              <label for="entryDateEmployee" class="mt-3">Entry Date</label>
               <el-date-picker
                 v-model="formCreate.entry_date"
                 type="date"
@@ -187,7 +191,10 @@
                 format="yyyy/MM/dd"
                 value-format="yyyy-MM-dd"
               />
-            </div>
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
             <label for="slackIdEmployee" class="mt-3">Slack Id</label>
             <el-input id="slackIdEmployee" v-model="formCreate.slack_id" />
             <label for="skypeIdEmployee" class="mt-3">Skype Id</label>

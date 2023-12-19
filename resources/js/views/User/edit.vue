@@ -47,7 +47,7 @@
                           <b-form-input
                             id="nameEmployee"
                             v-model="formEdit.name"
-                            class="border-0 p-0"
+                            class="p-0"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -66,7 +66,7 @@
                           <b-form-input
                             id="emailEmployee"
                             v-model="formEdit.email"
-                            class="border-0 p-0"
+                            class="p-0"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -96,7 +96,7 @@
                       <el-date-picker
                         v-model="formEdit.birthday"
                         type="date"
-                        placeholder="Pick birthday"
+                        placeholder="Please select birthday"
                         format="yyyy/MM/dd"
                         value-format="yyyy-MM-dd"
                       />
@@ -109,7 +109,7 @@
                         <b-form-input
                           id="address"
                           v-model="formEdit.address"
-                          class="border-0 p-0"
+                          class="p-0"
                         />
                       </b-input-group>
                     </div>
@@ -119,7 +119,7 @@
                         <b-form-input
                           id="telephone"
                           v-model="formEdit.telephone"
-                          class="border-0 p-0"
+                          class="p-0"
                         />
                       </b-input-group>
                     </div>
@@ -130,9 +130,10 @@
                       <el-date-picker
                         v-model="formEdit.entry_date"
                         type="date"
-                        placeholder="Pick entry date"
+                        placeholder="Please select entry date"
                         format="yyyy/MM/dd"
                         value-format="yyyy-MM-dd"
+                        disabled="disabled"
                       />
                     </div>
                     <div class="header-employee-edit">
@@ -141,7 +142,7 @@
                         <b-form-input
                           id="slack_id"
                           v-model="formEdit.slack_id"
-                          class="border-0 p-0"
+                          class="p-0"
                         />
                       </b-input-group>
                     </div>
@@ -153,7 +154,7 @@
                         <b-form-input
                           id="skype_id"
                           v-model="formEdit.skype_id"
-                          class="border-0 p-0"
+                          class="p-0"
                         />
                       </b-input-group>
                     </div>
@@ -163,7 +164,7 @@
                         <b-form-input
                           id="github_id"
                           v-model="formEdit.github_id"
-                          class="border-0 p-0"
+                          class="p-0"
                         />
                       </b-input-group>
                     </div>
@@ -435,12 +436,13 @@
                 </div>
                 <hr class="line">
                 <div>
-                  <b-input-group>
-                    <b-form-datepicker
-                      v-model="formEdit.retirement_date"
-                      locale="en"
-                    />
-                  </b-input-group>
+                  <el-date-picker
+                    v-model="formEdit.retirement_date"
+                    type="date"
+                    placeholder="Please select retirement date"
+                    format="yyyy/MM/dd"
+                    value-format="yyyy-MM-dd"
+                  />
                 </div>
               </h4>
               <h4 class="mb-0 font-weight-normal" style="margin-top: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.15);">
@@ -617,7 +619,6 @@ export default {
       this.openLoading();
       try {
         const response = await UserApi.getOneUser(this.id);
-        console.log('response', response.data);
         this.userInfo = {
           viam_user: response.data.viam_user.name,
         };
@@ -638,7 +639,6 @@ export default {
           role_id: response.data.role_id,
           retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
         };
-        console.log('formEdit', this.formEdit);
         this.closeLoading();
       } catch (error) {
         this.closeLoading();
@@ -1197,6 +1197,12 @@ select:required:invalid { color: #6f737c; }
   display: flex;
   gap: 60px;
   flex-direction: column;
+}
+::v-deep .el-select {
+  width: 100%;
+}
+::v-deep .el-date-editor {
+  width: 100%;
 }
 </style>
 
