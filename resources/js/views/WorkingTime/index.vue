@@ -28,7 +28,15 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill">
-            <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="showModalAdd()" />
+            <el-dropdown>
+              <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click.native="showModalAdd()">Add working time</el-dropdown-item>
+                  <el-dropdown-item @click.native="showModalAddDayOff()">Add day off</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <div class="box-search align-items-center" :class="display">
               <el-input
                 v-model="formSearch.search"
@@ -199,6 +207,71 @@
             <el-button class="btn-add-custom" type="primary" @click="submitForm('ruleForm')">Add</el-button>
           </span>
         </el-dialog>
+
+        <!-- Modal add new day off -->
+        <el-dialog class="title-add-working" title="Add Day off" :visible.sync="openModalAddDayOff" width="35%" @close="resetForm('dayOffForm')">
+          <el-form ref="dayOffForm" :model="form" :rules="rules" label-width="120px" label-position="top">
+            <el-form-item label="Employee Name" required prop="userId">
+              <el-select v-model="form.userId" placeholder="Please select employee name">
+                <el-option
+                  v-for="item in listEmployee"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+            <hr class="line">
+            <p class="title-working mb-3">Working Time</p>
+            <p class="label-custom">In Time</p>
+            <div class="date-time-custom">
+              <el-form-item prop="inDate" class="item-date">
+                <el-date-picker
+                  v-model="form.inDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+
+              <el-form-item prop="inTime" class="item-time">
+                <el-time-picker
+                  v-model="form.inTime"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+            </div>
+
+            <p class="label-custom">Out Time</p>
+            <div class="date-time-custom">
+              <el-form-item prop="outDate" class="item-date">
+                <el-date-picker
+                  v-model="form.outDate"
+                  type="date"
+                  format="yyyy/MM/dd"
+                  value-format="yyyy-MM-dd"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+              <el-form-item prop="outTime" class="item-time">
+                <el-time-picker
+                  v-model="form.outTime"
+                  format="HH:mm:ss"
+                  value-format="HH:mm:ss"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+            </div>
+          </el-form>
+
+          <span slot="footer" class="dialog-footer">
+            <el-button class="btn-cancle-custom" @click="resetForm('dayOffForm')">Cancel</el-button>
+            <el-button class="btn-add-custom" type="primary" @click="submitForm('dayOffForm')">Add</el-button>
+          </span>
+        </el-dialog>
       </div>
     </div>
   </div>
@@ -240,6 +313,8 @@ export default {
       display: 'd-none',
       displaySearch: 'd-block',
       openModalAdd: false,
+      openModalAddDayOff: false,
+      selectedOptionModal: null,
       rules: {
         userId: [
           { required: true, message: 'Please select Employee Name', trigger: 'change' },
@@ -291,6 +366,9 @@ export default {
     },
     showModalAdd: function() {
       this.openModalAdd = true;
+    },
+    showModalAddDayOff() {
+      this.openModalAddDayOff = true;
     },
     showDetail: function(row, column, event) {
       this.$router.push({ path: `/working-time/detail/${row.id}` });
@@ -594,5 +672,11 @@ export default {
   border: 1px solid;
   width: 40%;
   margin-left: 60%;
+}
+.back-list {
+  color: #0070C9;
+  font-weight: 400;
+  font-size: 23px;
+  margin: 0;
 }
 </style>
