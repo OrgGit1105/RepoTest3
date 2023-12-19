@@ -43,7 +43,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::get('/role',[RoleController::class, 'index']);
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
         Route::get('schedule/result-chat-gpt', 'ScheduleController@getChatGPT');
-        Route::apiResource('schedule', 'ScheduleController');
+        Route::get('schedule', 'ScheduleController@index')->withoutMiddleware(['managerRole']);
         Route::apiResource('policy', 'PolicyController');
         Route::apiResource('viam_user', 'VIAMUserController');
 
