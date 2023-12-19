@@ -201,6 +201,8 @@
             <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
             <label for="githubIdEmployee" class="mt-3">Github Id</label>
             <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
+            <label for="paidOff" class="mt-3">Paid off</label>
+            <el-input id="paidOff" v-model="formCreate.paidOff" />
             <hr class="line">
             <p class="title-create-employee mb-3">Face Data</p>
             <div style="margin-bottom: 15px;">
@@ -543,6 +545,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        paidOff: '',
         password: '',
         password_confirmation: '',
         viam_user_id: '',
