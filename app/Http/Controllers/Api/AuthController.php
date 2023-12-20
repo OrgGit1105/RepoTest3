@@ -49,10 +49,12 @@ class AuthController extends BaseController
      *                   ),
      *                  @OA\Property(
      *                      property="email",
+     *                      example="i.kohei2323@gmail.com",
      *                      type = "string"
      *                  ),
      *                  @OA\Property(
      *                      property="password",
+     *                      example="12345678",
      *                      type = "string"
      *                  ),
      *               ),
