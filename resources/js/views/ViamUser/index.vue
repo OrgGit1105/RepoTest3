@@ -285,7 +285,6 @@ export default {
         .then((response) => {
           if (response.code === 200) {
             this.listViamUser = response.data;
-            console.log('listUser===>', this.listViamUser);
             // this.$store.dispatch('app/saveListUSer', listUser);
             // this.pagination.total_records =
             //     response.data.pagination.total_records;
