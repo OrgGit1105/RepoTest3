@@ -23,7 +23,6 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
      public function __construct(Application $app)
      {
          parent::__construct($app);
-
      }
 
     /**
@@ -36,7 +35,7 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
     {
         return ArrivingReport::class;
     }
-    
+
     public function getListAnalytic($input = [])
     {
         $defaulStartDate = Carbon::now()->startOfMonth();
@@ -46,11 +45,17 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
         $startDate = date("Y-m-d 00:00", strtotime($startDate));
         $endDate = date("Y-m-d 23:59", strtotime($endDate));
         $userId = Arr::get($input, 'user_id', []);
+        $roleUser = User::getRoleVFace(Auth::user());
 
         $analytics = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user')->get();
-        if (!empty($userId)) {
+        if (!empty($userId) && $roleUser == POLICY_V_FACE_ID['Admin']) {
             $analytics = $analytics->where('user_id', $userId);
         }
+
+        if($roleUser == POLICY_V_FACE_ID['Normal']) {
+            $analytics = $analytics->where('user_id', Auth::id());
+        }
+
         $arrUserId = User::get()->pluck('id')->toArray();
 
         $data = [];
@@ -96,7 +101,7 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
         return $data;
     }
 
-    public function getEmotions($request) 
+    public function getEmotions($request)
     {
         $startMonth = Carbon::parse(Carbon::now())->firstOfMonth()->format('Y-m-d h:i:s');
         $endMonth   = Carbon::parse(Carbon::now())->endOfMonth()->format('Y-m-d h:i:s');

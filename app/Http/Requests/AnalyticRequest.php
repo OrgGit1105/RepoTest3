@@ -9,6 +9,7 @@ namespace App\Http\Requests;
 
 use App\Models\User;
 use App\Rules\CheckIDRule;
+use App\Rules\checkUserIdRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -31,21 +32,27 @@ class AnalyticRequest extends FormRequest
      */
     public function rules()
     {
-          switch (Route::getCurrentRoute()->getActionMethod()){
-                case 'index':
-                    return $this->getCustomRule();
-                default:
-                    return [];
-          }
+        switch (Route::getCurrentRoute()->getActionMethod()) {
+            case 'index':
+                return $this->getCustomRule();
+            case 'getEmotions':
+            case 'exportEmotions':
+                return [
+                    'user_id' => ['required', 'exists:users,id', new checkUserIdRule()]
+                ];
+            default:
+                return [];
+        }
     }
 
     public function getCustomRule()
     {
         if (Route::getCurrentRoute()->getActionMethod() == 'index') {
             return [
-                
+
             ];
         }
+
     }
 
     public function messages()

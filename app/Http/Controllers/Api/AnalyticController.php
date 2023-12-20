@@ -343,6 +343,7 @@ class AnalyticController extends Controller
      *   @OA\Parameter(
      *     name="user_id",
      *     in="query",
+     *     required=true,
      *     @OA\Schema(
      *      type="integer",
      *     ),

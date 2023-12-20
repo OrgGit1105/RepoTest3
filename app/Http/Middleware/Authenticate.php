@@ -21,10 +21,13 @@ class Authenticate extends BaseMiddleware
         if (!$token = $this->auth->setRequest($request)->getToken()) {
             return ResponseService::responseJson(CODE_UNAUTHORIZED, '', 'token not provided');
         }
+
+        if (!$this->auth->check()) {
+            return ResponseService::responseJson(CODE_UNAUTHORIZED, '', 'token expired');
+        }
+
         try {
             $user = auth('user')->user();
-        } catch (TokenExpiredException $e) {
-            return ResponseService::responseJson(CODE_UNAUTHORIZED, '', 'token expire');
         } catch (JWTException $e) {
             return ResponseService::responseJson(CODE_UNAUTHORIZED, $e->getMessage(), 'Exception');
         }
