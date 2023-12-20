@@ -1,43 +1,41 @@
 /* eslint-disable vue/max-attributes-per-line */
 <template>
-  <div>
-    <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-3 px-5">
-      <b-navbar-brand href="#" class="logo">
-        <Logo :href="'#'" />
-      </b-navbar-brand>
+  <b-navbar style="background: #dfe3e7" toggleable="lg" class="py-3 px-5">
+    <b-navbar-brand href="#" class="logo">
+      <Logo :href="'#'" />
+    </b-navbar-brand>
 
-      <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" style="display: none; font-size: 22px; white-space: nowrap;" is-nav>
-        <div style="display: flex; flex: 1; justify-content: space-between">
-          <div style="margin-left: 3rem; display: flex; flex-direction: row; justify-content: space-evenly">
-            <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
-              <b-nav-item :href="item.href" :class="{ 'font-weight-bold': currentPage === item.href }">{{ item.name }}</b-nav-item>
-            </b-navbar-nav>
-            <b-navbar-nav>
-              <b-nav-item-dropdown v-if="!checkViam" right>
-                <template #button-content>
-                  <span :class="{ 'font-weight-bold': currentPage.includes('/viam') }">VIAM</span>
-                </template>
-                <b-dropdown-item :href="'/viam/index'">VIAM POLICY</b-dropdown-item>
-                <b-dropdown-item :href="'/viam-user/index'">VIAM USER</b-dropdown-item>
-              </b-nav-item-dropdown>
-            </b-navbar-nav>
-          </div>
-          <div>
-            <b-navbar-nav>
-              <b-nav-item-dropdown right>
-                <template #button-content>
-                  <span :style="{ color: auth ? '#0070C9' : '' }">{{ auth ? auth.name : '' }}</span>
-                </template>
-                <b-dropdown-item v-if="auth.role_id === 1" :href="auth ? `/user/edit/${auth.id}` : '#'">Profile</b-dropdown-item>
-                <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
-              </b-nav-item-dropdown>
-            </b-navbar-nav>
-          </div>
+    <b-navbar-toggle target="nav-collapse" />
+    <b-collapse id="nav-collapse" style="display: none; font-size: 22px; white-space: nowrap" is-nav>
+      <div style="display: flex; flex: 1; justify-content: space-between">
+        <div style="margin-left: 3rem; display: flex; flex-direction: row; justify-content: space-evenly">
+          <b-navbar-nav v-for="(item, index) in navbars" :key="index" ref="ListRoutes">
+            <b-nav-item @click="$router.push({ path: item.href })">{{ item.name }}</b-nav-item>
+          </b-navbar-nav>
+          <b-navbar-nav>
+            <b-nav-item-dropdown v-if="!checkViam" right>
+              <template #button-content>
+                <span>VIAM</span>
+              </template>
+              <b-dropdown-item @click="$router.push({ path: `/viam/index` })">VIAM POLICY</b-dropdown-item>
+              <b-dropdown-item @click="$router.push({ path: `/viam-user/index` })">VIAM USER</b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-navbar-nav>
         </div>
-      </b-collapse>
-    </b-navbar>
-  </div>
+        <div>
+          <b-navbar-nav>
+            <b-nav-item-dropdown right>
+              <template #button-content>
+                <span :style="{ color: auth ? '#0070C9' : '' }">{{ auth ? auth.name : '' }}</span>
+              </template>
+              <b-dropdown-item v-if="auth && auth.role_id === 1" @click="$router.push({ path: `/user/edit/${auth.id}` })">Profile</b-dropdown-item>
+              <b-dropdown-item @click="doLogout()">Sign Out</b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-navbar-nav>
+        </div>
+      </div>
+    </b-collapse>
+  </b-navbar>
 </template>
 <script>
 const noAvt = require('@/assets/images/noavt.png');
@@ -59,13 +57,10 @@ export default {
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         { name: 'Employee', href: '/user/index' },
-        // { name: 'VIAM', href: '/viam/index' },
       ],
       navbarUser: [
         { name: 'Schedules', href: '/schedules/index' },
-        { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
-        // { name: 'VIAM', href: '/viam/index' },
       ],
     };
   },
@@ -88,7 +83,7 @@ export default {
       }
     },
     currentPage() {
-      return window.location.pathname;
+      return this.$route.path;
     },
     checkViam() {
       let check = false;

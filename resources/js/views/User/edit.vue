@@ -169,6 +169,19 @@
                       </b-input-group>
                     </div>
                   </div>
+                  <div class="employee-edit" style="justify-content: start; width: 200%">
+                    <div class="header-employee-edit">
+                      <p class="header-employee-edit fw-5">Paid Off</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="paid_off"
+                          v-model="formEdit.paid_off"
+                          class="p-0"
+                          disabled="disabled"
+                        />
+                      </b-input-group>
+                    </div>
+                  </div>
                 </div>
               </h4>
               <h4 class="mb-0 font-weight-normal">
@@ -546,6 +559,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        paid_off: '',
         password: '',
         password_confirmation: '',
         viam_user_id: '',
@@ -633,6 +647,7 @@ export default {
           slack_id: response.data.slack_id,
           skype_id: response.data.skype_id,
           github_id: response.data.github_id,
+          paid_off: response.data.paid_off,
           password: '',
           password_confirmation: '',
           viam_user: response.data.viam_user.name,
