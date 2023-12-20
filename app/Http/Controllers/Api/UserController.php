@@ -253,8 +253,12 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->with(['viam_user'])->find($id);
-            return $this->responseJson(200, new BaseResource($data));
+            $data = $this->repository->with(['viam_user'])->find($id)->toArray();
+            $date = Carbon::parse($data['entry_date'])->addMonth(2);
+            if(Carbon::now() < $date) {
+                $data['paid_off'] = 0;
+            }
+            return $this->responseJson(200, $data);
         } catch (\Exception $e) {
             throw $e;
         }
