@@ -125,12 +125,12 @@ class User extends Authenticatable implements JWTSubject
     public function getRoleVFace($user)
     {
         $policies = $user->viam_user->policies;
-        $policy_v_face = [];
+        $policy_v_face = '';
 
         foreach ($policies as $policy)
         {
             if($policy->type == POLICY_TYPE['V_FACE']) {
-                $policy_v_face[] = $policy->id;
+                $policy_v_face = $policy->id;
             }
         }
         return $policy_v_face;

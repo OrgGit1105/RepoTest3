@@ -26,17 +26,23 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         //Route::post('loginTest', 'AuthController@loginTest')->name('user.loginTest');
         Route::post('logout', 'AuthController@logout');
     });
-    Route::get('schedule/export', 'ScheduleController@export');
     Route::get('checkIpAddress', [ImageFaceController::class, 'checkIpAddress']);
-    Route::get('arriving_report/download', 'ArrivingReportController@download');
-    Route::get('analytic/download', 'AnalyticController@download');
-    Route::get('analytic/export-emotions', 'AnalyticController@exportEmotions');
+
+
+    Route::group(['middleware' => 'auth:user'], function () {
+        Route::get('schedule/export', 'ScheduleController@export');
+        Route::get('analytic/emotions', 'AnalyticController@getEmotions');
+        Route::get('arriving_report/download', 'ArrivingReportController@download');
+        Route::get('analytic/download', 'AnalyticController@download');
+        Route::get('analytic/export-emotions', 'AnalyticController@exportEmotions');
+        Route::get('analytic', 'AnalyticController@index');
+        Route::get('analytic/id', 'AnalyticController@show');
+
+    });
 
     Route::group(['middleware' => ['auth:user','managerRole']], function () {
 
         Route::apiResource('arriving_report', 'ArrivingReportController');
-        Route::get('analytic/emotions', 'AnalyticController@getEmotions');
-        Route::apiResource('analytic', 'AnalyticController');
         //Route::apiResource('user', UserController::class); Không được dùng cách viết này với apiResource vì sẽ bị lỗi không tìm thấy
         Route::get('/user/list_all', 'UserController@getAllEmployee');
         Route::apiResource('/user', 'UserController');
