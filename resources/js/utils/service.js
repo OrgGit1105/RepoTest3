@@ -36,6 +36,7 @@ service.interceptors.response.use(
   response => {
     if (response.data.code === 401) {
       Cookies.remove('token');
+      window.location.reload();
       return;
     }
     return response.data;

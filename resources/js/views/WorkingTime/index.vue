@@ -94,7 +94,7 @@
                 align="center"
               >
                 <template slot-scope="scope">
-                  <div :class="scope.row.type_date == 'Working' ? 'type_working' : (scope.row.type_date == 'Remote' ? 'type_remote' : 'type_take_off')">
+                  <div :class="getClass(scope.row.type_date)">
                     <strong>{{ scope.row.type_date }}</strong>
                   </div>
                 </template>
@@ -279,7 +279,7 @@
 
 <script>
 import { getArrving, createNewWorkingTime } from '../../api/working_time';
-import { getAllUser } from '../../api/user';
+import { getAllUserWithoutPagination } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
 import axios from 'axios';
@@ -430,11 +430,10 @@ export default {
       this.getWorkingTime();
     },
     async getListEmployee() {
-      const PARAMS = {};
-      await getAllUser(PARAMS)
+      await getAllUserWithoutPagination()
         .then((response) => {
           if (response.code === 200) {
-            this.listEmployee = response.data.result;
+            this.listEmployee = response.data;
           }
         })
         .catch(() => {
@@ -495,6 +494,22 @@ export default {
         this.formSearch.date = [Cookies.get('startDate'), Cookies.get('endDate')];
       } else {
         this.formSearch.date = [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')];
+      }
+    },
+    getClass(type_date) {
+      switch (type_date) {
+        case 'Working':
+          return 'type_working';
+        case 'Remote':
+          return 'type_remote';
+        case 'Take Off':
+          return 'type_take_off';
+        case 'Paid leave':
+          return 'type_paid_leave';
+        case 'Unpaid leave':
+          return 'type_unpaid_leave';
+        default:
+          return '';
       }
     },
   },
@@ -616,6 +631,20 @@ export default {
   width: 50%;
   border-radius: 10px;
   background-color: #ffcc99;
+}
+::v-deep .type_paid_leave {
+  margin: auto;
+  padding: 7px 0 5px 0;
+  width: 50%;
+  border-radius: 10px;
+  background-color: #90EE90;
+}
+::v-deep .type_unpaid_leave {
+  margin: auto;
+  padding: 7px 0 5px 0;
+  width: 50%;
+  border-radius: 10px;
+  background-color: #FF7F7F;
 }
 ::v-deep .title-add-working .el-dialog__title, .title-working {
   font-weight: 600;
