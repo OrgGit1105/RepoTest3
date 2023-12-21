@@ -502,7 +502,7 @@ export default {
           return 'type_working';
         case 'Remote':
           return 'type_remote';
-        case 'Take Off':
+        case 'Take off':
           return 'type_take_off';
         case 'Paid leave':
           return 'type_paid_leave';
