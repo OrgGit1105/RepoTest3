@@ -3,6 +3,7 @@ import { MakeToast } from './toast_message';
 import i18n from '../lang/index';
 // import router from '../router/index';
 import { getToken } from './getToken';
+import Cookies from 'js-cookie';
 
 const baseURL = process.env.MIX_BASE_API;
 
@@ -33,8 +34,8 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   response => {
-    if (response.status === 401) {
-      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    if (response.data.code === 401) {
+      Cookies.remove('token');
       return;
     }
     return response.data;

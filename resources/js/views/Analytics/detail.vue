@@ -96,6 +96,7 @@
 import { getEmotions } from '../../api/analytic';
 import * as UserApi from '../../api/user';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -138,7 +139,9 @@ export default {
           this.nameEmployee = response.data.name;
         })
         .catch(() => {
-          this.nameEmployee = '';
+          let userInfo = Cookies.get('userInfo');
+          userInfo = JSON.parse(userInfo);
+          this.nameEmployee = userInfo.role_id === 2 ? userInfo.name : '';
         });
     },
     formatDate(row, column) {
