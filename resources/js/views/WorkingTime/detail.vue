@@ -199,7 +199,7 @@ export default {
     async editWorkingTime() {
       const id = this.$route.params.id;
       const DATA = {
-        user_id: this.$route.params.id,
+        user_id: this.dataWorkingTimeRecord.user_id,
         in_time: this.dataWorkingTimeRecord.convert_in_date + ' ' + this.dataWorkingTimeRecord.convert_in_time,
         out_time: this.dataWorkingTimeRecord.convert_out_date + ' ' + this.dataWorkingTimeRecord.convert_out_time,
         remark: this.dataWorkingTimeRecord.remark,
