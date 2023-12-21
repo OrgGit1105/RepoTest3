@@ -279,7 +279,7 @@
 
 <script>
 import { getArrving, createNewWorkingTime } from '../../api/working_time';
-import { getAllUser } from '../../api/user';
+import { getAllUserWithoutPagination } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
 import axios from 'axios';
@@ -430,11 +430,10 @@ export default {
       this.getWorkingTime();
     },
     async getListEmployee() {
-      const PARAMS = {};
-      await getAllUser(PARAMS)
+      await getAllUserWithoutPagination()
         .then((response) => {
           if (response.code === 200) {
-            this.listEmployee = response.data.result;
+            this.listEmployee = response.data;
           }
         })
         .catch(() => {
