@@ -29,21 +29,6 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <div class="d-flex justify-content-end align-items-center">
-              <div class="select-custom">
-                <el-select v-model="employeeValue" placeholder="Select" class="el-select-custom" @change="fillSearch(employeeValue)">
-                  <el-option
-                    class="el-option-custom"
-                    label="All Employee"
-                    value=""
-                  />
-                  <el-option
-                    v-for="item in listEmployee"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
-                </el-select>
-              </div>
               <i class="el-icon-download custom-icon-down cursor-pointer" @click="exportDataAnalytic" />
             </div>
           </div>

@@ -169,8 +169,8 @@
                       </b-input-group>
                     </div>
                   </div>
-                  <div class="employee-edit" style="justify-content: start; width: 200%">
-                    <div class="header-employee-edit">
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
                       <p class="header-employee-edit fw-5">Paid Off</p>
                       <b-input-group>
                         <b-form-input
