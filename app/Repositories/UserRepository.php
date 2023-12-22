@@ -68,9 +68,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $attributes['entry_date'] = Carbon::now();
         }
 
-        if(!isset($attributes['paid_off']) || empty($attributes['paid_off'])) {
-                $attributes['paid_off'] = 0;
-        }
+        $attributes['paid_off'] = 0;
 
         $attributes['created_at'] = Carbon::now();
         $attributes['password'] = bcrypt($attributes['password']);

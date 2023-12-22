@@ -41,20 +41,20 @@ class PaidOffWithMonthJob implements ShouldQueue
             $threeMonthsLater = Carbon::parse($employee->entry_date)->addMonth(3);
             $nextYear = Carbon::parse($employee->entry_date)->addYear();
             $thirteenMonthsLater = Carbon::parse($employee->entry_date)->addMonth(13);
+            $paid_off_start = $employee->paid_off_start;
             $paid_off = $employee->paid_off;
-            $test = $paid_off;
             if ($currentDate < $nextYear) {
                 if($currentDate < $probationary_staff) {
-                    $paid_off = $paid_off > 0 ? $paid_off : 0;
+                    $paid_off = 0;
                 }
                 elseif ($currentDate == $probationary_staff) {
-                    $paid_off = 3;
+                    $paid_off = ($paid_off_start > 0 ) ? ($paid_off_start + 1) : 3;
                 }
                 elseif ($currentDate > $probationary_staff && $currentDate < $threeMonthsLater) {
                     if($dateStart->format('Y-m-d') <= $dateStart->format('Y-m-15'))
-                        $paid_off = $paid_off > 0 ? $paid_off + 1 : 4;
+                        $paid_off = ($paid_off_start > 0) ? ($paid_off_start + 2) : 4;
                     else
-                        $paid_off = $paid_off > 0 ? $paid_off + 1 : 3;
+                        $paid_off = ($paid_off_start > 0) ? ($paid_off_start + 1) : 3;
                 } else {
                     $paid_off += 1;
                 }
