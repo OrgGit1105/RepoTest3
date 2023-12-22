@@ -47,7 +47,7 @@
                           <b-form-input
                             id="nameEmployee"
                             v-model="formEdit.name"
-                            class="p-0"
+                            class="p-1"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -66,7 +66,7 @@
                           <b-form-input
                             id="emailEmployee"
                             v-model="formEdit.email"
-                            class="p-0"
+                            class="p-1"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -109,7 +109,7 @@
                         <b-form-input
                           id="address"
                           v-model="formEdit.address"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -119,7 +119,7 @@
                         <b-form-input
                           id="telephone"
                           v-model="formEdit.telephone"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -142,7 +142,7 @@
                         <b-form-input
                           id="slack_id"
                           v-model="formEdit.slack_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -154,7 +154,7 @@
                         <b-form-input
                           id="skype_id"
                           v-model="formEdit.skype_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -164,7 +164,7 @@
                         <b-form-input
                           id="github_id"
                           v-model="formEdit.github_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -176,7 +176,7 @@
                         <b-form-input
                           id="paid_off"
                           v-model="formEdit.paid_off"
-                          class="p-0"
+                          class="p-1"
                           disabled="disabled"
                         />
                       </b-input-group>
