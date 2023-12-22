@@ -47,7 +47,7 @@
                           <b-form-input
                             id="nameEmployee"
                             v-model="formEdit.name"
-                            class="p-0"
+                            class="p-1"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -66,7 +66,7 @@
                           <b-form-input
                             id="emailEmployee"
                             v-model="formEdit.email"
-                            class="p-0"
+                            class="p-1"
                           />
                         </b-input-group>
                         <div class="text-error">
@@ -109,7 +109,7 @@
                         <b-form-input
                           id="address"
                           v-model="formEdit.address"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -119,7 +119,7 @@
                         <b-form-input
                           id="telephone"
                           v-model="formEdit.telephone"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -142,7 +142,7 @@
                         <b-form-input
                           id="slack_id"
                           v-model="formEdit.slack_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -154,7 +154,7 @@
                         <b-form-input
                           id="skype_id"
                           v-model="formEdit.skype_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -164,7 +164,7 @@
                         <b-form-input
                           id="github_id"
                           v-model="formEdit.github_id"
-                          class="p-0"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -176,7 +176,7 @@
                         <b-form-input
                           id="paid_off"
                           v-model="formEdit.paid_off"
-                          class="p-0"
+                          class="p-1"
                           disabled="disabled"
                         />
                       </b-input-group>
@@ -338,7 +338,7 @@
                         @change="handleFileSelect"
                       >
                       <div class="image-preview">
-                        <span v-if="linkFilesWithoutMask !== [] && withoutMask">
+                        <span v-if="linkFilesWithoutMask.length > 0 && withoutMask">
                           <div v-for="(file, index) in linkFilesWithoutMask" :key="index" class="preview-item">
                             <img :src="file.file">
                             <b-icon-x-circle
@@ -354,7 +354,7 @@
                             </b-icon-x-circle>
                           </div>
                         </span>
-                        <span v-if="linkFilesWithMask !== [] && withMask">
+                        <span v-if="linkFilesWithMask.length > 0 && withMask">
                           <div v-for="(file, index) in linkFilesWithMask" :key="index" class="preview-item">
                             <img :src="file.file">
                             <b-icon-x-circle
@@ -647,7 +647,7 @@ export default {
           slack_id: response.data.slack_id,
           skype_id: response.data.skype_id,
           github_id: response.data.github_id,
-          paid_off: response.data.paid_off,
+          paid_off: response.data.paid_off_start,
           password: '',
           password_confirmation: '',
           viam_user: response.data.viam_user.name,
@@ -996,7 +996,7 @@ export default {
     removeFileAll(){
       if (this.withoutMask){
         this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-        if (this.linkFilesWithoutMask !== []){
+        if (this.linkFilesWithoutMask.length > 0){
           this.linkFilesWithoutMask.forEach((element) => {
             this.linkFileDelete.push(element);
           });
@@ -1005,7 +1005,7 @@ export default {
       }
       if (this.withMask){
         this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-        if (this.linkFilesWithMask !== []){
+        if (this.linkFilesWithMask.length > 0){
           this.linkFilesWithMask.forEach((element) => {
             this.linkFileDelete.push(element);
           });
