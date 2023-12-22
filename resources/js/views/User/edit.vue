@@ -647,7 +647,7 @@ export default {
           slack_id: response.data.slack_id,
           skype_id: response.data.skype_id,
           github_id: response.data.github_id,
-          paid_off: response.data.paid_off,
+          paid_off: response.data.paid_off_start,
           password: '',
           password_confirmation: '',
           viam_user: response.data.viam_user.name,

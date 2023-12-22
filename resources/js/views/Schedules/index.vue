@@ -27,7 +27,9 @@
     </div>
     <b-modal id="modal-center" v-model="modalShow" :title="date_click" centered :config="calendarConfig">
       <div v-for="item in one_day" :key="item.id">
-        <div :class="item.title.includes('Remote') ? 'remote' : 'take-off'">{{ item.title }}</div>
+        <div :class="getClass(item.title)">
+          <strong>{{ item.title }}</strong>
+        </div>
       </div>
       <template #modal-footer>
         <div class="w-100">
@@ -166,6 +168,15 @@ export default {
         console.log(error);
       });
     },
+    getClass(title) {
+      if (title.includes('Remote')) {
+        return 'remote';
+      } else if (title.includes('Take off')) {
+        return 'take-off';
+      } else {
+        return 'type_special_day_off';
+      }
+    },
   },
 };
 </script>
@@ -196,7 +207,13 @@ export default {
   width: 50%;
   border-radius: 10px;
 }
-
+.type_special_day_off {
+  background-color: #90EE90;
+  margin-bottom: 10px;
+  padding-left: 10px;
+  width: 50%;
+  border-radius: 10px;
+}
 .comp-full-calendar {
   max-width: none !important;
   padding-left: 3rem !important;
@@ -204,6 +221,12 @@ export default {
 
 ::v-deep .work-remote {
   background-color: #C7E6FD !important;
+  width: 70%;
+  border-radius: 6px;
+}
+
+::v-deep .specialOff {
+  background-color: #90EE90 !important;
   width: 70%;
   border-radius: 6px;
 }
