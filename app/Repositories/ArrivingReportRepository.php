@@ -293,6 +293,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 $index++;
             }
             $user->paid_off = $user->paid_off - $paid_off;
+            $user->save();
         }
 
         return response()->json([
