@@ -161,7 +161,7 @@ class UserController extends Controller
      *              description="YYYY-mm-dd",
      *            ),
      *            @OA\Property(
-     *              property="paid_off",
+     *              property="paid_off_start",
      *              type="float",
      *            ),
      *            @OA\Property(
@@ -179,6 +179,11 @@ class UserController extends Controller
      *            @OA\Property(
      *              property="viam_user_id",
      *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="status",
+     *              format="integer",
+     *              example=1,
      *            ),
      *            @OA\Property(
      *              property="password",
@@ -199,7 +204,7 @@ class UserController extends Controller
      *      example={"code":200,"data":{"id":6,"name":"manager","email":"manager@gmail.com","password":123,"viam_user_id":1,"jwt_active":null,"retirement_date":null,"status":1,"created_at":1686191465,"updated_at":1686192839,"deleted_at":null}}
      *     )
      *   ),
-     *   security={},
+     *   security={{"auth": {}}},
      * )
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
@@ -253,12 +258,8 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->with(['viam_user'])->find($id)->toArray();
-            $date = Carbon::parse($data['entry_date'])->addMonth(2);
-            if(Carbon::now() < $date) {
-                $data['paid_off'] = 0;
-            }
-            return $this->responseJson(200, $data);
+            $data = $this->repository->with(['viam_user'])->find($id);
+            return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -326,7 +327,7 @@ class UserController extends Controller
         if ($request->has('password')){
           $request->validate(['password' => 'required|min:3|confirmed']);
         }
-        $attributes = $request->except(['entry_date']);
+        $attributes = $request->except(['entry_date', 'paid_off', 'paid_off_start']);
 //        $data = $this->repository->update($attributes, $id);
         return $this->repository->update($attributes, $id);
     }

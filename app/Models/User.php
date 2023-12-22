@@ -34,6 +34,7 @@ class User extends Authenticatable implements JWTSubject
     const TELEPHONE = 'telephone';
     const ENTRY_DATE = 'entry_date';
     const PAID_OFF = 'paid_off';
+    const PAID_OFF_START = 'paid_off_start';
     const SLACK_ID = 'slack_id';
     const SKYPE_ID = 'skype_id';
     const GITHUB_ID = 'github_id';
@@ -51,6 +52,7 @@ class User extends Authenticatable implements JWTSubject
         self::TELEPHONE,
         self::ENTRY_DATE,
         self::PAID_OFF,
+        self::PAID_OFF_START,
         self::SLACK_ID,
         self::SKYPE_ID,
         self::GITHUB_ID,
