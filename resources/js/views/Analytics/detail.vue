@@ -15,8 +15,14 @@
             </p>
             <div class="use-management-title-table mt-3">
               <div class="employee-name">
-                <strong>Employee name</strong>
-                <div>{{ nameEmployee }}</div>
+                <div>
+                  <strong>Employee name</strong>
+                  <div>{{ nameEmployee }}</div>
+                </div>
+                <div>
+                  <strong>Paid off ({{ getDateToday() }})</strong>
+                  <div :style="{ color: paidOffRemain < 0 ? 'red' : '' }">{{ paidOffRemain }}</div>
+                </div>
               </div>
               <div class="fill mt-5">
                 <h1 class="titel-emotion">Emotion Statistics</h1>
@@ -104,6 +110,7 @@ export default {
       emmotionStatistics: [],
       nameEmployee: '',
       search: '',
+      paidOffRemain: '',
       pagination: {
         current_page: 1,
         per_page: 20,
@@ -137,6 +144,7 @@ export default {
       await UserApi.getOneUser(id)
         .then((response) => {
           this.nameEmployee = response.data.name;
+          this.paidOffRemain = response.data.paid_off;
         })
         .catch(() => {
           let userInfo = Cookies.get('userInfo');
@@ -173,6 +181,10 @@ export default {
       }).catch((error) => {
         console.log(error);
       });
+    },
+    getDateToday() {
+      const dateNow = new Date();
+      return dateNow.getFullYear() + '-' + (dateNow.getMonth() + 1) + '-' + dateNow.getDate();
     },
   },
 };
@@ -215,6 +227,8 @@ export default {
 }
 .employee-name {
   font-size: 20px;
+  display: flex;
+  gap: 3rem;
 }
 .all-analytics {
   cursor: pointer;

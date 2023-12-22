@@ -504,10 +504,8 @@ export default {
           return 'type_remote';
         case 'Take off':
           return 'type_take_off';
-        case 'Paid leave':
-          return 'type_paid_leave';
-        case 'Unpaid leave':
-          return 'type_unpaid_leave';
+        case 'Special day off':
+          return 'type_special_day_off';
         default:
           return '';
       }
@@ -632,19 +630,12 @@ export default {
   border-radius: 10px;
   background-color: #ffcc99;
 }
-::v-deep .type_paid_leave {
+::v-deep .type_special_day_off {
   margin: auto;
   padding: 7px 0 5px 0;
   width: 50%;
   border-radius: 10px;
   background-color: #90EE90;
-}
-::v-deep .type_unpaid_leave {
-  margin: auto;
-  padding: 7px 0 5px 0;
-  width: 50%;
-  border-radius: 10px;
-  background-color: #FF7F7F;
 }
 ::v-deep .title-add-working .el-dialog__title, .title-working {
   font-weight: 600;
