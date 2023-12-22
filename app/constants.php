@@ -30,3 +30,9 @@ const POLICY_V_FACE_ID = [
     "Normal" => 2
 ];
 
+const TYPE_DATE = [
+    1 => 'Work',
+    2 => 'Remote',
+    3 => 'Take off',
+    4 => 'Special day off'
+];

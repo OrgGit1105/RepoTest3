@@ -38,7 +38,7 @@ class ScheduleRepository extends BaseRepository implements ScheduleRepositoryInt
 
     public function getAllSchedule($request)
     {
-        $typDate = [2, 3];
+        $typDate = [2, 3, 4];
         $yearMonth = $request->get('year_month', null);
         $firstOfMonthNow = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
         $endOfMonthNow  = Carbon::now()->endOfMonth()->format('Y-m-d H:i:s');

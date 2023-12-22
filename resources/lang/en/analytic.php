@@ -13,6 +13,6 @@ return [
         1 => 'Working',
         2 => 'Remote',
         3 => 'Take off',
-        4 => 'Special',
+        4 => 'Special day off',
     ]
 ];
