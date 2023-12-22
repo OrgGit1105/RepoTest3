@@ -86,18 +86,15 @@ class ScheduleController extends Controller
         $data = $this->repository->getAllSchedule($request);
         $convertData = [];
 
-        $type = [
-            1 => 'Work',
-            2 => 'Remote',
-            3 => 'Take off'
-        ];
+        $type = TYPE_DATE;
+        $type_id = config('analytic.type');
 
         if ($data) {
             foreach ($data as $value) {
                 $convertData[] = [
                     'title' => $value['name'] . ' ' . $type[$value['title']],
                     'start' => $value['start'],
-                    'cssClass' => ($value['title'] == 2 && $value['title'] != 1) ? 'work-remote' : 'titelOff'
+                    'cssClass' => ($value['title'] == $type_id['remote']) ? 'work-remote' : ($value['title'] == $type_id['special'] ? 'specialOff' : 'titelOff')
                 ];
             }
         }
