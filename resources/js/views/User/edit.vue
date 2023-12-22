@@ -338,7 +338,7 @@
                         @change="handleFileSelect"
                       >
                       <div class="image-preview">
-                        <span v-if="linkFilesWithoutMask !== [] && withoutMask">
+                        <span v-if="linkFilesWithoutMask.length > 0 && withoutMask">
                           <div v-for="(file, index) in linkFilesWithoutMask" :key="index" class="preview-item">
                             <img :src="file.file">
                             <b-icon-x-circle
@@ -354,7 +354,7 @@
                             </b-icon-x-circle>
                           </div>
                         </span>
-                        <span v-if="linkFilesWithMask !== [] && withMask">
+                        <span v-if="linkFilesWithMask.length > 0 && withMask">
                           <div v-for="(file, index) in linkFilesWithMask" :key="index" class="preview-item">
                             <img :src="file.file">
                             <b-icon-x-circle
@@ -996,7 +996,7 @@ export default {
     removeFileAll(){
       if (this.withoutMask){
         this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-        if (this.linkFilesWithoutMask !== []){
+        if (this.linkFilesWithoutMask.length > 0){
           this.linkFilesWithoutMask.forEach((element) => {
             this.linkFileDelete.push(element);
           });
@@ -1005,7 +1005,7 @@ export default {
       }
       if (this.withMask){
         this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-        if (this.linkFilesWithMask !== []){
+        if (this.linkFilesWithMask.length > 0){
           this.linkFilesWithMask.forEach((element) => {
             this.linkFileDelete.push(element);
           });

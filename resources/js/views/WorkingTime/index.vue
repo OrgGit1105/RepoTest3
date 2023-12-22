@@ -106,6 +106,11 @@
                 align="center"
               />
               <el-table-column
+                prop="special_day_off"
+                label="Special"
+                align="center"
+              />
+              <el-table-column
                 prop="date"
                 label="Date"
                 align="center"
