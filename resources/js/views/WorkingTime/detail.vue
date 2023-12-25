@@ -41,7 +41,7 @@
                     <el-select
                       id="type_date"
                       v-model="dataWorkingTimeRecord.type_date"
-                      :style="{ width: '100px' }"
+                      :style="{ width: '150px' }"
                     >
                       <el-option
                         v-for="item in listWorkingType"
