@@ -18,9 +18,9 @@ service.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = token;
     } else {
-      if (!this.$route.path.includes('/login')) {
-        window.location.href = '/login';
-      }
+      // if (!this.$route.path.includes('/login')) {
+      //   window.location.href = '/login';
+      // }
     }
 
     return config;
