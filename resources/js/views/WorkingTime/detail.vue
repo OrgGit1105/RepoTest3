@@ -17,7 +17,7 @@
         <div class="use-management-title-table mt-5">
           <p class="back-list cursor-pointer" @click="listWorkingRecord()"> <i class="el-icon-arrow-left icon-back-list" /> All Working Records </p>
           <div class="card-body p-card-body">
-            <el-form ref="ruleForm" :model="dataWorkingTimeRecord" :rules="rules" label-width="120px" label-position="top">
+            <el-form ref="ruleForm" :model="dataWorkingTimeRecord" label-width="120px" label-position="top">
               <!-- Working Record -->
               <div class="d-flex justify-content-between align-items-center">
                 <div class="basic">
@@ -66,46 +66,21 @@
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
                   <el-date-picker
-                    v-model="dataWorkingTimeRecord.datetime"
+                    v-model="dataWorkingTimeRecord.in_time"
                     type="datetime"
                     format="yyyy-MM-dd / HH:mm:ss"
                     value-format="yyyy-MM-ddTHH:mm:ss"
                   />
-                  <!-- <el-date-picker
-                    v-model="dataWorkingTimeRecord.convert_in_date"
-                    class="disable-date-custom"
-                    format="MMMM dd yyyy"
-                    value-format="yyyy-MM-dd"
-                    disabled
-                  />
-
-                  <el-form-item prop="convert_in_time" class="custom-time m-0">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.convert_in_time"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
-                    />
-                  </el-form-item> -->
                 </div>
 
                 <p class="title-time">Out Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
                   <el-date-picker
-                    v-model="dataWorkingTimeRecord.convert_out_date"
-                    class="disable-date-custom"
-                    format="MMMM dd yyyy"
-                    value-format="yyyy-MM-dd"
-                    disabled
+                    v-model="dataWorkingTimeRecord.out_time"
+                    type="datetime"
+                    format="yyyy-MM-dd / HH:mm:ss"
+                    value-format="yyyy-MM-ddTHH:mm:ss"
                   />
-
-                  <el-form-item prop="convert_out_time" class="custom-time m-0">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.convert_out_time"
-                      class="custime-time-input"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
-                    />
-                  </el-form-item>
                 </div>
               </div>
 
@@ -152,30 +127,17 @@
 <script>
 import { getWokingTimeDetailById, editWorkingTimeById, deleteWorkingTimeById } from '../../api/working_time';
 import { MakeToast } from '../../utils/toast_message';
-import moment from 'moment';
 export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
       dataWorkingTimeRecord: {
-        convert_in_date: '',
-        convert_in_time: '',
-        convert_out_date: '',
-        convert_out_time: '',
         remark: '',
         type_date: '',
       },
       showModalDelete: false,
       dateRangeOptions1: {
         firstDayOfWeek: 5,
-      },
-      rules: {
-        convert_in_time: [
-          { required: true, message: 'Please pick a time in', trigger: 'change' },
-        ],
-        convert_out_time: [
-          { required: true, message: 'Please pick a time out', trigger: 'change' },
-        ],
       },
       listWorkingType: [
         { id: 1, name: 'Working' },
@@ -209,11 +171,6 @@ export default {
       await getWokingTimeDetailById({ id })
         .then((response) => {
           if (response.code === 200) {
-            response.data.result.convert_in_date = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
-            response.data.result.convert_in_time = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
-            response.data.result.convert_out_date = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
-            response.data.result.convert_out_time = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
-
             this.dataWorkingTimeRecord = response.data.result;
           }
         })
@@ -225,8 +182,6 @@ export default {
       const id = this.$route.params.id;
       const DATA = {
         user_id: this.dataWorkingTimeRecord.user_id,
-        in_time: this.dataWorkingTimeRecord.convert_in_date + ' ' + this.dataWorkingTimeRecord.convert_in_time,
-        out_time: this.dataWorkingTimeRecord.convert_out_date + ' ' + this.dataWorkingTimeRecord.convert_out_time,
         remark: this.dataWorkingTimeRecord.remark,
       };
 
