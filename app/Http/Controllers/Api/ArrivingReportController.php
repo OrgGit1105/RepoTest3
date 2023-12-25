@@ -321,8 +321,12 @@ class ArrivingReportController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        try {
+            $this->repository->delete($id);
+            return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
     /**
      * @OA\Get(
