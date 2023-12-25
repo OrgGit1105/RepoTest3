@@ -57,7 +57,7 @@
               <!-- Working Time -->
               <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="basic">
-                  <h1 class="title-record">Working Time</h1>
+                  <h1 class="title-record">{{ isNaN(dataWorkingTimeRecord.type_date) ? dataWorkingTimeRecord.type_date : updateStatusHeader() }} Time</h1>
                 </div>
                 <div class="basic" />
               </div>
@@ -66,6 +66,12 @@
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
                   <el-date-picker
+                    v-model="dataWorkingTimeRecord.datetime"
+                    type="datetime"
+                    format="yyyy-MM-dd / HH:mm:ss"
+                    value-format="yyyy-MM-ddTHH:mm:ss"
+                  />
+                  <!-- <el-date-picker
                     v-model="dataWorkingTimeRecord.convert_in_date"
                     class="disable-date-custom"
                     format="MMMM dd yyyy"
@@ -79,7 +85,7 @@
                       format="HH:mm:ss"
                       value-format="HH:mm:ss"
                     />
-                  </el-form-item>
+                  </el-form-item> -->
                 </div>
 
                 <p class="title-time">Out Time</p>
@@ -151,14 +157,14 @@ export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      dataWorkingTimeRecord:
-        {
-          convert_in_date: '',
-          convert_in_time: '',
-          convert_out_date: '',
-          convert_out_time: '',
-          remark: '',
-        },
+      dataWorkingTimeRecord: {
+        convert_in_date: '',
+        convert_in_time: '',
+        convert_out_date: '',
+        convert_out_time: '',
+        remark: '',
+        type_date: '',
+      },
       showModalDelete: false,
       dateRangeOptions1: {
         firstDayOfWeek: 5,
@@ -172,10 +178,10 @@ export default {
         ],
       },
       listWorkingType: [
-        { id: 0, name: 'Working' },
-        { id: 1, name: 'Remote' },
-        { id: 2, name: 'Take off' },
-        { id: 3, name: 'Special day off' },
+        { id: 1, name: 'Working' },
+        { id: 2, name: 'Remote' },
+        { id: 3, name: 'Take off' },
+        { id: 4, name: 'Special day off' },
       ],
     };
   },
@@ -275,6 +281,11 @@ export default {
             content: error.message,
           });
         });
+    },
+    updateStatusHeader() {
+      const item = this.listWorkingType.find(item => this.dataWorkingTimeRecord.type_date === item.id);
+      console.log(item);
+      return item ? item.name : '';
     },
   },
 };
