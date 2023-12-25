@@ -58,13 +58,13 @@
               <el-table-column
                 prop="user_name"
                 label="Employee name"
-                width="400"
+                width="350"
                 align="center"
               />
               <el-table-column
                 prop="work_day"
                 label="Work Day"
-                width="400"
+                width="350"
                 align="center"
               />
               <el-table-column
@@ -75,6 +75,11 @@
               <el-table-column
                 prop="off_day"
                 label="Day Off"
+                align="center"
+              />
+              <el-table-column
+                prop="special_off_day"
+                label="Special"
                 align="center"
               />
             </el-table>
