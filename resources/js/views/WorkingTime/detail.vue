@@ -37,7 +37,20 @@
                   <p class="header-working-record">{{ dataWorkingTimeRecord.id }}</p>
                   <p class="header-working-record">{{ dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : '' }}</p>
                   <p class="header-working-record">{{ dataWorkingTimeRecord.registration_type }}</p>
-                  <p class="header-working-record">{{ dataWorkingTimeRecord.type_date }}</p>
+                  <div class="header-working-record">
+                    <el-select
+                      id="type_date"
+                      v-model="dataWorkingTimeRecord.type_date"
+                      :style="{ width: '100px' }"
+                    >
+                      <el-option
+                        v-for="item in listWorkingType"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
+                  </div>
                 </div>
               </div>
 
@@ -158,6 +171,12 @@ export default {
           { required: true, message: 'Please pick a time out', trigger: 'change' },
         ],
       },
+      listWorkingType: [
+        { id: 0, name: 'Working' },
+        { id: 1, name: 'Remote' },
+        { id: 2, name: 'Take off' },
+        { id: 3, name: 'Special day off' },
+      ],
     };
   },
   created() {
