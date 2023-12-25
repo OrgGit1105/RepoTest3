@@ -117,21 +117,29 @@ class ArrivingReportController extends Controller
      *   operationId="arriving_report_create",
      *   @OA\RequestBody(
      *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          example={"user_id":"integer", "in_time": "string", "out_time": "string"},
+     *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"user_id", "in_time","out_time"},
+     *            required={"user_id", "type_date", "in_time"},
      *            @OA\Property(
      *              property="user_id",
      *              format="integer",
      *            ),
      *            @OA\Property(
+     *              property="type_date",
+     *              format="integer",
+     *              description="1:working time, 2: remote, 3: take off, 4: special off",
+     *              enum={1,2,3,4},
+     *              example=1,
+     *            ),
+     *            @OA\Property(
      *              property="in_time",
      *              format="string",
+     *             description="YYYY-mm-dd H:i:s",
      *            ),
      *            @OA\Property(
      *              property="out_time",
      *              format="string",
+     *              description="YYYY-mm-dd H:i:s",
      *            ),
      *         )
      *      )
@@ -152,7 +160,7 @@ class ArrivingReportController extends Controller
      *      example={"code":401,"message":"Username or password invalid"}
      *     )
      *   ),
-     *   security={},
+     *   security={{"auth": {}}},
      * )
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
@@ -370,7 +378,7 @@ class ArrivingReportController extends Controller
   {
     $data = $this->repository->downloadArrivingreport($request);
     $fileName= 'arrivingreport.xlsx';
-    return Excel::download(new workingTimes($data), $fileName, null, 
+    return Excel::download(new workingTimes($data), $fileName, null,
            ['Content-Type' => 'application/octet-stream; charset=SJIS-win', 'Content-Transfer-Encoding' => 'Binary', 'Charset' => 'SJIS-win']);
   }
 }
