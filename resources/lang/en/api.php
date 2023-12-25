@@ -32,9 +32,13 @@ return [
         'time_in_is_check' => 'Employee was check in',
         'time_out_is_check' => 'Employee was check out',
         'time_must_today' => 'Please time_in must today',
+        'in_time_exist' => 'This in time data already exists',
+        'out_time_exist' => 'This out time data already exists',
+        'type_date' => 'This type date data already exists'
     ],
     'viam_user' => [
         'policy_id' => 'Please select only one V-face policy',
         'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user'
-    ]
+    ],
+    'working_time.out_time' => 'The out time field is required when type field other value working'
 ];
