@@ -48,8 +48,9 @@ class ArrivingReportRequest extends FormRequest
         $type_work = config('analytic.type');
         if (Route::getCurrentRoute()->getActionMethod() == 'update') {
             return [
+                'type_date' => 'required|in:' . implode(',', $type_work),
                 'in_time' => 'required|date_format:Y-m-d H:i:s',
-                'out_time' => 'required|date_format:Y-m-d H:i:s',
+                'out_time' => 'nullable|required_if:type_date,' . implode(',', array_diff($type_work, [$type_work['work']])) . '|date_format:Y-m-d H:i:s',
             ];
         }
         if (Route::getCurrentRoute()->getActionMethod() == 'store') {
@@ -57,7 +58,7 @@ class ArrivingReportRequest extends FormRequest
                 'user_id' => ['required', new CheckIDRule(new User())],
                 'type_date' => 'required|in:' . implode(',', $type_work),
                 'in_time' => 'required|date_format:Y-m-d H:i:s',
-                'out_time' => 'nullable|required_if:type,' . implode(',', array_diff($type_work, [$type_work['work']])) . '|date_format:Y-m-d H:i:s',
+                'out_time' => 'nullable|required_if:type_date,' . implode(',', array_diff($type_work, [$type_work['work']])) . '|date_format:Y-m-d H:i:s',
             ];
         }
         if (Route::getCurrentRoute()->getActionMethod() == 'index') {

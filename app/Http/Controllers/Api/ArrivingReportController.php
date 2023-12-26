@@ -240,11 +240,15 @@ class ArrivingReportController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"user_id":"integer", "in_time": "string", "out_time": "string"},
+     *          example={"user_id":"integer", "in_time": "string", "out_time": "string", "type_date": "string"},
      *          @OA\Schema(
-     *            required={"user_id", "in_time","out_time"},
+     *            required={"user_id", "type_date","in_time"},
      *            @OA\Property(
      *              property="user_id",
+     *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="type_date",
      *              format="integer",
      *            ),
      *            @OA\Property(
@@ -282,7 +286,7 @@ class ArrivingReportController extends Controller
      */
     public function update(ArrivingReportRequest $request, $id)
     {
-        $attributes = $request->except([]);
+        $attributes = $request->except(['user_id']);
 //        $data = $this->repository->update($attributes, $id);
 //        if (!$data){
 //          return $this->responseJsonError(Response::HTTP_NOT_FOUND, "report not found", "report not found");
