@@ -19,10 +19,8 @@ service.interceptors.request.use(
       config.headers['Authorization'] = token;
     } else {
       // if (!this.$route.path.includes('/login')) {
-      //   router.push({ path: '/login' });
+      //   window.location.href = '/login';
       // }
-      // console.log(router.currentRoute.path !== '/login')
-      // router.push({ path: '/login' });
     }
 
     return config;
@@ -36,7 +34,7 @@ service.interceptors.response.use(
   response => {
     if (response.data.code === 401) {
       Cookies.remove('token');
-      window.location.reload();
+      window.location.href = '/login';
       return;
     }
     return response.data;
