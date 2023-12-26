@@ -98,15 +98,6 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $morning = DateTime::createFromFormat('H:i', '12:00');
         $afternoon = DateTime::createFromFormat('H:i', '13:30');
 
-        $checkType = $this->model
-            ->where("user_id", $attributes['user_id'])
-            ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->where('type_date', $type_date)
-            ->first();
-        if($checkType) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.type_date'), trans('api.arriving_report.type_date'));
-        }
-
         // Kiểm tra ngày này đã check-in check-out chưa
         $arrivingIn_time = $this->model
             ->where("user_id", $attributes['user_id'])
@@ -188,21 +179,101 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     {
         $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
-
-        // Kiểm tra xem có cùng ngày không
-        if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.must_same_date'), trans('api.arriving_report.must_same_date'));
-        }
-
-        // Kiểm tra xem có check out có phải là tương lai check in không, nếu không báo lỗi
-        if ($in_time->getTimestamp() > $out_time->getTimestamp()) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
-        }
+        $type_update = $attributes['type_date'];
+        $type_take_off = config('analytic.type.take off');
+        $morning = DateTime::createFromFormat('H:i', '12:00');
+        $afternoon = DateTime::createFromFormat('H:i', '13:30');
 
         $report = $this->model->find($id);
         if (!$report) {
             return false;
         }
+
+        if ($out_time) {
+            // Kiểm tra xem có cùng ngày không
+            if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.must_same_date'), trans('api.arriving_report.must_same_date'));
+            }
+
+            // Kiểm tra xem có check out có phải là tương lai check in không, nếu không báo lỗi
+            if ($in_time->getTimestamp() > $out_time->getTimestamp()) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
+            }
+
+            $checkPeriodMorning = $this->model
+                ->where("id", '!=', $id)
+                ->where("user_id", $report->user_id)
+                ->whereDate("in_time", $in_time->format('Y-m-d'))
+                ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
+                    $e->where("in_time", "<=", $morning);
+                }, function ($e) use ($afternoon) {
+                    $e->where('in_time', '>=', $afternoon);
+                })
+                ->first();
+            if ($checkPeriodMorning) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.in_time_exist'), trans('api.arriving_report.in_time_exist'));
+            }
+
+            $checkPeriodAfternoon = $this->model
+                ->where("id", '!=', $id)
+                ->where("user_id", $report->user_id)
+                ->whereDate("in_time", $in_time->format('Y-m-d'))
+                ->when($out_time->format('H:i') < $afternoon->format('H:i'), function ($e) use($afternoon){
+                    $e->where("out_time", "<", $afternoon);
+                }, function ($e) use ($afternoon) {
+                    $e->where('out_time', '>=', $afternoon);
+                })
+                ->first();
+            if ($checkPeriodAfternoon) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.out_time_exist'), trans('api.arriving_report.out_time_exist'));
+            }
+        } else {
+            $out_time = null;
+        }
+
+        $user = User::query()->find($report->user_id);
+
+        //Update time với type date cũ và mới đều là take_off
+        if($type_update == $report->type_date && $report->type_date == $type_take_off) {
+            $report_in_time = DateTime::createFromFormat('Y-m-d H:i:s', $report->in_time);
+            $report_out_time = DateTime::createFromFormat('Y-m-d H:i:s', $report->out_time);
+
+            if($report_in_time != $in_time || $report_out_time != $out_time) {
+                if($report_in_time->diff($report_out_time)->h >= 8){
+                    $user->paid_off = $user->paid_off + 1;
+                } else {
+                    $user->paid_off = $user->paid_off + 0.5;
+                }
+                if($in_time->diff($out_time)->h >= 8) {
+                    $user->paid_off = $user->paid_off - 1;
+                } else {
+                    $user->paid_off = $user->paid_off - 0.5;
+                }
+            }
+        }
+
+        //update type từ take_off -> khác hoặc từ loại khác về take_off
+        if($type_update != $report->type_date) {
+            if($type_update == $type_take_off) {
+                if($in_time->diff($out_time)->h >= 8) {
+                    $user->paid_off = $user->paid_off - 1;
+                } else {
+                    $user->paid_off = $user->paid_off - 0.5;
+                }
+            }
+            if($report->type_date == $type_take_off) {
+                $in_time_report = DateTime::createFromFormat('Y-m-d H:i:s', $report->in_time);
+                $out_time_report = DateTime::createFromFormat('Y-m-d H:i:s', $report->out_time);
+
+                if($in_time_report->diff($out_time_report)->h >= 8) {
+                    $user->paid_off = $user->paid_off + 1;
+                } else {
+                    $user->paid_off = $user->paid_off + 0.5;
+                }
+            }
+        }
+        $user->save();
+
         $attributes['updated_at'] = Carbon::now();
 
         $attribute_history = [

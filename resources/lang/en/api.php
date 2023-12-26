@@ -34,7 +34,6 @@ return [
         'time_must_today' => 'Please time_in must today',
         'in_time_exist' => 'This in time data already exists',
         'out_time_exist' => 'This out time data already exists',
-        'type_date' => 'This type date data already exists'
     ],
     'viam_user' => [
         'policy_id' => 'Please select only one V-face policy',

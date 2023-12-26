@@ -179,7 +179,7 @@ class UserSeeder extends Seeder
                 'name' => 'Vũ Thị Hoa',
                 'email' => 'vuhoa11052000@gmail.com',
                 'password' => Hash::make($password),
-                User::VIAM_USER_ID => 2,
+                User::VIAM_USER_ID => 1,
                 User::ENTRY_DATE => Carbon::parse('2023-05-01')->format('Y-m-d'),
                 User::PAID_OFF => 4,
                 'status' => 1,
