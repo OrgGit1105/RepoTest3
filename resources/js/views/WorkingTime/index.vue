@@ -394,6 +394,7 @@ export default {
         user_id: this.form.userId,
         in_time: this.form.inDate + ' ' + this.form.inTime,
         out_time: this.form.outDate + ' ' + this.form.outTime,
+        type_date: this.form.type_date,
       };
       await createNewWorkingTime(PARAMS)
         .then((response) => {
