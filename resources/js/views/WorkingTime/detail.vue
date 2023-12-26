@@ -57,7 +57,7 @@
               <!-- Working Time -->
               <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="basic">
-                  <h1 class="title-record">{{ isNaN(dataWorkingTimeRecord.type_date) ? dataWorkingTimeRecord.type_date : updateStatusHeader() }} Time</h1>
+                  <h1 class="title-record">{{ updateStatusHeader() }} Time</h1>
                 </div>
                 <div class="basic" />
               </div>
@@ -164,7 +164,7 @@ export default {
   },
   watch: {
     'dataWorkingTimeRecord.type_date': function() {
-      const isRequired = ![1, 'Working'].includes(this.dataWorkingTimeRecord.type_date);
+      const isRequired = this.dataWorkingTimeRecord.type_date !== 1;
       this.rules.out_time[0].required = isRequired;
     },
   },
@@ -201,15 +201,9 @@ export default {
     },
     async editWorkingTime() {
       const id = this.$route.params.id;
-      const { user_id, in_time, out_time, remark } = this.dataWorkingTimeRecord;
-      let { type_date } = this.dataWorkingTimeRecord;
-      if (isNaN(type_date)) {
-        type_date = this.listWorkingType.find(item => item.name === type_date)?.id ?? type_date;
-      }
-
+      const { user_id, in_time, out_time, remark, type_date } = this.dataWorkingTimeRecord;
       const DATA = { user_id, in_time, out_time, type_date, remark };
 
-      console.log('file: detail.vue:212 / DATA:  ===>', DATA);
       await editWorkingTimeById({ id }, DATA)
         .then((response) => {
           if (response.code === 200) {
