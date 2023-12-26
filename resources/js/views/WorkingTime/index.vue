@@ -138,16 +138,28 @@
         <!-- Modal add new -->
         <el-dialog class="title-add-working" title="Add Working time" :visible.sync="openModalAdd" width="35%" @close="resetForm('ruleForm')">
           <el-form ref="ruleForm" :model="form" :rules="rules" label-width="120px" label-position="top">
-            <el-form-item label="Employee Name" required prop="userId">
-              <el-select v-model="form.userId" placeholder="Please select employee name">
-                <el-option
-                  v-for="item in listEmployee"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
+            <div class="d-flex flex-row justify-content-between flex-wrap">
+              <el-form-item label="Employee Name" required prop="userId">
+                <el-select v-model="form.userId" placeholder="Please select employee name" style="width: 250px;">
+                  <el-option
+                    v-for="item in listEmployee"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="Working Type" required prop="type_date">
+                <el-select v-model="form.type_date" placeholder="Please select working type" style="width: 250px;">
+                  <el-option
+                    v-for="item in listWorkingType"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
+                </el-select>
+              </el-form-item>
+            </div>
             <hr class="line">
             <p class="title-working mb-3">Working Time</p>
             <p class="label-custom">In Time</p>
@@ -229,6 +241,12 @@ export default {
       },
       listWorkingTimes: [],
       listEmployee: [],
+      listWorkingType: [
+        { id: 1, name: 'Working' },
+        { id: 2, name: 'Remote' },
+        { id: 3, name: 'Take off' },
+        { id: 4, name: 'Special day off' },
+      ],
       employeeValue: '',
       form: {
         userId: '',
@@ -236,6 +254,7 @@ export default {
         inTime: '',
         outDate: '',
         outTime: '',
+        type_date: '',
       },
       display: 'd-none',
       displaySearch: 'd-block',
@@ -259,6 +278,14 @@ export default {
       },
     };
   },
+  watch: {
+    'form.type_date': function() {
+      const isRequired = this.form.type_date !== 1;
+      this.rules.outDate[0].required = isRequired;
+      this.rules.outTime[0].required = isRequired;
+    },
+  },
+
   created() {
     this.handleDate();
     this.getWorkingTime();
