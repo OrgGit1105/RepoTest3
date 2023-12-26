@@ -240,7 +240,7 @@ class ArrivingReportController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"user_id":"integer", "in_time": "string", "out_time": "string", "type_date": "string"},
+     *          example={"user_id":"integer", "in_time": "string", "out_time": "string", "type_date": "string", "remark": "string"},
      *          @OA\Schema(
      *            required={"user_id", "type_date","in_time"},
      *            @OA\Property(
@@ -257,6 +257,10 @@ class ArrivingReportController extends Controller
      *            ),
      *            @OA\Property(
      *              property="out_time",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="remark",
      *              format="string",
      *            ),
      *         )
