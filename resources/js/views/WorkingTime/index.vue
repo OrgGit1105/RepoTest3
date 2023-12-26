@@ -161,7 +161,7 @@
               </el-form-item>
             </div>
             <hr class="line">
-            <p class="title-working mb-3">Working Time</p>
+            <p class="title-working mb-3">{{ isNaN(form.type_date) ? form.type_date : updateStatusHeader() }} Time</p>
             <p class="label-custom">In Time</p>
             <div class="date-time-custom">
               <el-form-item prop="inDate" class="item-date">
@@ -459,6 +459,10 @@ export default {
         default:
           return '';
       }
+    },
+    updateStatusHeader() {
+      const item = this.listWorkingType.find(item => this.form.type_date === item.id);
+      return item ? item.name : '';
     },
   },
 };

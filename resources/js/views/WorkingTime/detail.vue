@@ -239,7 +239,6 @@ export default {
     },
     updateStatusHeader() {
       const item = this.listWorkingType.find(item => this.dataWorkingTimeRecord.type_date === item.id);
-      console.log(item);
       return item ? item.name : '';
     },
   },
