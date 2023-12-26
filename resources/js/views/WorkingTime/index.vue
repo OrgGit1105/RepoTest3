@@ -207,7 +207,7 @@
           </el-form>
 
           <span slot="footer" class="dialog-footer">
-            <el-button class="btn-cancle-custom" @click="resetForm('ruleForm')">Cancel</el-button>
+            <el-button class="btn-cancel-custom" @click="resetForm('ruleForm')">Cancel</el-button>
             <el-button class="btn-add-custom" type="primary" @click="submitForm('ruleForm')">Add</el-button>
           </span>
         </el-dialog>
@@ -231,7 +231,6 @@ export default {
         search: '',
         userId: '',
         date: [],
-        // date: [ '', '' ],
       },
       pagination: {
         current_page: 1,
@@ -345,7 +344,6 @@ export default {
         PARAMS = {
           key_search: this.formSearch.search,
           start_date: this.formSearch.date[0],
-          // start_date: this.formSearch.date[0],
           end_date: this.formSearch.date[1],
           user_id: this.employeeValue,
           per_page: this.pagination.per_page,
@@ -614,7 +612,7 @@ export default {
 ::v-deep .title-add-working .el-dialog {
   border-radius: 5px;
 }
-::v-deep .btn-cancle-custom {
+::v-deep .btn-cancel-custom {
   border: 1px solid #0070C9;
   color: #0070C9;
   width: 100px;

@@ -17,7 +17,7 @@
         <div class="use-management-title-table mt-5">
           <p class="back-list cursor-pointer" @click="listWorkingRecord()"> <i class="el-icon-arrow-left icon-back-list" /> All Working Records </p>
           <div class="card-body p-card-body">
-            <el-form ref="ruleForm" :model="dataWorkingTimeRecord" label-width="120px" label-position="top">
+            <el-form ref="ruleForm" :model="dataWorkingTimeRecord" :rules="rules" label-width="120px" label-position="top">
               <!-- Working Record -->
               <div class="d-flex justify-content-between align-items-center">
                 <div class="basic">
@@ -65,22 +65,26 @@
               <div class="time-line">
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-date-picker
-                    v-model="dataWorkingTimeRecord.in_time"
-                    type="datetime"
-                    format="yyyy-MM-dd / HH:mm:ss"
-                    value-format="yyyy-MM-ddTHH:mm:ss"
-                  />
+                  <el-form-item prop="in_time">
+                    <el-date-picker
+                      v-model="dataWorkingTimeRecord.in_time"
+                      type="datetime"
+                      format="yyyy-MM-dd / HH:mm:ss"
+                      value-format="yyyy-MM-dd HH:mm:ss"
+                    />
+                  </el-form-item>
                 </div>
 
                 <p class="title-time">Out Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-date-picker
-                    v-model="dataWorkingTimeRecord.out_time"
-                    type="datetime"
-                    format="yyyy-MM-dd / HH:mm:ss"
-                    value-format="yyyy-MM-ddTHH:mm:ss"
-                  />
+                  <el-form-item prop="out_time">
+                    <el-date-picker
+                      v-model="dataWorkingTimeRecord.out_time"
+                      type="datetime"
+                      format="yyyy-MM-dd / HH:mm:ss"
+                      value-format="yyyy-MM-dd HH:mm:ss"
+                    />
+                  </el-form-item>
                 </div>
               </div>
 
@@ -132,8 +136,11 @@ export default {
   data() {
     return {
       dataWorkingTimeRecord: {
-        remark: '',
+        user_id: '',
+        in_time: '',
+        out_time: '',
         type_date: '',
+        remark: '',
       },
       showModalDelete: false,
       dateRangeOptions1: {
@@ -145,7 +152,21 @@ export default {
         { id: 3, name: 'Take off' },
         { id: 4, name: 'Special day off' },
       ],
+      rules: {
+        in_time: [
+          { required: true, message: 'Please pick a time in', trigger: 'change' },
+        ],
+        out_time: [
+          { required: true, message: 'Please pick a time out', trigger: 'change' },
+        ],
+      },
     };
+  },
+  watch: {
+    'dataWorkingTimeRecord.type_date': function() {
+      const isRequired = ![1, 'Working'].includes(this.dataWorkingTimeRecord.type_date);
+      this.rules.out_time[0].required = isRequired;
+    },
   },
   created() {
     this.getWorkingRecordById();
@@ -180,11 +201,15 @@ export default {
     },
     async editWorkingTime() {
       const id = this.$route.params.id;
-      const DATA = {
-        user_id: this.dataWorkingTimeRecord.user_id,
-        remark: this.dataWorkingTimeRecord.remark,
-      };
+      const { user_id, in_time, out_time, remark } = this.dataWorkingTimeRecord;
+      let { type_date } = this.dataWorkingTimeRecord;
+      if (isNaN(type_date)) {
+        type_date = this.listWorkingType.find(item => item.name === type_date)?.id ?? type_date;
+      }
 
+      const DATA = { user_id, in_time, out_time, type_date, remark };
+
+      console.log('file: detail.vue:212 / DATA:  ===>', DATA);
       await editWorkingTimeById({ id }, DATA)
         .then((response) => {
           if (response.code === 200) {
