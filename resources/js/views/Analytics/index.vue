@@ -53,18 +53,19 @@
               :data="listAnalytic"
               style="width: 100%"
               :row-style="rowWorkingStyle"
+              :cell-class-name="cellStyle"
               @row-click="showDetail"
             >
               <el-table-column
                 prop="user_name"
                 label="Employee name"
-                width="400"
+                width="350"
                 align="center"
               />
               <el-table-column
                 prop="work_day"
                 label="Work Day"
-                width="400"
+                width="350"
                 align="center"
               />
               <el-table-column
@@ -75,6 +76,11 @@
               <el-table-column
                 prop="off_day"
                 label="Day Off"
+                align="center"
+              />
+              <el-table-column
+                prop="special_off_day"
+                label="Special"
                 align="center"
               />
             </el-table>
@@ -188,6 +194,12 @@ export default {
         this.formSearch.date = [moment().startOf('month').format('YYYY-MM-DD'), moment().endOf('month').format('YYYY-MM-DD')];
       }
     },
+    cellStyle({ row, column, rowIndex, columnIndex }) {
+      if (column.property === 'special_off_day' && row.special_off_day > 3) {
+        return 'red-cell-special-day-off';
+      }
+      return '';
+    },
   },
 };
 </script>
@@ -285,5 +297,8 @@ export default {
 }
 ::v-deep .date-time-custom .item-time {
   width: 40%;
+}
+::v-deep .red-cell-special-day-off {
+  color: red !important;
 }
 </style>

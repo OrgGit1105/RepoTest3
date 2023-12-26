@@ -37,14 +37,27 @@
                   <p class="header-working-record">{{ dataWorkingTimeRecord.id }}</p>
                   <p class="header-working-record">{{ dataWorkingTimeRecord.user ? dataWorkingTimeRecord.user.name : '' }}</p>
                   <p class="header-working-record">{{ dataWorkingTimeRecord.registration_type }}</p>
-                  <p class="header-working-record">{{ dataWorkingTimeRecord.type_date }}</p>
+                  <div class="header-working-record">
+                    <el-select
+                      id="type_date"
+                      v-model="dataWorkingTimeRecord.type_date"
+                      :style="{ width: '150px' }"
+                    >
+                      <el-option
+                        v-for="item in listWorkingType"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
+                  </div>
                 </div>
               </div>
 
               <!-- Working Time -->
               <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="basic">
-                  <h1 class="title-record">Working Time</h1>
+                  <h1 class="title-record">{{ isNaN(dataWorkingTimeRecord.type_date) ? dataWorkingTimeRecord.type_date : updateStatusHeader() }} Time</h1>
                 </div>
                 <div class="basic" />
               </div>
@@ -52,39 +65,24 @@
               <div class="time-line">
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-date-picker
-                    v-model="dataWorkingTimeRecord.convert_in_date"
-                    class="disable-date-custom"
-                    format="MMMM dd yyyy"
-                    value-format="yyyy-MM-dd"
-                    disabled
-                  />
-
-                  <el-form-item prop="convert_in_time" class="custom-time m-0">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.convert_in_time"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
+                  <el-form-item prop="in_time">
+                    <el-date-picker
+                      v-model="dataWorkingTimeRecord.in_time"
+                      type="datetime"
+                      format="yyyy-MM-dd / HH:mm:ss"
+                      value-format="yyyy-MM-dd HH:mm:ss"
                     />
                   </el-form-item>
                 </div>
 
                 <p class="title-time">Out Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-date-picker
-                    v-model="dataWorkingTimeRecord.convert_out_date"
-                    class="disable-date-custom"
-                    format="MMMM dd yyyy"
-                    value-format="yyyy-MM-dd"
-                    disabled
-                  />
-
-                  <el-form-item prop="convert_out_time" class="custom-time m-0">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.convert_out_time"
-                      class="custime-time-input"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
+                  <el-form-item prop="out_time">
+                    <el-date-picker
+                      v-model="dataWorkingTimeRecord.out_time"
+                      type="datetime"
+                      format="yyyy-MM-dd / HH:mm:ss"
+                      value-format="yyyy-MM-dd HH:mm:ss"
                     />
                   </el-form-item>
                 </div>
@@ -133,32 +131,42 @@
 <script>
 import { getWokingTimeDetailById, editWorkingTimeById, deleteWorkingTimeById } from '../../api/working_time';
 import { MakeToast } from '../../utils/toast_message';
-import moment from 'moment';
 export default {
   name: 'WorkingTimeManagement',
   data() {
     return {
-      dataWorkingTimeRecord:
-        {
-          convert_in_date: '',
-          convert_in_time: '',
-          convert_out_date: '',
-          convert_out_time: '',
-          remark: '',
-        },
+      dataWorkingTimeRecord: {
+        user_id: '',
+        in_time: '',
+        out_time: '',
+        type_date: '',
+        remark: '',
+      },
       showModalDelete: false,
       dateRangeOptions1: {
         firstDayOfWeek: 5,
       },
+      listWorkingType: [
+        { id: 1, name: 'Working' },
+        { id: 2, name: 'Remote' },
+        { id: 3, name: 'Take off' },
+        { id: 4, name: 'Special day off' },
+      ],
       rules: {
-        convert_in_time: [
+        in_time: [
           { required: true, message: 'Please pick a time in', trigger: 'change' },
         ],
-        convert_out_time: [
+        out_time: [
           { required: true, message: 'Please pick a time out', trigger: 'change' },
         ],
       },
     };
+  },
+  watch: {
+    'dataWorkingTimeRecord.type_date': function() {
+      const isRequired = ![1, 'Working'].includes(this.dataWorkingTimeRecord.type_date);
+      this.rules.out_time[0].required = isRequired;
+    },
   },
   created() {
     this.getWorkingRecordById();
@@ -184,11 +192,6 @@ export default {
       await getWokingTimeDetailById({ id })
         .then((response) => {
           if (response.code === 200) {
-            response.data.result.convert_in_date = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
-            response.data.result.convert_in_time = moment(response.data.result.in_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
-            response.data.result.convert_out_date = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
-            response.data.result.convert_out_time = moment(response.data.result.out_time, 'YYYY-MM-DD HH:mm:ss').format('HH:mm:ss');
-
             this.dataWorkingTimeRecord = response.data.result;
           }
         })
@@ -198,13 +201,15 @@ export default {
     },
     async editWorkingTime() {
       const id = this.$route.params.id;
-      const DATA = {
-        user_id: this.dataWorkingTimeRecord.user_id,
-        in_time: this.dataWorkingTimeRecord.convert_in_date + ' ' + this.dataWorkingTimeRecord.convert_in_time,
-        out_time: this.dataWorkingTimeRecord.convert_out_date + ' ' + this.dataWorkingTimeRecord.convert_out_time,
-        remark: this.dataWorkingTimeRecord.remark,
-      };
+      const { user_id, in_time, out_time, remark } = this.dataWorkingTimeRecord;
+      let { type_date } = this.dataWorkingTimeRecord;
+      if (isNaN(type_date)) {
+        type_date = this.listWorkingType.find(item => item.name === type_date)?.id ?? type_date;
+      }
 
+      const DATA = { user_id, in_time, out_time, type_date, remark };
+
+      console.log('file: detail.vue:212 / DATA:  ===>', DATA);
       await editWorkingTimeById({ id }, DATA)
         .then((response) => {
           if (response.code === 200) {
@@ -256,6 +261,10 @@ export default {
             content: error.message,
           });
         });
+    },
+    updateStatusHeader() {
+      const item = this.listWorkingType.find(item => this.dataWorkingTimeRecord.type_date === item.id);
+      return item ? item.name : '';
     },
   },
 };
