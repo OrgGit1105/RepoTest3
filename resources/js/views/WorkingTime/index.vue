@@ -138,7 +138,7 @@
         <!-- Modal add new -->
         <el-dialog class="title-add-working" title="Add Working time" :visible.sync="openModalAdd" width="35%" @close="resetForm('ruleForm')">
           <el-form ref="ruleForm" :model="form" :rules="rules" label-width="120px" label-position="top">
-            <div class="d-flex flex-row justify-content-between flex-wrap">
+            <div class="d-flex flex-row flex-wrap" style="gap: 10px;">
               <el-form-item label="Employee Name" required prop="userId">
                 <el-select v-model="form.userId" placeholder="Please select employee name" style="width: 250px;">
                   <el-option
@@ -162,37 +162,46 @@
             </div>
             <hr class="line">
             <p class="title-working mb-3">{{ isNaN(form.type_date) ? form.type_date : updateStatusHeader() }} Time</p>
-            <p class="label-custom">Date</p>
-            <div class="date-time-custom">
-              <el-form-item prop="date" class="item-date">
-                <el-date-picker
-                  v-model="form.date"
-                  type="date"
-                  format="yyyy/MM/dd"
-                  value-format="yyyy-MM-dd"
-                />
-              </el-form-item>
-            </div>
-            <p class="label-custom">In Time</p>
-            <div class="date-time-custom">
-              <el-form-item prop="inTime" class="item-time">
-                <el-time-picker
-                  v-model="form.inTime"
-                  format="HH:mm:ss"
-                  value-format="HH:mm:ss"
-                />
-              </el-form-item>
-            </div>
-
-            <p class="label-custom">Out Time</p>
-            <div class="date-time-custom">
-              <el-form-item prop="outTime" class="item-time">
-                <el-time-picker
-                  v-model="form.outTime"
-                  format="HH:mm:ss"
-                  value-format="HH:mm:ss"
-                />
-              </el-form-item>
+            <div class="d-flex flex-row flex-wrap" style="gap: 10px;">
+              <div>
+                <p class="label-custom">Date</p>
+                <div class="date-time-custom">
+                  <el-form-item prop="date" class="item-date">
+                    <el-date-picker
+                      v-model="form.date"
+                      type="date"
+                      format="yyyy/MM/dd"
+                      value-format="yyyy-MM-dd"
+                    />
+                  </el-form-item>
+                </div>
+              </div>
+              <div class="d-flex flex-row flex-wrap" style="gap: 10px;">
+                <div>
+                  <p class="label-custom">In Time</p>
+                  <div class="date-time-custom">
+                    <el-form-item prop="inTime" class="item-time">
+                      <el-time-picker
+                        v-model="form.inTime"
+                        format="HH:mm:ss"
+                        value-format="HH:mm:ss"
+                      />
+                    </el-form-item>
+                  </div>
+                </div>
+                <div>
+                  <p class="label-custom">Out Time</p>
+                  <div class="date-time-custom">
+                    <el-form-item prop="outTime" class="item-time">
+                      <el-time-picker
+                        v-model="form.outTime"
+                        format="HH:mm:ss"
+                        value-format="HH:mm:ss"
+                      />
+                    </el-form-item>
+                  </div>
+                </div>
+              </div>
             </div>
           </el-form>
 
