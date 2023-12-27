@@ -12,7 +12,7 @@ return [
     'type' => [
         1 => 'Working',
         2 => 'Remote',
-        3 => 'Take off',
+        3 => 'Day off',
         4 => 'Special day off',
     ]
 ];
