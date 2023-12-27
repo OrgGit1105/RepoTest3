@@ -29,7 +29,7 @@ return [
         'time_in_more_than_time_out' => 'Time in not more than time out',
         'need_check_time_in' => 'Please check time in first',
         'must_same_date' => 'check in, check out must same date',
-        'time_in_is_check' => 'Employee was check in',
+        'time_in_is_check' => 'Today, this employee checked in and checked out',
         'time_out_is_check' => 'Employee was check out',
         'time_must_today' => 'Please time_in must today',
         'in_time_exist' => 'This in time data already exists',

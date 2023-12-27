@@ -95,8 +95,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_date = $attributes['type_date'];
-        $morning = DateTime::createFromFormat('H:i', '12:00');
-        $afternoon = DateTime::createFromFormat('H:i', '13:30');
+        $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
 
         // Kiểm tra ngày này đã check-in check-out chưa
         $arrivingIn_time = $this->model
@@ -111,10 +111,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $checkPeriodMorning = $this->model
             ->where("user_id", $attributes['user_id'])
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
-                $e->where("in_time", "<=", $morning);
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
+                $e->whereTime("in_time", "<", $morning);
             }, function ($e) use ($afternoon) {
-                $e->where('in_time', '>=', $afternoon);
+                $e->whereTime('in_time', '>=', $afternoon);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -136,13 +136,13 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $checkPeriodAfternoon = $this->model
                 ->where("user_id", $attributes['user_id'])
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i') < $afternoon->format('H:i'), function ($e) use($afternoon){
-                    $e->where("out_time", "<", $afternoon);
+                ->when($out_time->format('H:i:s') < $afternoon, function ($e) use($afternoon){
+                    $e->whereTime("out_time", "<", $afternoon);
                 }, function ($e) use ($afternoon) {
-                    $e->where('out_time', '>=', $afternoon);
+                    $e->whereTime('out_time', '>=', $afternoon);
                 })
                 ->first();
-
+            dd($checkPeriodMorning, $checkPeriodAfternoon, $out_time->format('H:i') < $afternoon);
             if ($checkPeriodAfternoon) {
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.out_time_exist'), trans('api.arriving_report.out_time_exist'));
             }
@@ -184,8 +184,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_update = $attributes['type_date'];
-        $morning = DateTime::createFromFormat('H:i', '12:00');
-        $afternoon = DateTime::createFromFormat('H:i', '13:30');
+        $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
 
         $report = $this->model->find($id);
         if (!$report) {
@@ -196,7 +196,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->where("id", '!=', $id)
             ->where("user_id", $report->user_id)
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
                 $e->where("in_time", "<=", $morning);
             }, function ($e) use ($afternoon) {
                 $e->where('in_time', '>=', $afternoon);
@@ -221,7 +221,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->where("id", '!=', $id)
                 ->where("user_id", $report->user_id)
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i') < $afternoon->format('H:i'), function ($e) use($afternoon){
+                ->when($out_time->format('H:i:s') < $afternoon, function ($e) use($afternoon){
                     $e->where("out_time", "<", $afternoon);
                 }, function ($e) use ($afternoon) {
                     $e->where('out_time', '>=', $afternoon);
