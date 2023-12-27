@@ -339,7 +339,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                     'type_date' => $type_date,
                     'status' => 1,
                 ]);
-                if ($type_date == config('analytic.type.take off') && $dateOff > $official_staff) {
+                if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
                     if (Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
                         $paid_off = 0.5;
                     } else {
@@ -390,7 +390,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                     ];
                     ArrivingReport::create($dataInsert);
 
-                    if ($type_date == config('analytic.type.take off') && $dateOff > $official_staff) {
+                    if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
                         $paid_off++;
                     }
                 }
