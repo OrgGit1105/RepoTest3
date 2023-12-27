@@ -162,45 +162,35 @@
             </div>
             <hr class="line">
             <p class="title-working mb-3">{{ isNaN(form.type_date) ? form.type_date : updateStatusHeader() }} Time</p>
-            <p class="label-custom">In Time</p>
+            <p class="label-custom">Date</p>
             <div class="date-time-custom">
-              <el-form-item prop="inDate" class="item-date">
+              <el-form-item prop="date" class="item-date">
                 <el-date-picker
-                  v-model="form.inDate"
+                  v-model="form.date"
                   type="date"
                   format="yyyy/MM/dd"
                   value-format="yyyy-MM-dd"
-                  style="width: 100%;"
                 />
               </el-form-item>
-
+            </div>
+            <p class="label-custom">In Time</p>
+            <div class="date-time-custom">
               <el-form-item prop="inTime" class="item-time">
                 <el-time-picker
                   v-model="form.inTime"
                   format="HH:mm:ss"
                   value-format="HH:mm:ss"
-                  style="width: 100%;"
                 />
               </el-form-item>
             </div>
 
             <p class="label-custom">Out Time</p>
             <div class="date-time-custom">
-              <el-form-item prop="outDate" class="item-date">
-                <el-date-picker
-                  v-model="form.outDate"
-                  type="date"
-                  format="yyyy/MM/dd"
-                  value-format="yyyy-MM-dd"
-                  style="width: 100%;"
-                />
-              </el-form-item>
               <el-form-item prop="outTime" class="item-time">
                 <el-time-picker
                   v-model="form.outTime"
                   format="HH:mm:ss"
                   value-format="HH:mm:ss"
-                  style="width: 100%;"
                 />
               </el-form-item>
             </div>
@@ -249,9 +239,8 @@ export default {
       employeeValue: '',
       form: {
         userId: '',
-        inDate: '',
+        date: '',
         inTime: '',
-        outDate: '',
         outTime: '',
         type_date: '',
       },
@@ -262,14 +251,11 @@ export default {
         userId: [
           { required: true, message: 'Please select Employee Name', trigger: 'change' },
         ],
-        inDate: [
-          { required: true, message: 'Please pick a date in', trigger: 'change' },
+        date: [
+          { required: true, message: 'Please pick a date out', trigger: 'change' },
         ],
         inTime: [
           { required: true, message: 'Please pick a time in', trigger: 'change' },
-        ],
-        outDate: [
-          { required: true, message: 'Please pick a date out', trigger: 'change' },
         ],
         outTime: [
           { required: true, message: 'Please pick a time out', trigger: 'change' },
@@ -279,9 +265,7 @@ export default {
   },
   watch: {
     'form.type_date': function() {
-      const isRequired = this.form.type_date !== 1;
-      this.rules.outDate[0].required = isRequired;
-      this.rules.outTime[0].required = isRequired;
+      this.rules.outTime[0].required = this.form.type_date !== 1;
     },
   },
 
@@ -331,9 +315,8 @@ export default {
       this.openModalAdd = false;
       this.form = {
         userId: '',
-        inDate: '',
+        date: '',
         inTime: '',
-        outDate: '',
         outTime: '',
       };
       this.$refs[formName].resetFields();
@@ -388,10 +371,11 @@ export default {
         });
     },
     async createNew() {
+      const isWorking = this.form.type_date === 1;
       const PARAMS = {
         user_id: this.form.userId,
-        in_time: this.form.inDate + ' ' + this.form.inTime,
-        out_time: this.form.outDate + ' ' + this.form.outTime,
+        in_time: this.form.date + ' ' + this.form.inTime,
+        out_time: isWorking ? '' : this.form.date + ' ' + this.form.outTime,
         type_date: this.form.type_date,
       };
       await createNewWorkingTime(PARAMS)
