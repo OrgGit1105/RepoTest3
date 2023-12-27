@@ -149,7 +149,7 @@ export default {
       listWorkingType: [
         { id: 1, name: 'Working' },
         { id: 2, name: 'Remote' },
-        { id: 3, name: 'Take off' },
+        { id: 3, name: 'Day off' },
         { id: 4, name: 'Special day off' },
       ],
       rules: {
