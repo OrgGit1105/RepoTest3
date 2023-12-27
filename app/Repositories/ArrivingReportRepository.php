@@ -137,12 +137,16 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->where("user_id", $attributes['user_id'])
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
                 ->when($out_time->format('H:i:s') < $afternoon, function ($e) use($afternoon){
-                    $e->whereTime("out_time", "<", $afternoon);
-                }, function ($e) use ($afternoon) {
-                    $e->whereTime('out_time', '>=', $afternoon);
+                    $e->whereTime("out_time", "<=", $afternoon);
+                }, function ($e) use ($afternoon, $in_time) {
+                    $e->whereTime('out_time', '>=', $afternoon)
+                    ->orWhere(function ($query) use ($afternoon, $in_time) {
+                        $query->whereNull('out_time')
+                            ->whereDate('in_time', $in_time)
+                            ->whereTime('in_time', '>=', $afternoon);
+                    });
                 })
                 ->first();
-            dd($checkPeriodMorning, $checkPeriodAfternoon, $out_time->format('H:i') < $afternoon);
             if ($checkPeriodAfternoon) {
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.out_time_exist'), trans('api.arriving_report.out_time_exist'));
             }
