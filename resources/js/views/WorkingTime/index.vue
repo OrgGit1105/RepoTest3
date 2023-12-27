@@ -149,8 +149,8 @@
                   />
                 </el-select>
               </el-form-item>
-              <el-form-item label="Working Type" required prop="type_date">
-                <el-select v-model="form.type_date" placeholder="Please select working type" style="width: 250px;">
+              <el-form-item label="Type" required prop="type_date">
+                <el-select v-model="form.type_date" placeholder="Please select type" style="width: 250px;">
                   <el-option
                     v-for="item in listWorkingType"
                     :key="item.id"
@@ -587,7 +587,7 @@ export default {
   padding: 7px 0 5px 0;
   width: 50%;
   border-radius: 10px;
-  background-color: #90EE90;
+  background-color: #ea805d;
 }
 ::v-deep .title-add-working .el-dialog__title, .title-working {
   font-weight: 600;
