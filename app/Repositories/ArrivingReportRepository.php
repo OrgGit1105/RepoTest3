@@ -192,6 +192,20 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             return false;
         }
 
+        $checkPeriodMorning = $this->model
+            ->where("id", '!=', $id)
+            ->where("user_id", $report->user_id)
+            ->whereDate("in_time", $in_time->format('Y-m-d'))
+            ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
+                $e->where("in_time", "<=", $morning);
+            }, function ($e) use ($afternoon) {
+                $e->where('in_time', '>=', $afternoon);
+            })
+            ->first();
+        if ($checkPeriodMorning) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.in_time_exist'), trans('api.arriving_report.in_time_exist'));
+        }
+
         if ($out_time) {
             // Kiểm tra xem có cùng ngày không
             if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')) {
@@ -201,20 +215,6 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             // Kiểm tra xem có check out có phải là tương lai check in không, nếu không báo lỗi
             if ($in_time->getTimestamp() > $out_time->getTimestamp()) {
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.time_in_more_than_time_out'), trans('api.arriving_report.time_in_more_than_time_out'));
-            }
-
-            $checkPeriodMorning = $this->model
-                ->where("id", '!=', $id)
-                ->where("user_id", $report->user_id)
-                ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
-                    $e->where("in_time", "<=", $morning);
-                }, function ($e) use ($afternoon) {
-                    $e->where('in_time', '>=', $afternoon);
-                })
-                ->first();
-            if ($checkPeriodMorning) {
-                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.in_time_exist'), trans('api.arriving_report.in_time_exist'));
             }
 
             $checkPeriodAfternoon = $this->model
