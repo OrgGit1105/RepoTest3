@@ -86,7 +86,7 @@
                 align="center"
               >
                 <template slot-scope="scope">
-                  <div :class="getClass(scope.row.type_date)">
+                  <div :class="getClassCss(scope.row.type_date)">
                     <strong>{{ scope.row.type_date }}</strong>
                   </div>
                 </template>
@@ -242,7 +242,7 @@ export default {
       listWorkingType: [
         { id: 1, name: 'Working' },
         { id: 2, name: 'Remote' },
-        { id: 3, name: 'Take off' },
+        { id: 3, name: 'Day off' },
         { id: 4, name: 'Special day off' },
       ],
       employeeValue: '',
@@ -437,14 +437,14 @@ export default {
         this.formSearch.date = [moment(moment().clone().weekday(1), 'MMMM Do YYYY').format('YYYY-MM-DD'), moment(moment().clone().weekday(5), 'MMMM Do YYYY').format('YYYY-MM-DD')];
       }
     },
-    getClass(type_date) {
+    getClassCss(type_date) {
       switch (type_date) {
         case 'Working':
           return 'type_working';
         case 'Remote':
           return 'type_remote';
-        case 'Take off':
-          return 'type_take_off';
+        case 'Day off':
+          return 'type_day_off';
         case 'Special day off':
           return 'type_special_day_off';
         default:
@@ -568,7 +568,7 @@ export default {
   border-radius: 10px;
   background-color: #ccf2ff;
 }
-::v-deep .type_take_off {
+::v-deep .type_day_off {
   margin: auto;
   padding: 7px 0 5px 0;
   width: 50%;
