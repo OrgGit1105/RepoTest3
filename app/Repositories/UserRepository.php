@@ -100,4 +100,13 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         return $this->model->select(['id', 'name'])->get();
     }
+
+    public function detail($id)
+    {
+        $data = $this->model->with(['viam_user'])->find($id);
+        $now = Carbon::now();
+        $entry_date = Carbon::parse($data['entry_date'])->addMonth(2);
+        $data['paid_off'] = ($now >= $entry_date) ? $data['paid_off'] : 0;
+        return $data;
+    }
 }

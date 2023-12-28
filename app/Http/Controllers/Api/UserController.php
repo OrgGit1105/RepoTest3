@@ -258,7 +258,7 @@ class UserController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->with(['viam_user'])->find($id);
+            $data = $this->repository->detail($id);
             return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
