@@ -335,12 +335,13 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
             } else {
-                $type_date = Str::contains($messages['0'], 'remote') ? config('analytic.type.remote') : config('analytic.type.' . $messages[0]);
+                $type_date = $this->getTypeDate($messages[0]);
                 ArrivingReport::create([
                     'user_id' => $user->id,
                     'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
                     'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
                     'type_date' => $type_date,
+                    'remark' => $messages[2],
                     'status' => 1,
                 ]);
                 if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
@@ -381,7 +382,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $index = 0;
             $dataInsert = [];
             $paid_off = 0;
-            $type_date = $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.' . $messages[0]);
+            $type_date = $this->getTypeDate($messages[0]);
+
             for ($i = 0; $i < $diffInDays; $i++) {
                 $dateOff = Carbon::parse($messages['1'])->addDays($index);
                 if ($this->holiday($dateOff)) {
@@ -390,6 +392,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                         'in_time' => $dateOff->format('Y-m-d 08:30:00'),
                         'out_time' => $dateOff->format('Y-m-d 18:00:00'),
                         'type_date' => $type_date,
+                        'remark' => $messages[2],
                         'status' => 1,
                     ];
                     ArrivingReport::create($dataInsert);
@@ -409,6 +412,18 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             'response_type' => 'in_channel',
             'text' => $user->name . ' ' . __('analytic.success'),
         ]);
+    }
+
+    private function getTypeDate($messages)
+    {
+        $type = config('analytic.type');
+        if (Str::contains($messages, 'take off')) {
+            return $type['take off'];
+        } elseif (Str::contains($messages, 'special')) {
+            return $type['special'];
+        } else {
+            return $type['remote'];
+        }
     }
 
     private function validateDate($date, $format = 'Y-m-d')
