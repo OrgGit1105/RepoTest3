@@ -30,6 +30,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 
 
     Route::group(['middleware' => 'auth:user'], function () {
+        Route::get('user/{id}', 'UserController@show');
         Route::get('schedule/export', 'ScheduleController@export');
         Route::get('analytic/emotions', 'AnalyticController@getEmotions');
         Route::get('arriving_report/download', 'ArrivingReportController@download');

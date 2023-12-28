@@ -259,7 +259,10 @@ class UserController extends Controller
     {
         try {
             $data = $this->repository->detail($id);
-            return $this->responseJson(200, new BaseResource($data));
+            if($data) {
+                return $this->responseJson(200, new BaseResource($data));
+            }
+            return $this->responseJsonError(CODE_NO_ACCESS, 'user not permission', 'user not permission');
         } catch (\Exception $e) {
             throw $e;
         }
