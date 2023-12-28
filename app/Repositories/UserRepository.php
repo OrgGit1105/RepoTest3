@@ -103,6 +103,11 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function detail($id)
     {
+        $roleUser = User::getRoleVFace(Auth::user());
+        if($roleUser == POLICY_V_FACE_ID['Normal'] && $id != Auth::id()) {
+            return false;
+        }
+
         $data = $this->model->with(['viam_user'])->find($id);
         $now = Carbon::now();
         $entry_date = Carbon::parse($data['entry_date'])->addMonth(2);
