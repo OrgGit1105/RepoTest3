@@ -96,7 +96,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_date = $attributes['type_date'];
         $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
-        $afternoon = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '13:30')->format('H:i:s');
 
         // Kiểm tra ngày này đã check-in check-out chưa
         $arrivingIn_time = $this->model
@@ -113,8 +113,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->whereDate("in_time", $in_time->format('Y-m-d'))
             ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
                 $e->whereTime("in_time", "<", $morning);
-            }, function ($e) use ($afternoon) {
-                $e->whereTime('in_time', '>=', $afternoon);
+            }, function ($e) use ($morning) {
+                $e->whereTime('in_time', '>=', $morning);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -138,12 +138,12 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
                 ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
                     $e->whereTime("out_time", "<=", $afternoon);
-                }, function ($e) use ($afternoon, $in_time) {
+                }, function ($e) use ($morning, $afternoon, $in_time) {
                     $e->whereTime('out_time', '>=', $afternoon)
-                        ->orWhere(function ($query) use ($afternoon, $in_time) {
+                        ->orWhere(function ($query) use ($morning, $in_time) {
                             $query->whereNull('out_time')
                                 ->whereDate('in_time', $in_time)
-                                ->whereTime('in_time', '>=', $afternoon);
+                                ->whereTime('in_time', '>=', $morning);
                         });
                 })
                 ->first();
@@ -189,7 +189,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_update = $attributes['type_date'];
         $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
-        $afternoon = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '13:30')->format('H:i:s');
 
         $report = $this->model->find($id);
         if (!$report) {
@@ -202,8 +202,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->whereDate("in_time", $in_time->format('Y-m-d'))
             ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
                 $e->whereTime("in_time", "<", $morning);
-            }, function ($e) use ($afternoon) {
-                $e->whereTime('in_time', '>=', $afternoon);
+            }, function ($e) use ($morning) {
+                $e->whereTime('in_time', '>=', $morning);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -226,14 +226,13 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->where("user_id", $report->user_id)
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
                 ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
-                    $e->whereTime("out_time", "<", $afternoon);
-                }, function ($e) use ($afternoon, $in_time, $id) {
+                    $e->whereTime("out_time", "<=", $afternoon);
+                }, function ($e) use ($morning, $afternoon, $in_time, $id) {
                     $e->whereTime('out_time', '>=', $afternoon)
-                        ->orWhere(function ($query) use ($afternoon, $in_time, $id) {
+                        ->orWhere(function ($query) use ($morning, $afternoon, $in_time, $id) {
                             $query->whereNull('out_time')
-                                ->where("id", '!=', $id)
                                 ->whereDate('in_time', $in_time)
-                                ->whereTime('in_time', '>=', $afternoon);
+                                ->whereTime('in_time', '>=', $morning);
                         });
                 })
                 ->first();
