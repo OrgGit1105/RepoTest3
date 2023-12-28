@@ -95,8 +95,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_date = $attributes['type_date'];
-        $morning = DateTime::createFromFormat('H:i', '12:00');
-        $afternoon = DateTime::createFromFormat('H:i', '13:30');
+        $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '13:30')->format('H:i:s');
 
         // Kiểm tra ngày này đã check-in check-out chưa
         $arrivingIn_time = $this->model
@@ -111,10 +111,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $checkPeriodMorning = $this->model
             ->where("user_id", $attributes['user_id'])
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
-                $e->where("in_time", "<=", $morning);
-            }, function ($e) use ($afternoon) {
-                $e->where('in_time', '>=', $afternoon);
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
+                $e->whereTime("in_time", "<", $morning);
+            }, function ($e) use ($morning) {
+                $e->whereTime('in_time', '>=', $morning);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -136,13 +136,17 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $checkPeriodAfternoon = $this->model
                 ->where("user_id", $attributes['user_id'])
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i') < $afternoon->format('H:i'), function ($e) use($afternoon){
-                    $e->where("out_time", "<", $afternoon);
-                }, function ($e) use ($afternoon) {
-                    $e->where('out_time', '>=', $afternoon);
+                ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
+                    $e->whereTime("out_time", "<=", $afternoon);
+                }, function ($e) use ($morning, $afternoon, $in_time) {
+                    $e->whereTime('out_time', '>=', $afternoon)
+                        ->orWhere(function ($query) use ($morning, $in_time) {
+                            $query->whereNull('out_time')
+                                ->whereDate('in_time', $in_time)
+                                ->whereTime('in_time', '>=', $morning);
+                        });
                 })
                 ->first();
-
             if ($checkPeriodAfternoon) {
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.out_time_exist'), trans('api.arriving_report.out_time_exist'));
             }
@@ -184,8 +188,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['in_time']);
         $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $attributes['out_time']);
         $type_update = $attributes['type_date'];
-        $morning = DateTime::createFromFormat('H:i', '12:00');
-        $afternoon = DateTime::createFromFormat('H:i', '13:30');
+        $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
+        $afternoon = DateTime::createFromFormat('H:i', '13:30')->format('H:i:s');
 
         $report = $this->model->find($id);
         if (!$report) {
@@ -196,10 +200,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->where("id", '!=', $id)
             ->where("user_id", $report->user_id)
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i') < $morning->format('H:i'), function ($e) use($morning){
-                $e->where("in_time", "<=", $morning);
-            }, function ($e) use ($afternoon) {
-                $e->where('in_time', '>=', $afternoon);
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
+                $e->whereTime("in_time", "<", $morning);
+            }, function ($e) use ($morning) {
+                $e->whereTime('in_time', '>=', $morning);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -221,10 +225,15 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->where("id", '!=', $id)
                 ->where("user_id", $report->user_id)
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i') < $afternoon->format('H:i'), function ($e) use($afternoon){
-                    $e->where("out_time", "<", $afternoon);
-                }, function ($e) use ($afternoon) {
-                    $e->where('out_time', '>=', $afternoon);
+                ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
+                    $e->whereTime("out_time", "<=", $afternoon);
+                }, function ($e) use ($morning, $afternoon, $in_time, $id) {
+                    $e->whereTime('out_time', '>=', $afternoon)
+                        ->orWhere(function ($query) use ($morning, $afternoon, $in_time, $id) {
+                            $query->whereNull('out_time')
+                                ->whereDate('in_time', $in_time)
+                                ->whereTime('in_time', '>=', $morning);
+                        });
                 })
                 ->first();
             if ($checkPeriodAfternoon) {
@@ -331,12 +340,13 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
             } else {
-                $type_date = Str::contains($messages['0'], 'remote') ? config('analytic.type.remote') : config('analytic.type.' . $messages[0]);
+                $type_date = $this->getTypeDate($messages[0]);
                 ArrivingReport::create([
                     'user_id' => $user->id,
                     'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
                     'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
                     'type_date' => $type_date,
+                    'remark' => $messages[2],
                     'status' => 1,
                 ]);
                 if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
@@ -377,7 +387,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $index = 0;
             $dataInsert = [];
             $paid_off = 0;
-            $type_date = $messages['0'] == 'remote' ? config('analytic.type.remote') : config('analytic.type.' . $messages[0]);
+            $type_date = $this->getTypeDate($messages[0]);
+
             for ($i = 0; $i < $diffInDays; $i++) {
                 $dateOff = Carbon::parse($messages['1'])->addDays($index);
                 if ($this->holiday($dateOff)) {
@@ -386,6 +397,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                         'in_time' => $dateOff->format('Y-m-d 08:30:00'),
                         'out_time' => $dateOff->format('Y-m-d 18:00:00'),
                         'type_date' => $type_date,
+                        'remark' => $messages[2],
                         'status' => 1,
                     ];
                     ArrivingReport::create($dataInsert);
@@ -405,6 +417,18 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             'response_type' => 'in_channel',
             'text' => $user->name . ' ' . __('analytic.success'),
         ]);
+    }
+
+    private function getTypeDate($messages)
+    {
+        $type = config('analytic.type');
+        if (Str::contains($messages, 'take off')) {
+            return $type['take off'];
+        } elseif (Str::contains($messages, 'special')) {
+            return $type['special'];
+        } else {
+            return $type['remote'];
+        }
     }
 
     private function validateDate($date, $format = 'Y-m-d')
