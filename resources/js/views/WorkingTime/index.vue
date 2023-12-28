@@ -397,6 +397,7 @@ export default {
             });
             this.getWorkingTime();
           } else {
+            this.openModalAdd = false;
             MakeToast({
               variant: 'danger',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
