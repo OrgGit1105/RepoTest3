@@ -136,15 +136,15 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $checkPeriodAfternoon = $this->model
                 ->where("user_id", $attributes['user_id'])
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i:s') < $afternoon, function ($e) use($afternoon){
+                ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
                     $e->whereTime("out_time", "<=", $afternoon);
                 }, function ($e) use ($afternoon, $in_time) {
                     $e->whereTime('out_time', '>=', $afternoon)
-                    ->orWhere(function ($query) use ($afternoon, $in_time) {
-                        $query->whereNull('out_time')
-                            ->whereDate('in_time', $in_time)
-                            ->whereTime('in_time', '>=', $afternoon);
-                    });
+                        ->orWhere(function ($query) use ($afternoon, $in_time) {
+                            $query->whereNull('out_time')
+                                ->whereDate('in_time', $in_time)
+                                ->whereTime('in_time', '>=', $afternoon);
+                        });
                 })
                 ->first();
             if ($checkPeriodAfternoon) {
@@ -201,9 +201,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->where("user_id", $report->user_id)
             ->whereDate("in_time", $in_time->format('Y-m-d'))
             ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
-                $e->where("in_time", "<=", $morning);
+                $e->whereTime("in_time", "<", $morning);
             }, function ($e) use ($afternoon) {
-                $e->where('in_time', '>=', $afternoon);
+                $e->whereTime('in_time', '>=', $afternoon);
             })
             ->first();
         if ($checkPeriodMorning) {
@@ -225,10 +225,16 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->where("id", '!=', $id)
                 ->where("user_id", $report->user_id)
                 ->whereDate("in_time", $in_time->format('Y-m-d'))
-                ->when($out_time->format('H:i:s') < $afternoon, function ($e) use($afternoon){
-                    $e->where("out_time", "<", $afternoon);
-                }, function ($e) use ($afternoon) {
-                    $e->where('out_time', '>=', $afternoon);
+                ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
+                    $e->whereTime("out_time", "<", $afternoon);
+                }, function ($e) use ($afternoon, $in_time, $id) {
+                    $e->whereTime('out_time', '>=', $afternoon)
+                        ->orWhere(function ($query) use ($afternoon, $in_time, $id) {
+                            $query->whereNull('out_time')
+                                ->where("id", '!=', $id)
+                                ->whereDate('in_time', $in_time)
+                                ->whereTime('in_time', '>=', $afternoon);
+                        });
                 })
                 ->first();
             if ($checkPeriodAfternoon) {
