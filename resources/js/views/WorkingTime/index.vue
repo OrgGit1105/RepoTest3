@@ -380,11 +380,10 @@ export default {
         });
     },
     async createNew() {
-      const isWorking = this.form.type_date === 1;
       const PARAMS = {
         user_id: this.form.userId,
         in_time: this.form.date + ' ' + this.form.inTime,
-        out_time: isWorking ? '' : this.form.date + ' ' + this.form.outTime,
+        out_time: this.form.outTime ? `${this.form.date} ${this.form.outTime}` : '',
         type_date: this.form.type_date,
       };
       await createNewWorkingTime(PARAMS)

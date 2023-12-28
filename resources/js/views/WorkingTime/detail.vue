@@ -63,6 +63,44 @@
               </div>
               <hr class="line">
               <div class="time-line">
+                <p class="title-time">Date</p>
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                  <el-form-item prop="date">
+                    <el-date-picker
+                      v-model="dataWorkingTimeRecord.date"
+                      type="date"
+                      format="yyyy-MM-dd"
+                      value-format="yyyy-MM-dd"
+                    />
+                  </el-form-item>
+                </div>
+              </div>
+              <div class="time-line">
+                <p class="title-time">In Time</p>
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                  <el-form-item prop="in_time">
+                    <el-time-picker
+                      v-model="dataWorkingTimeRecord.in_time"
+                      format="HH:mm:ss"
+                      value-format="HH:mm:ss"
+                    />
+                  </el-form-item>
+                </div>
+              </div>
+              <div class="time-line">
+                <p class="title-time">Out Time</p>
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                  <el-form-item prop="out_time">
+                    <el-time-picker
+                      v-model="dataWorkingTimeRecord.out_time"
+                      format="HH:mm:ss"
+                      value-format="HH:mm:ss"
+                    />
+                  </el-form-item>
+                </div>
+              </div>
+
+              <!-- <div class="time-line">
                 <p class="title-time">In Time</p>
                 <div class="d-flex justify-content-start align-items-center mb-3">
                   <el-form-item prop="in_time">
@@ -86,7 +124,7 @@
                     />
                   </el-form-item>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Remark -->
               <div class="d-flex justify-content-between align-items-center mt-2">
@@ -137,6 +175,7 @@ export default {
     return {
       dataWorkingTimeRecord: {
         user_id: '',
+        date: '',
         in_time: '',
         out_time: '',
         type_date: '',
@@ -153,6 +192,9 @@ export default {
         { id: 4, name: 'Special day off' },
       ],
       rules: {
+        date: [
+          { required: true, message: 'Please pick a date', trigger: 'change' },
+        ],
         in_time: [
           { required: true, message: 'Please pick a time in', trigger: 'change' },
         ],
@@ -192,7 +234,13 @@ export default {
       await getWokingTimeDetailById({ id })
         .then((response) => {
           if (response.code === 200) {
+            const res = { ...response };
+            response.data.result.date = res.data.result.in_time?.split(' ')[0];
+            // 2 line above are needed because reference will mess the data
+
             this.dataWorkingTimeRecord = response.data.result;
+            this.dataWorkingTimeRecord.in_time = response.data.result.in_time?.split(' ')[1];
+            this.dataWorkingTimeRecord.out_time = response.data.result.out_time?.split(' ')[1];
           }
         })
         .catch(() => {
@@ -201,9 +249,14 @@ export default {
     },
     async editWorkingTime() {
       const id = this.$route.params.id;
-      const { user_id, in_time, out_time, remark, type_date } = this.dataWorkingTimeRecord;
-      const DATA = { user_id, in_time, out_time, type_date, remark };
+      const { user_id, date, remark, type_date } = this.dataWorkingTimeRecord;
+      let { in_time, out_time } = this.dataWorkingTimeRecord;
+      in_time = `${date} ${in_time}`;
+      out_time = out_time ? `${date} ${out_time}` : null;
 
+      const DATA = { user_id, date, in_time, out_time, type_date, remark };
+
+      console.log('file: detail.vue:252 / DATA:  ===>', DATA);
       await editWorkingTimeById({ id }, DATA)
         .then((response) => {
           if (response.code === 200) {
