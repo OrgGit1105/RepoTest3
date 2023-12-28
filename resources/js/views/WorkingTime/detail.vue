@@ -62,9 +62,9 @@
                 <div class="basic" />
               </div>
               <hr class="line">
-              <div class="time-line">
+              <div>
                 <p class="title-time">Date</p>
-                <div class="d-flex justify-content-start align-items-center mb-3">
+                <div class="d-flex justify-content-start align-items-center">
                   <el-form-item prop="date">
                     <el-date-picker
                       v-model="dataWorkingTimeRecord.date"
@@ -75,9 +75,9 @@
                   </el-form-item>
                 </div>
               </div>
-              <div class="time-line">
+              <div>
                 <p class="title-time">In Time</p>
-                <div class="d-flex justify-content-start align-items-center mb-3">
+                <div class="d-flex justify-content-start align-items-center">
                   <el-form-item prop="in_time">
                     <el-time-picker
                       v-model="dataWorkingTimeRecord.in_time"
@@ -87,9 +87,9 @@
                   </el-form-item>
                 </div>
               </div>
-              <div class="time-line">
+              <div>
                 <p class="title-time">Out Time</p>
-                <div class="d-flex justify-content-start align-items-center mb-3">
+                <div class="d-flex justify-content-start align-items-center">
                   <el-form-item prop="out_time">
                     <el-time-picker
                       v-model="dataWorkingTimeRecord.out_time"
@@ -99,32 +99,6 @@
                   </el-form-item>
                 </div>
               </div>
-
-              <!-- <div class="time-line">
-                <p class="title-time">In Time</p>
-                <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-form-item prop="in_time">
-                    <el-date-picker
-                      v-model="dataWorkingTimeRecord.in_time"
-                      type="datetime"
-                      format="yyyy-MM-dd / HH:mm:ss"
-                      value-format="yyyy-MM-dd HH:mm:ss"
-                    />
-                  </el-form-item>
-                </div>
-
-                <p class="title-time">Out Time</p>
-                <div class="d-flex justify-content-start align-items-center mb-3">
-                  <el-form-item prop="out_time">
-                    <el-date-picker
-                      v-model="dataWorkingTimeRecord.out_time"
-                      type="datetime"
-                      format="yyyy-MM-dd / HH:mm:ss"
-                      value-format="yyyy-MM-dd HH:mm:ss"
-                    />
-                  </el-form-item>
-                </div>
-              </div> -->
 
               <!-- Remark -->
               <div class="d-flex justify-content-between align-items-center mt-2">
@@ -415,9 +389,6 @@ export default {
 	font-size: 20px;
 	color: #000000;
 	margin-bottom: 5px;
-}
-.time-line {
-	padding: 15px 0px;
 }
 ::v-deep .working-record {
   display: flex;
