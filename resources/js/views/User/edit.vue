@@ -133,7 +133,6 @@
                         placeholder="Please select entry date"
                         format="yyyy/MM/dd"
                         value-format="yyyy-MM-dd"
-                        disabled="disabled"
                       />
                     </div>
                     <div class="header-employee-edit">
@@ -599,6 +598,9 @@ export default {
   watch: {
     companyBranch() {
     },
+    'userInfo.viam_user': function() {
+      this.formEdit.viam_user_id = this.userInfo.viam_user;
+    },
   },
   created() {
     this.getListRole();
@@ -634,7 +636,7 @@ export default {
       try {
         const response = await UserApi.getOneUser(this.id);
         this.userInfo = {
-          viam_user: response.data.viam_user.name,
+          viam_user: response.data.viam_user.id,
         };
         this.formEdit = {
           name: response.data.name,
