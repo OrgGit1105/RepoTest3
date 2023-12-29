@@ -90,8 +90,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         $attributes['updated_at'] = Carbon::now();
-        if (array_key_exists("password", $attributes)) {
+        if (isset($attributes['password']) && !empty($attributes['password'])) {
             $attributes['password'] = bcrypt($attributes['password']);
+        } else {
+            unset($attributes['password'], $attributes['password_confirmation']);
         }
         return ResponseService::responseJson(200, new BaseResource(parent::update($attributes, $id)));
     }
