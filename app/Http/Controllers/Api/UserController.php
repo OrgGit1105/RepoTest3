@@ -127,7 +127,7 @@ class UserController extends Controller
      *       @OA\MediaType(
      *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"name", "email","viam_user_id","entry_date","password","password_confirmation"},
+     *            required={"name", "email","viam_user_id","password","password_confirmation"},
      *            @OA\Property(
      *              property="name",
      *              format="string",

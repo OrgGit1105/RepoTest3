@@ -65,7 +65,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function create(array $attributes)
     {
         if(!isset($attributes['entry_date']) || empty($attributes['entry_date'])) {
-            $attributes['entry_date'] = Carbon::now();
+            $attributes['entry_date'] = null;
         }
 
         $attributes['paid_off'] = 0;
