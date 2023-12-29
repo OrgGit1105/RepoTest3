@@ -32,7 +32,7 @@ class PaidOffWithMonthJob implements ShouldQueue
      */
     public function handle()
     {
-        $employees = User::query()->get();
+        $employees = User::query()->whereNotNull('entry_date')->get();
         foreach ($employees as $employee)
         {
             $dateStart = Carbon::parse($employee->entry_date);
