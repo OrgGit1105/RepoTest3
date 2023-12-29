@@ -3,7 +3,7 @@ import { template } from './template.js';
 import * as RequestApi from './request';
 const urlAPI = {
   urlGETUser: template`/user`,
-  urlGetAllUser: template`/user/list_all`,
+  urlGetAllUser: template`/user_list_all`,
   urlPOSTOneUser: template`/user`,
   urlGETOneUser: template`/user/${'id'}`,
   urlPUTOneUser: template`/user/${'id'}`,
