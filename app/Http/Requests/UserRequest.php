@@ -48,6 +48,7 @@ class UserRequest extends FormRequest
                  'birthday' => 'nullable|date-format:Y-m-d',
                  'address' => 'nullable|string',
                  'telephone' => 'nullable|string',
+                 'entry_date' => 'nullable|date-format:Y-m-d',
                  'slack_id' => 'nullable|string',
                  'skype_id' => 'nullable|string',
                  'github_id' => 'nullable|string',

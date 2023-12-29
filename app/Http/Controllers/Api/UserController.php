@@ -328,9 +328,9 @@ class UserController extends Controller
     public function update(UserRequest $request, $id)
     {
         if ($request->has('password')){
-          $request->validate(['password' => 'required|min:3|confirmed']);
+          $request->validate(['password' => 'nullable|min:3|confirmed']);
         }
-        $attributes = $request->except(['entry_date', 'paid_off', 'paid_off_start']);
+        $attributes = $request->except(['paid_off', 'paid_off_start']);
 //        $data = $this->repository->update($attributes, $id);
         return $this->repository->update($attributes, $id);
     }
