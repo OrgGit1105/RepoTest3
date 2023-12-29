@@ -638,4 +638,8 @@ export default {
   width: 40%;
   margin-left: 60%;
 }
+
+::v-deep .el-form-item__error {
+  white-space: nowrap;
+}
 </style>
