@@ -32,7 +32,7 @@ class PaidOffWithYearJob implements ShouldQueue
      */
     public function handle()
     {
-        $employees = User::query()->get();
+        $employees = User::query()->whereNotNull('entry_date')->get();
         foreach ($employees as $employee)
         {
             $currentDate = Carbon::now();

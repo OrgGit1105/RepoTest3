@@ -31,7 +31,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *   path="/api/user/list_all",
+     *   path="/api/user_list_all",
      *   tags={"User"},
      *   summary="List all employee",
      *   operationId="all_employee",
