@@ -397,6 +397,7 @@ export default {
             });
             this.getWorkingTime();
           } else {
+            this.openModalAdd = false;
             MakeToast({
               variant: 'danger',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_FAILED'),
@@ -636,5 +637,9 @@ export default {
   border: 1px solid;
   width: 40%;
   margin-left: 60%;
+}
+
+::v-deep .el-form-item__error {
+  white-space: nowrap;
 }
 </style>
