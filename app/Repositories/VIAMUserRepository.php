@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\VIAMUser;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\VIAMUserRepositoryInterface;
+use Aws\Credentials\Credentials;
+use Aws\Iam\IamClient;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Repository\BaseRepository;
@@ -58,19 +60,29 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
     public function create(array $attributes)
     {
-        $policies = array_unique($attributes['policy_id']);
-        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+        $iam = app()->make(IamClient::class);
+        try {
+            $result = $iam->listUsers();
+
+            foreach ($result['Users'] as $user) {
+                echo $user['UserName'] . "\n";
+            }
+        } catch (AwsException $e) {
+            echo $e->getMessage();
         }
-        $model = $this->model->create($attributes);
-        foreach ($policies as $policy) {
-            VIAMUserPolicy::create([
-                VIAMUserPolicy::VIAM_USER_ID => $model->id,
-                VIAMUserPolicy::POLICY_ID => $policy
-            ]);
-        }
-        $model->load('policies');
-        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
+//        $policies = array_unique($attributes['policy_id']);
+//        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
+//            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+//        }
+//        $model = $this->model->create($attributes);
+//        foreach ($policies as $policy) {
+//            VIAMUserPolicy::create([
+//                VIAMUserPolicy::VIAM_USER_ID => $model->id,
+//                VIAMUserPolicy::POLICY_ID => $policy
+//            ]);
+//        }
+//        $model->load('policies');
+//        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function update(array $attributes, $id)

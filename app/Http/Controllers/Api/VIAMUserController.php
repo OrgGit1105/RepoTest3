@@ -112,7 +112,7 @@ class VIAMUserController extends Controller
      *      example={"code":200,"data":{"id": 1,"name": "......"}}
      *     )
      *   ),
-     *   security={},
+     *   security={{"auth": {}}},
      * )
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
