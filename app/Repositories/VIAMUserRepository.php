@@ -14,6 +14,7 @@ use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\VIAMUserRepositoryInterface;
 use Aws\Credentials\Credentials;
 use Aws\Iam\IamClient;
+use Helper\Common;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Repository\BaseRepository;
@@ -60,13 +61,11 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
     public function create(array $attributes)
     {
-        $iam = app()->make(IamClient::class);
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
         try {
-            $result = $iam->listUsers();
-
-            foreach ($result['Users'] as $user) {
-                echo $user['UserName'] . "\n";
-            }
+            $result = $iamClient->listUsers();
+            dd($result);
         } catch (AwsException $e) {
             echo $e->getMessage();
         }
