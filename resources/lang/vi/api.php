@@ -37,7 +37,8 @@ return [
     ],
     'viam_user' => [
         'policy_id' => 'Please select only one V-face policy',
-        'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user'
+        'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user',
+        'name_regex' => 'Tên chỉ được chứa các ký tự chữ và số và/hoặc các ký tự sau: +=,.@_-'
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working'
 ];

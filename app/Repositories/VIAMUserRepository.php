@@ -61,27 +61,35 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
     public function create(array $attributes)
     {
+        $policies = array_unique($attributes['policy_id']);
+        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+        }
+
         $param = Common::configAwsSDK();
         $iamClient = new IamClient($param);
         try {
-            $result = $iamClient->listUsers();
-            dd($result);
+            $iamAWS = $iamClient->listUsers()['Users'];
+            foreach ($iamAWS as $user) {
+                if($attributes['name'] == $user['UserName']) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+                }
+            }
+            $iamClient->createUser([
+                'UserName' => $attributes['name']
+            ]);
+            $model = $this->model->create($attributes);
+            foreach ($policies as $policy) {
+                VIAMUserPolicy::create([
+                    VIAMUserPolicy::VIAM_USER_ID => $model->id,
+                    VIAMUserPolicy::POLICY_ID => $policy
+                ]);
+            }
+            $model->load('policies');
+            return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
         } catch (AwsException $e) {
-            echo $e->getMessage();
+            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
         }
-//        $policies = array_unique($attributes['policy_id']);
-//        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
-//            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
-//        }
-//        $model = $this->model->create($attributes);
-//        foreach ($policies as $policy) {
-//            VIAMUserPolicy::create([
-//                VIAMUserPolicy::VIAM_USER_ID => $model->id,
-//                VIAMUserPolicy::POLICY_ID => $policy
-//            ]);
-//        }
-//        $model->load('policies');
-//        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function update(array $attributes, $id)
@@ -90,16 +98,44 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
         if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
         }
-        $model = parent::update($attributes, $id);
-        VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
-        foreach ($policies as $policy) {
-            VIAMUserPolicy::create([
-                VIAMUserPolicy::VIAM_USER_ID => $id,
-                VIAMUserPolicy::POLICY_ID => $policy
-            ]);
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
+        try {
+            $name = VIAMUser::find($id)->name;
+            if($name != $attributes['name']) {
+                $isAWSUserName = false;
+                $iamAWS = $iamClient->listUsers()['Users'];
+                foreach ($iamAWS as $user) {
+                    if($attributes['name'] == $user['UserName']) {
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+                    }
+
+                    if($name == $user['UserName']) {
+                        $isAWSUserName = true;
+                    }
+                }
+
+                if ($isAWSUserName) {
+                    $iamClient->updateUser([
+                        'UserName' => $name,
+                        'NewUserName' => $attributes['name']
+                    ]);
+                }
+            }
+
+            $model = parent::update($attributes, $id);
+            VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
+            foreach ($policies as $policy) {
+                VIAMUserPolicy::create([
+                    VIAMUserPolicy::VIAM_USER_ID => $id,
+                    VIAMUserPolicy::POLICY_ID => $policy
+                ]);
+            }
+            $model->load('policies');
+            return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
+        } catch (AwsException $e) {
+            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
         }
-        $model->load('policies');
-        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function delete($id)
@@ -109,8 +145,24 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.cannot_delete'));
         }
 
-        VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
-        parent::delete($id);
-        return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
+        try {
+            $name = VIAMUser::find($id)->name;
+            $iamAWS = $iamClient->listUsers()['Users'];
+            foreach ($iamAWS as $user) {
+                if($name == $user['UserName']) {
+                    $iamClient->deleteUser([
+                        'UserName' => $name
+                    ]);
+                    break;
+                }
+            }
+            VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
+            parent::delete($id);
+            return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
+        } catch (AwsException $e) {
+            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
+        }
     }
 }
