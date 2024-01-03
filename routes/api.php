@@ -51,8 +51,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::put('/user/{id}', 'UserController@update');
         Route::delete('/user/{id}', 'UserController@destroy');
         Route::post('/user/import', 'UserController@import');
-        Route::post('/user/create-aws', 'UserController@createUserAws');
-        Route::get('/user_test', 'UserController@test');
 
         Route::get('/role',[RoleController::class, 'index']);
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
