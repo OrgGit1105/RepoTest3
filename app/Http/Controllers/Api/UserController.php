@@ -393,27 +393,4 @@ class UserController extends Controller
     {
 
     }
-
-
-    /**
-     * Automatically create a new IAM User on AWS according to the employee's name existed
-     * @return mixed
-     * @throws \Exception
-     */
-//    public function createUserAws()
-//    {
-//        try {
-//            return $this->repository->createUserAws();
-//        } catch (\Exception $e) {
-//            throw $e;
-//        }
-//    }
-
-    public function test()
-    {
-        $param = Common::configAwsSDK();
-        $iamClient = new IamClient($param);
-
-        dd($iamClient->listUsers()['Users']);
-    }
 }
