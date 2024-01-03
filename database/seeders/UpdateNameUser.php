@@ -43,7 +43,7 @@ class UpdateNameUser extends Seeder
             'Nguyen_Duy_Khanh',
             'Nguyen_Thi_Phuong_Hoa'
         ];
-        $users = User::query()->get();
+        $users = User::query()->where('id', '>=', 27)->get();
         if ($users->count() == 27) {
             foreach ($users as $index => $user) {
                 $user->name = $names[$index];
