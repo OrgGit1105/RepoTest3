@@ -191,5 +191,29 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
     }
 
-    
+    public function createUserAws()
+    {
+        $names = User::query()->pluck('name', 'id')->toArray();
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
+        if (count($names) == 27) {
+            try {
+                $iamAWS = $iamClient->listUsers()['Users'];
+                foreach ($iamAWS as $user) {
+                    if (array_search($user['UserName'], $names)) {
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
+                    }
+                }
+
+                foreach ($names as $index => $name) {
+                    $iamClient->createUser([
+                        'UserName' => $names[$index]
+                    ]);
+                }
+                return ResponseService::responseJson(CODE_SUCCESS, trans('messages.mes.create_success'));
+            } catch (AwsException $e) {
+                return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
+            }
+        }
+    }
 }

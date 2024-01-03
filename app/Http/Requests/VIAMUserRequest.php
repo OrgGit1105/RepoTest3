@@ -42,7 +42,7 @@ class VIAMUserRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return [
-                'name' => 'required|unique:viam_users,name,max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                'name' => 'required|unique:viam_users,name,max:255',
                 'policy_id' => 'required|array',
                 'policy_id.*' => 'required|exists:policies,id',
                 'description' => 'nullable|string'
@@ -50,18 +50,11 @@ class VIAMUserRequest extends FormRequest
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return  [
-                'name' => 'required|unique:viam_users,name,' . $this->route('viam_user'). '|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                'name' => 'required|unique:viam_users,name,' . $this->route('viam_user'). '|max:255',
                 'policy_id' => 'required|array',
                 'policy_id.*' => 'required|exists:policies,id',
                 'description' => 'nullable|string'
             ];
         }
-     }
-
-     public function messages()
-     {
-         return [
-             'name.regex' => trans('api.viam_user.name_regex')
-         ];
      }
 }
