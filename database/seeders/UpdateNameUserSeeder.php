@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class UpdateNameUser extends Seeder
+class UpdateNameUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -43,7 +43,7 @@ class UpdateNameUser extends Seeder
             'Nguyen_Duy_Khanh',
             'Nguyen_Thi_Phuong_Hoa'
         ];
-        $users = User::query()->where('id', '>=', 27)->get();
+        $users = User::query()->where('id', '<=', 27)->get();
         if ($users->count() == 27) {
             foreach ($users as $index => $user) {
                 $user->name = $names[$index];
