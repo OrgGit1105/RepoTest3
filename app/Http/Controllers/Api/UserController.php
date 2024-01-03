@@ -365,9 +365,9 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        return $this->repository->delete($id);
     }
+
   /**
    * @OA\Post(
    *   path="/api/user/import",
@@ -392,4 +392,27 @@ class UserController extends Controller
   {
 
   }
+
+
+    /**
+     * Automatically create a new IAM User on AWS according to the employee's name existed
+     * @return mixed
+     * @throws \Exception
+     */
+//    public function createUserAws()
+//    {
+//        try {
+//            return $this->repository->createUserAws();
+//        } catch (\Exception $e) {
+//            throw $e;
+//        }
+//    }
+
+    public function test()
+    {
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
+
+        dd($iamClient->listUsers()['Users']);
+    }
 }

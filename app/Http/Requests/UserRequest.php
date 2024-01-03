@@ -42,7 +42,7 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
          if (Route::getCurrentRoute()->getActionMethod() == 'update') {
              return [
-                 'name' => 'required',
+                 'name' => 'required|unique:users,name,' . $this->route('id'). '|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
                  'email' => 'required|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',
@@ -52,13 +52,13 @@ class UserRequest extends FormRequest
                  'slack_id' => 'nullable|string',
                  'skype_id' => 'nullable|string',
                  'github_id' => 'nullable|string',
-                 'viam_user_id' => 'required|numeric',
+                 'viam_user_id' => 'required|numeric|exists:viam_users,id',
                  'retirement_date' => 'nullable|date-format:Y-m-d',
              ];
          }
          if (Route::getCurrentRoute()->getActionMethod() == 'store') {
              return [
-                 'name' => 'required',
+                 'name' => 'required|unique:users,name|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
                  'email' => 'required|unique:users,email|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',
@@ -69,7 +69,7 @@ class UserRequest extends FormRequest
                  'slack_id' => 'nullable|string',
                  'skype_id' => 'nullable|string',
                  'github_id' => 'nullable|string',
-                 'viam_user_id' => 'required|numeric',
+                 'viam_user_id' => 'required|numeric|exists:viam_users,id',
                  'password' => 'required|min:3|confirmed',
              ];
          }
@@ -78,7 +78,8 @@ class UserRequest extends FormRequest
     public function messages()
     {
         return [
-            'required' => ':attribute not null'
+            'required' => ':attribute not null',
+            'name.regex' => trans('api.user.name_regex')
         ];
     }
 }
