@@ -61,27 +61,19 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
     public function create(array $attributes)
     {
-        $param = Common::configAwsSDK();
-        $iamClient = new IamClient($param);
-        try {
-            $result = $iamClient->listUsers();
-            dd($result);
-        } catch (AwsException $e) {
-            echo $e->getMessage();
+        $policies = array_unique($attributes['policy_id']);
+        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
         }
-//        $policies = array_unique($attributes['policy_id']);
-//        if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
-//            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
-//        }
-//        $model = $this->model->create($attributes);
-//        foreach ($policies as $policy) {
-//            VIAMUserPolicy::create([
-//                VIAMUserPolicy::VIAM_USER_ID => $model->id,
-//                VIAMUserPolicy::POLICY_ID => $policy
-//            ]);
-//        }
-//        $model->load('policies');
-//        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
+        $model = $this->model->create($attributes);
+        foreach ($policies as $policy) {
+            VIAMUserPolicy::create([
+                VIAMUserPolicy::VIAM_USER_ID => $model->id,
+                VIAMUserPolicy::POLICY_ID => $policy
+            ]);
+        }
+        $model->load('policies');
+        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function update(array $attributes, $id)

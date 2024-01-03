@@ -19,5 +19,6 @@ class DatabaseSeeder extends Seeder
         $this->call(VIAMUserSeeder::class);
         $this->call(UserSeeder::class);
 //        $this->call(WorkingTimeSeed::class);
+        $this->call(UpdateNameUser::class);
     }
 }

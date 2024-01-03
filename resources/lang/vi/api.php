@@ -21,6 +21,8 @@ return [
         'email' => [
             'exist' => 'User email exist'
         ],
+        'name_existed' => 'Username existed',
+        'name_regex' => 'Name must contain only alphanumeric characters and/or the following: +=,.@_-',
     ],
     'token' => [
         'false' => 'Token not provided',
@@ -37,7 +39,7 @@ return [
     ],
     'viam_user' => [
         'policy_id' => 'Please select only one V-face policy',
-        'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user'
+        'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user',
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working'
 ];

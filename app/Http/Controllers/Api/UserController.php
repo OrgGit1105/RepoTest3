@@ -13,13 +13,15 @@ use App\Http\Requests\UserRequest;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Http\Resources\BaseResource;
 use App\Http\Resources\UserResource;
+use Aws\Iam\IamClient;
 use Carbon\Carbon;
+use Helper\Common;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
 
-     /**
+    /**
      * var Repository
      */
     protected $repository;
@@ -110,7 +112,7 @@ class UserController extends Controller
         $data = $this->repository->pagination($request);
         foreach ($data as $item) {
             $item['retired'] = '';
-            if($item->retirement_date && Carbon::parse($item->retirement_date) <= Carbon::now()) {
+            if ($item->retirement_date && Carbon::parse($item->retirement_date) <= Carbon::now()) {
                 $item['retired'] = 'Retired';
             }
         }
@@ -211,9 +213,8 @@ class UserController extends Controller
      */
     public function store(UserRequest $request)
     {
-      try {
-            $data = $this->repository->create($request->all());
-            return $this->responseJson(200, new UserResource($data));
+        try {
+            return $this->repository->create($request->all());
         } catch (\Exception $e) {
             throw $e;
         }
@@ -259,7 +260,7 @@ class UserController extends Controller
     {
         try {
             $data = $this->repository->detail($id);
-            if($data) {
+            if ($data) {
                 return $this->responseJson(200, new BaseResource($data));
             }
             return $this->responseJsonError(CODE_NO_ACCESS, 'user not permission', 'user not permission');
@@ -327,8 +328,8 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, $id)
     {
-        if ($request->has('password')){
-          $request->validate(['password' => 'nullable|min:3|confirmed']);
+        if ($request->has('password')) {
+            $request->validate(['password' => 'nullable|min:3|confirmed']);
         }
         $attributes = $request->except(['paid_off', 'paid_off_start']);
 //        $data = $this->repository->update($attributes, $id);
@@ -365,31 +366,54 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        return $this->repository->delete($id);
     }
-  /**
-   * @OA\Post(
-   *   path="/api/user/import",
-   *   tags={"User"},
-   *   summary="Import ..............",
-   *   operationId="user_import",
-   *   @OA\Response(
-   *     response=200,
-   *     description="Send request success",
-   *     @OA\MediaType(
-   *      mediaType="application/json",
-   *      example={"code":200,"data":"Send request success"}
-   *     )
-   *   ),
-   *   security={{"auth": {}}},
-   * )
-   * @param int $id
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Exception
-   */
-  public function import()
-  {
 
-  }
+    /**
+     * @OA\Post(
+     *   path="/api/user/import",
+     *   tags={"User"},
+     *   summary="Import ..............",
+     *   operationId="user_import",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":"Send request success"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function import()
+    {
+
+    }
+
+
+    /**
+     * Automatically create a new IAM User on AWS according to the employee's name existed
+     * @return mixed
+     * @throws \Exception
+     */
+//    public function createUserAws()
+//    {
+//        try {
+//            return $this->repository->createUserAws();
+//        } catch (\Exception $e) {
+//            throw $e;
+//        }
+//    }
+
+    public function test()
+    {
+        $param = Common::configAwsSDK();
+        $iamClient = new IamClient($param);
+
+        dd($iamClient->listUsers()['Users']);
+    }
 }
