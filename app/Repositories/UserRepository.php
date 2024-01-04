@@ -9,9 +9,7 @@ namespace Repository;
 
 use App\Exports\UserExport;
 use App\Http\Resources\BaseResource;
-use App\Jobs\PaidOffWithMonthJob;
 use App\Models\User;
-use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Aws\Iam\IamClient;
 use Carbon\Carbon;
@@ -102,12 +100,12 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         $nameOld = $user->name;
-        if ($nameOld != $attributes['name']) {
             $param = Common::configAwsSDK();
             $iamClient = new IamClient($param);
+        $iamAws = $iamClient->listUsers()['Users'];
+        if ($nameOld != $attributes['name']) {
             try {
                 $isAwsUserName = false;
-                $iamAws = $iamClient->listUsers()['Users'];
                 foreach ($iamAws as $userAws) {
                     if ($attributes['name'] == $userAws['UserName']) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
@@ -121,6 +119,35 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     $iamClient->updateUser([
                         'UserName' => $nameOld,
                         'NewUserName' => $attributes['name']
+                    ]);
+                }
+            } catch (AwsException $e) {
+                return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
+            }
+        }
+
+        $retirement_date = $user->retirement_date;
+        $retirement_date_update = $attributes['retirement_date'];
+        if ($retirement_date != $retirement_date_update) {
+            try {
+                $isCreateNew = true;
+                $isDelete = false;
+
+                foreach ($iamAws as $userAws) {
+                    if ($attributes['name'] == $userAws['UserName']) {
+                        $isCreateNew = false;
+                        $isDelete = true;
+                    }
+                }
+
+                if(Carbon::now() >= Carbon::parse($retirement_date_update) && $isDelete) {
+                    $iamClient->deleteUser([
+                        'UserName' => $attributes['name']
+                    ]);
+                }
+                if(Carbon::now() < Carbon::parse($retirement_date_update) && $isCreateNew) {
+                    $iamClient->createUser([
+                        'UserName' => $attributes['name']
                     ]);
                 }
             } catch (AwsException $e) {
