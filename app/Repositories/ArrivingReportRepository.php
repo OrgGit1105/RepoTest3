@@ -397,7 +397,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                         'in_time' => $dateOff->format('Y-m-d 08:30:00'),
                         'out_time' => $dateOff->format('Y-m-d 18:00:00'),
                         'type_date' => $type_date,
-                        'remark' => $messages[2],
+                        'remark' => $messages[3],
                         'status' => 1,
                     ];
                     ArrivingReport::create($dataInsert);
