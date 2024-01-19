@@ -38,6 +38,7 @@ class User extends Authenticatable implements JWTSubject
     const SLACK_ID = 'slack_id';
     const SKYPE_ID = 'skype_id';
     const GITHUB_ID = 'github_id';
+    const SSH_PUBLIC_KEY = 'ssh_public_key';
 
     protected $fillable = [
         self::NAME,
@@ -56,6 +57,7 @@ class User extends Authenticatable implements JWTSubject
         self::SLACK_ID,
         self::SKYPE_ID,
         self::GITHUB_ID,
+        self::SSH_PUBLIC_KEY,
         self::CREATED_AT,
         self::UPDATED_AT,
         'jwt_active'

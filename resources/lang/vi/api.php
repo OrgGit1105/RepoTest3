@@ -21,8 +21,9 @@ return [
         'email' => [
             'exist' => 'User email exist'
         ],
-        'name_existed' => 'Username existed',
+        'name_existed' => 'Name existed',
         'name_regex' => 'Name must contain only alphanumeric characters and/or the following: +=,.@_-',
+        'ssh_key' => 'Please enter the ssh public key value'
     ],
     'token' => [
         'false' => 'Token not provided',
@@ -38,8 +39,14 @@ return [
         'out_time_exist' => 'This out time data already exists',
     ],
     'viam_user' => [
-        'policy_id' => 'Please select only one V-face policy',
+        'policy_id' => 'Policies are overlapping. Please select again',
         'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user',
+    ],
+    'policy' => [
+        'name_existed' => 'Policy name existed',
+        'instance_id' => 'The instance id field is required with types are AWS',
+        'project_do_not_existed' => 'The project name does not exist',
+        'policy_existed' => 'On the same server, only one deploy policy and one admin policy can be created for each project'
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working'
 ];

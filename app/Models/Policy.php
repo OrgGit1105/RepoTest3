@@ -15,8 +15,12 @@ class Policy extends Model
 
     const NAME = 'name';
     const TYPE = 'type';
+    const INSTANCE_ID = 'instance_id';
+    const POLICY_ARN = 'policy_arn';
+    const PROJECT_NAME = 'project_name';
+
     protected $fillable = [
-        self::NAME, self::TYPE
+        self::NAME, self::TYPE, self::INSTANCE_ID, self::POLICY_ARN, self::PROJECT_NAME
     ];
 
     protected $casts = [
@@ -26,6 +30,6 @@ class Policy extends Model
 
     public function viam_users()
     {
-        return $this->belongsToMany(VIAMUser::class, 'viam_user_policy', 'viam_user_id', 'policy_id');
+        return $this->belongsToMany(VIAMUser::class, 'viam_user_policy','policy_id', 'viam_user_id', );
     }
 }

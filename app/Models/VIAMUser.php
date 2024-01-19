@@ -27,4 +27,9 @@ class VIAMUser extends Model
     {
         return $this->belongsToMany(Policy::class, 'viam_user_policy', 'viam_user_id', 'policy_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'viam_user_id', 'id');
+    }
 }
