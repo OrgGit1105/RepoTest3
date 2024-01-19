@@ -13,7 +13,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class AutoDeleteIamUserJob implements ShouldQueue
+class AutoDeleteEc2UserJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -34,20 +34,10 @@ class AutoDeleteIamUserJob implements ShouldQueue
      */
     public function handle()
     {
-        $names = User::query()
-            ->whereDate(User::RETIREMENT_DATE, Carbon::now()->format('Y-m-d'))
-            ->pluck('name', 'id')
-            ->toArray();
-
-        $param = Common::configAwsSDK();
-        $iamClient = new IamClient($param);
-        $iamAws = $iamClient->listUsers()['Users'];
-
-        foreach ($iamAws as $user) {
-            if(array_search($user['UserName'], $names) && config('app.env') == 'production') {
-                $iamClient->deleteUser([
-                    'UserName' => $user['UserName']
-                ]);
+        if (config('app.env') == 'production') {
+            $users = User::query()->whereDate(User::RETIREMENT_DATE, Carbon::now()->format('Y-m-d'))->get();
+            foreach ($users as $user) {
+                Common::deleteUserEc2($user);
             }
         }
     }

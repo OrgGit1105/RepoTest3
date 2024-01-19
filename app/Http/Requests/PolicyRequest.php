@@ -42,14 +42,18 @@ class PolicyRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-                'name' => 'required|unique:policies,name,' . $this->route('policy'). '|max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:policies,name,' . $this->route('policy'). ',id,deleted_at,NULL|max:255',
+                'type' => 'required|in:' . implode(',', POLICY_TYPE),
+                'instance_id' => 'string|required_if:type,' . POLICY_TYPE['AWS_admin'] . ',' . POLICY_TYPE['AWS_deploy'],
+                'project_name' => 'string|required_if:type,' . POLICY_TYPE['AWS_admin'] . ',' . POLICY_TYPE['AWS_deploy'],
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
-                'name' => 'required|unique:policies,name,max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:policies,name,NULL,id,deleted_at,NULL|max:255',
+                'type' => 'required|in:' . implode(',', POLICY_TYPE),
+                'instance_id' => 'string|required_if:type,' . POLICY_TYPE['AWS_admin'] . ',' . POLICY_TYPE['AWS_deploy'],
+                'project_name' => 'string|required_if:type,' . POLICY_TYPE['AWS_admin'] . ',' . POLICY_TYPE['AWS_deploy'],
             ];
         }
      }
@@ -57,7 +61,8 @@ class PolicyRequest extends FormRequest
     public function messages()
     {
         return [
-            'required' => ':attribute not null'
+            'required' => ':attribute not null',
+            'instance_id.required_if' => trans('api.policy.instance_id')
         ];
     }
 }

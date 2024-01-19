@@ -97,7 +97,15 @@ class PolicyController extends Controller
      *                property="type",
      *                type = "integer",
      *                enum = {1,2,3},
-     *                description="1:V_FACE,2:AWS,3:Google"
+     *                description="1:V_FACE,2:AWS Admin, 3:AWS Deploy, 4:Google"
+     *            ),
+     *            @OA\Property(
+     *                property="instance_id",
+     *                type = "string",
+     *            ),
+     *            @OA\Property(
+     *                property="project_name",
+     *                type = "string",
      *            ),
      *         ),
      *       ),
@@ -118,8 +126,7 @@ class PolicyController extends Controller
     public function store(PolicyRequest $request)
     {
         try {
-            $data = $this->repository->create($request->all());
-            return $this->responseJson(CODE_SUCCESS, new EmotionResource($data));
+            return $this->repository->create($request->all());
         } catch (\Exception $e) {
             throw $e;
         }
@@ -229,16 +236,7 @@ class PolicyController extends Controller
      */
     public function update(PolicyRequest $request, $id)
     {
-        try {
-            $data = $this->repository->update($request->all(), $id);
-            if(!$data) {
-                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.update_fail'));
-            }
-            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
-        } catch (Exception $exception) {
-            return $exception;
-        }
-
+        return $this->repository->update($request->except(['policy_arn']), $id);
     }
 
     /**
@@ -271,16 +269,6 @@ class PolicyController extends Controller
      */
     public function destroy($id)
     {
-        try {
-            $data = $this->repository->delete($id);
-            if(!$data) {
-                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.delete_fail'));
-            }
-            return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));;
-        } catch (Exception $exception) {
-            return $exception;
-        }
-        $this->repository->delete($id);
-        return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
+        return $this->repository->delete($id);
     }
 }
