@@ -73,7 +73,7 @@ class UserRequest extends FormRequest
                  'github_id' => 'nullable|string',
                  'viam_user_id' => 'required|numeric|exists:viam_users,id',
                  'ssh_public_key' => ['nullable', new SshKeyRule()],
-                 'password' => 'required|min:3|confirmed',
+                 'password' => 'required|min:4|confirmed',
              ];
          }
      }

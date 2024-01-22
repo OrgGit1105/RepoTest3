@@ -11,13 +11,11 @@ use App\Exports\UserExport;
 use App\Http\Resources\BaseResource;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
-use Aws\Iam\IamClient;
+use Aws\Ssm\SsmClient;
 use Carbon\Carbon;
 use Helper\Common;
 use Helper\ResponseService;
-use Illuminate\Database\Eloquent\JsonEncodingException;
 use Illuminate\Http\Response;
-use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 
@@ -65,31 +63,21 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function create(array $attributes)
     {
-        $param = Common::configAwsSDK();
-        $iamClient = new IamClient($param);
-        try {
-            $iamAWS = $iamClient->listUsers()['Users'];
-            foreach ($iamAWS as $user) {
-                if ($attributes['name'] == $user['UserName']) {
-                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
-                }
-            }
-            $iamClient->createUser([
-                'UserName' => $attributes['name']
-            ]);
-
-            if (!isset($attributes['entry_date']) || empty($attributes['entry_date'])) {
-                $attributes['entry_date'] = null;
-            }
-            $attributes['paid_off'] = 0;
-            $attributes['created_at'] = Carbon::now();
-            $attributes['password'] = bcrypt($attributes['password']);
-            $model = $this->model->create($attributes);
-
-            return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
-        } catch (AwsException $e) {
-            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
+        $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id']);
+        if($crateUser->original['code'] != CODE_SUCCESS) {
+            return $crateUser;
         }
+
+        if (!isset($attributes['entry_date']) || empty($attributes['entry_date'])) {
+            $attributes['entry_date'] = null;
+        }
+        $attributes['paid_off'] = 0;
+        $attributes['paid_off_start'] = $attributes['paid_off_start'] ?? 0;
+        $attributes['created_at'] = Carbon::now();
+        $attributes['password'] = bcrypt($attributes['password']);
+        $model = $this->model->create($attributes);
+
+        return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function update(array $attributes, $id)
@@ -99,66 +87,41 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.not.found'), trans('api.user.not.found'));
         }
 
-        $nameOld = $user->name;
-            $param = Common::configAwsSDK();
-            $iamClient = new IamClient($param);
-        $iamAws = $iamClient->listUsers()['Users'];
-        if ($nameOld != $attributes['name']) {
-            try {
-                $isAwsUserName = false;
-                foreach ($iamAws as $userAws) {
-                    if ($attributes['name'] == $userAws['UserName']) {
-                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
-                    }
-                    if ($nameOld == $userAws['UserName']) {
-                        $isAwsUserName = true;
-                    }
-                }
-
-                if ($isAwsUserName) {
-                    $iamClient->updateUser([
-                        'UserName' => $nameOld,
-                        'NewUserName' => $attributes['name']
-                    ]);
-                }
-            } catch (AwsException $e) {
-                return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
-            }
-        }
-
-        $retirement_date = $user->retirement_date;
-        $retirement_date_update = $attributes['retirement_date'];
-        if ($retirement_date != $retirement_date_update) {
-            try {
-                $isCreateNew = true;
-                $isDelete = false;
-
-                foreach ($iamAws as $userAws) {
-                    if ($attributes['name'] == $userAws['UserName']) {
-                        $isCreateNew = false;
-                        $isDelete = true;
-                    }
-                }
-
-                if(Carbon::now() >= Carbon::parse($retirement_date_update) && $isDelete) {
-                    $iamClient->deleteUser([
-                        'UserName' => $attributes['name']
-                    ]);
-                }
-                if(Carbon::now() < Carbon::parse($retirement_date_update) && $isCreateNew) {
-                    $iamClient->createUser([
-                        'UserName' => $attributes['name']
-                    ]);
-                }
-            } catch (AwsException $e) {
-                return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
-            }
-        }
-
         if ($user->email != $attributes['email']) {
             $userCheckEmail = $this->model->where('email', $attributes['email'])->first();
             if ($userCheckEmail) {
                 return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.user.email.exist'), trans('api.user.email.exist'));
+            }
+        }
+
+        $oldName = $user->name;
+        $oldRetirementDate = Carbon::parse($user->retirement_date)->format('Y-m-d');
+        $oldViamUserId = $user->viam_user_id;
+        $updateName = $attributes['name'];
+        $updateRetirementDate = $attributes['retirement_date'];
+        $updateViamUserId = $attributes['viam_user_id'];
+        $publicKey = @$attributes['ssh_public_key'];
+
+        if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName) || ($oldViamUserId != $updateViamUserId)) {
+            if(($user->retirement_date != $attributes['retirement_date']) && (Carbon::now() >= Carbon::parse($updateRetirementDate))) {
+                $delete = Common::deleteUserEc2($user);
+                if($delete->original['code'] != CODE_SUCCESS) {
+                    return $delete;
+                }
+            } else {
+                $delete = Common::deleteUserEc2($user);
+                if($delete->original['code'] != CODE_SUCCESS) {
+                    return $delete;
+                }
+
+                $crateUser = Common::createUserEc2($updateName, $publicKey, $updateViamUserId);
+                if($crateUser->original['code'] != CODE_SUCCESS) {
+                    return $crateUser;
+                }
+            }
+        } else {
+            if($user->ssh_public_key != $publicKey) {
+                $this->updateSshKey($user, $publicKey);
             }
         }
 
@@ -168,8 +131,36 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         } else {
             unset($attributes['password'], $attributes['password_confirmation']);
         }
-
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource(parent::update($attributes, $id)));
+    }
+
+    public function updateSshKey(User $user, $publicKey)
+    {
+        $param = Common::configAwsSDK();
+        $ssmClient = new SsmClient($param);
+        $policies = $user->viam_user->policies;
+        $username = $user->name;
+        $instanceIds = [];
+
+        foreach ($policies as $policy) {
+            if($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
+                if(empty($publicKey)) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
+                }
+                $instanceIds[] = $policy->instance_id;
+            }
+        }
+        $instanceIds = array_unique($instanceIds);
+        foreach ($instanceIds as $instanceId) {
+            $parameters = [
+                'InstanceIds' => [$instanceId],
+                'DocumentName' => 'AWS-RunShellScript',
+                'Parameters' => [
+                    'commands' => ["echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"]
+                ]
+            ];
+            $ssmClient->sendCommand($parameters);
+        }
     }
 
     public function getAll()
@@ -198,18 +189,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.not.found'));
         }
 
-        $param = Common::configAwsSDK();
-        $iamClient = new IamClient($param);
         try {
-            $name = $user->name;
-            $iamAWS = $iamClient->listUsers()['Users'];
-            foreach ($iamAWS as $user) {
-                if($name == $user['UserName']) {
-                    $iamClient->deleteUser([
-                        'UserName' => $name
-                    ]);
-                    break;
-                }
+            $delete = Common::deleteUserEc2($user);
+            if($delete->original['code'] != CODE_SUCCESS) {
+                return $delete;
             }
             parent::delete($id);
             return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
