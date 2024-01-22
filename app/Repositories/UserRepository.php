@@ -120,8 +120,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 }
             }
         } else {
-            if($user->ssh_public_key != $publicKey) {
-                $this->updateSshKey($user, $publicKey);
+            if(!$this->updateSshKey($user, $publicKey)) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
             }
         }
 
@@ -134,33 +134,36 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource(parent::update($attributes, $id)));
     }
 
-    public function updateSshKey(User $user, $publicKey)
+    private function updateSshKey(User $user, $publicKey)
     {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
-        $policies = $user->viam_user->policies;
-        $username = $user->name;
-        $instanceIds = [];
+        if($user->ssh_public_key != $publicKey) {
+            $param = Common::configAwsSDK();
+            $ssmClient = new SsmClient($param);
+            $policies = $user->viam_user->policies;
+            $username = $user->name;
+            $instanceIds = [];
 
-        foreach ($policies as $policy) {
-            if($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
-                if(empty($publicKey)) {
-                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
+            foreach ($policies as $policy) {
+                if ($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
+                    if (empty($publicKey)) {
+                        return false;
+                    }
+                    $instanceIds[] = $policy->instance_id;
                 }
-                $instanceIds[] = $policy->instance_id;
+            }
+            $instanceIds = array_unique($instanceIds);
+            foreach ($instanceIds as $instanceId) {
+                $parameters = [
+                    'InstanceIds' => [$instanceId],
+                    'DocumentName' => 'AWS-RunShellScript',
+                    'Parameters' => [
+                        'commands' => ["echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"]
+                    ]
+                ];
+                $ssmClient->sendCommand($parameters);
             }
         }
-        $instanceIds = array_unique($instanceIds);
-        foreach ($instanceIds as $instanceId) {
-            $parameters = [
-                'InstanceIds' => [$instanceId],
-                'DocumentName' => 'AWS-RunShellScript',
-                'Parameters' => [
-                    'commands' => ["echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"]
-                ]
-            ];
-            $ssmClient->sendCommand($parameters);
-        }
+        return true;
     }
 
     public function getAll()

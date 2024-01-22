@@ -63,7 +63,7 @@ class CreatePolicyUserJob implements ShouldQueue
                 }
             }
             $commands = [];
-            $userNotExists = self::checkUserExist($ssmClient, $parameters, $this->instanceId, $names);
+            $userNotExists = Common::checkUserExist($ssmClient, $parameters, $this->instanceId, $names);
             if (!empty($userNotExist)) {
                 foreach ($userNotExists as $userNotExist) {
                     $commands[] = "sudo adduser $userNotExist";
