@@ -47,55 +47,20 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         return $this->model->get();
     }
 
-    private function checkProjectExist($instanceId, $projectName)
-    {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
-
-        $parameters = [
-            'InstanceIds' => [$instanceId],
-            'DocumentName' => 'AWS-RunShellScript',
-            'Parameters' => [
-                'commands' => ["cd /var/www && ls"],
-            ],
-        ];
-        $response = $ssmClient->sendCommand($parameters);
-        $commandId = $response['Command']['CommandId'];
-
-        $waitTime = 1;
-        $maxAttempts = 10;
-        $attempts = 0;
-
-        do {
-            $output = $ssmClient->getCommandInvocation([
-                'CommandId' => $commandId,
-                'InstanceId' => $instanceId,
-            ]);
-            $status = $output['Status'];
-            if($status == 'Success') {
-                $projects = explode("\n", $output['StandardOutputContent']);
-                if(array_search($projectName, $projects)) {
-                    return true;
-                }
-            }
-            sleep($waitTime);
-            $attempts++;
-        } while ($status != 'Success' && $attempts <= $maxAttempts);
-        return false;
-    }
-
     public function create(array $attributes)
     {
         try {
             if($attributes['type'] == POLICY_TYPE['EC2_admin'] || $attributes['type'] == POLICY_TYPE['EC2_deploy']) {
+                $projectName = $attributes['project_name'];
                 $instanceId = $attributes['instance_id'];
-                if(!$this->checkProjectExist($instanceId, $attributes['project_name'])) {
+                $projects = $this->getListProject($instanceId);
+                if(!array_search($projectName, $projects)) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                 }
 
                 $isExisted = Policy::query()->where(Policy::TYPE, $attributes['type'])
-                    ->where(Policy::PROJECT_NAME, $attributes['project_name'])
-                    ->where(Policy::INSTANCE_ID, $attributes['instance_id'])
+                    ->where(Policy::PROJECT_NAME, $projectName)
+                    ->where(Policy::INSTANCE_ID, $instanceId)
                     ->exists();
                 if($isExisted) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
@@ -131,7 +96,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $projectNew = @$attributes['project_name'];
 
             if(in_array($policyTypeNew, $typeAws)) {
-                if(!$this->checkProjectExist($instanceNew, $projectNew)) {
+                $projects = $this->getListProject($instanceNew);
+                if(!array_search($projectNew, $projects)) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                 }
 
@@ -180,7 +146,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript',
             'Parameters' => [
-                'commands' => ["cd /var/www && ls -d */ | sed 's#/##'"],
+                'commands' => ["cd /var/www && ls -d */"],
             ],
         ];
         $response = $ssmClient->sendCommand($parameters);
@@ -190,20 +156,21 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $maxAttempts = 10;
         $attempts = 0;
         $projects = [];
-
         do {
+            sleep($waitTime);
             $output = $ssmClient->getCommandInvocation([
                 'CommandId' => $commandId,
                 'InstanceId' => $instanceId,
             ]);
             $status = $output['Status'];
             if($status == 'Success') {
-                $projects = explode("\n", $output['StandardOutputContent']);
+                $outputs = explode("/\n", $output['StandardOutputContent']);
+                $projects = array_filter($outputs, function ($value) {
+                    return $value !== "" && $value !== "conf.d";
+                });
             }
-            sleep($waitTime);
             $attempts++;
         } while ($status != 'Success' && $attempts <= $maxAttempts);
-        dd($projects);
         return $projects;
     }
 }
