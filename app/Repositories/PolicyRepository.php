@@ -85,11 +85,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     public function create(array $attributes)
     {
-//        $param = Common::configAwsSDK();
-//        $iamClient = new IamClient($param);
-
         try {
-            if($attributes['type'] == POLICY_TYPE['AWS_admin'] || $attributes['type'] == POLICY_TYPE['AWS_deploy']) {
+            if($attributes['type'] == POLICY_TYPE['EC2_admin'] || $attributes['type'] == POLICY_TYPE['EC2_deploy']) {
                 $instanceId = $attributes['instance_id'];
                 if(!$this->checkProjectExist($instanceId, $attributes['project_name'])) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
@@ -103,82 +100,12 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
                 }
             }
-
-//            $iamAWS = $iamClient->listPolicies()['Policies'];
-//            if ($this->isPolicyNameExisted($attributes['name'], $iamAWS)) {
-//                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.name_existed'));
-//            }
-//
-//            $policyDocument = $this->generatePolicyDocument($attributes, $param);
-//
-//            $result = $iamClient->createPolicy([
-//                'PolicyName' => $attributes['name'],
-//                'PolicyDocument' => json_encode($policyDocument),
-//            ]);
-//
-//            $attributes[Policy::POLICY_ARN] = $result['Policy']['Arn'];
             $model = $this->model->create($attributes);
             return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
         } catch (AwsException $e) {
             return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
         }
         return parent::create($attributes);
-    }
-
-    private function isPolicyNameExisted($name, $policies)
-    {
-        foreach ($policies as $policy) {
-            if ($name == $policy['PolicyName']) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function generatePolicyDocument($attributes, $param)
-    {
-        if (!empty($attributes['instance_id'])) {
-            if ($attributes['type'] == POLICY_TYPE['AWS_admin']) {
-                return [
-                    'Version' => '2012-10-17',
-                    'Statement' => [
-                        [
-                            "Effect" => "Allow",
-                            "Action" => "ec2:*",
-                            "Resource" => "*"
-                        ]
-                    ]
-                ];
-            }
-            if ($attributes['type'] == POLICY_TYPE['AWS_deploy']) {
-                return [
-                    'Version' => '2012-10-17',
-                    'Statement' => [
-                        [
-                            "Effect" => 'Allow',
-                            "Action" => [
-                                'ec2:RunInstances',
-                                'ec2:DescribeInstances',
-                            ],
-                            "Resource" => ['arn:aws:ec2:' . $param['region'] . ':*:instance/' . $attributes['instance_id']]
-                        ]
-                    ]
-                ];
-            }
-        }
-
-        return [
-            'Version' => '2012-10-17',
-            'Statement' => [
-                [
-                    "Action" => [
-                        "s3:Get*",
-                        "s3:List*"
-                    ],
-                    "Resource" => "arn:aws:s3:::*"
-                ]
-            ]
-        ];
     }
 
     public function update(array $attributes, $id)
@@ -192,7 +119,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        $typeAws = [POLICY_TYPE['AWS_admin'], POLICY_TYPE['AWS_deploy']];
+        $typeAws = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
         $policyTypeOld = $policy->type;
         $policyTypeNew = $attributes['type'];
 
@@ -228,29 +155,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 }
             }
         }
-
-        try {
-//            $param = Common::configAwsSDK();
-//            $iamClient = new IamClient($param);
-//            $iamAWS = $iamClient->listPolicies()['Policies'];
-//
-//            if($policy->name != $attributes['name']) {
-//                if ($this->isPolicyNameExisted($attributes['name'], $iamAWS)) {
-//                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.name_existed'));
-//                }
-//            }
-//
-//            $policyDocument = $this->generatePolicyDocument($attributes, $param);
-//            $iamClient->createPolicyVersion([
-//                'PolicyArn' => $policy->policy_arn,
-//                'PolicyDocument' => json_encode($policyDocument),
-//                'SetAsDefault' => true,
-//            ]);
-
-            return parent::update($attributes, $id); // TODO: Change the autogenerated stub
-        } catch (AwsException $e) {
-            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
-        }
+        return parent::update($attributes, $id); // TODO: Change the autogenerated stub
     }
 
     public function delete($id)
@@ -261,25 +166,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
         $policy = Policy::query()->find($id);
         Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
-        $param = Common::configAwsSDK();
-//        $iamClient = new IamClient($param);
-
-        try {
-//            $policyArn = $this->model->find($id)->policy_arn;
-//            $iamAWS = $iamClient->listPolicies()['Policies'];
-//            foreach ($iamAWS as $policy) {
-//                if($policyArn == $policy['Arn']) {
-//                    $iamClient->deletePolicyAsync([
-//                        'PolicyArn' => $policyArn,
-//                    ]);
-//                    break;
-//                }
-//            }
-            VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
-            parent::delete($id);
-            return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
-        } catch (AwsException $e) {
-            return ResponseService::responseJson(CODE_ERROR_SERVER, $e->getMessage());
-        }
+        VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
+        parent::delete($id);
+        return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }
 }

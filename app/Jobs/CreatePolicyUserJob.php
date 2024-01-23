@@ -41,7 +41,7 @@ class CreatePolicyUserJob implements ShouldQueue
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
 
-        if($this->type == POLICY_TYPE['AWS_admin'] || $this->type == POLICY_TYPE['AWS_deploy']) {
+        if($this->type == POLICY_TYPE['EC2_admin'] || $this->type == POLICY_TYPE['EC2_deploy']) {
             $parameters = [
                 'InstanceIds' => [$this->instanceId],
                 'DocumentName' => 'AWS-RunShellScript'
@@ -54,7 +54,7 @@ class CreatePolicyUserJob implements ShouldQueue
                     $username = $user->name;
                     $names[] = $username;
                     $sshKey[$username] = $user->ssh_public_key;
-                    if ($this->type == POLICY_TYPE['AWS_admin']) {
+                    if ($this->type == POLICY_TYPE['EC2_admin']) {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$this->project/*' >> /etc/sudoers";
                     } else {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$this->project/*' >> /etc/sudoers";

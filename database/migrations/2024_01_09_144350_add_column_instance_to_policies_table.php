@@ -15,8 +15,7 @@ class AddColumnInstanceToPoliciesTable extends Migration
     {
         Schema::table('policies', function (Blueprint $table) {
             $table->string('instance_id')->nullable()->after('type');
-            $table->string('policy_arn')->nullable()->after('instance_id');
-            $table->string('project_name')->nullable()->after('policy_arn');
+            $table->string('project_name')->nullable()->after('instance_id');
         });
     }
 
@@ -29,7 +28,6 @@ class AddColumnInstanceToPoliciesTable extends Migration
     {
         Schema::table('policies', function (Blueprint $table) {
             $table->dropColumn('instance_id');
-            $table->dropColumn('policy_arn');
             $table->dropColumn('project_name');
         });
     }

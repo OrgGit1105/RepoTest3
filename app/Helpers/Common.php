@@ -94,7 +94,7 @@ class Common
             $policies = VIAMUser::query()->find($viam_user_id)->policies;
             $instanceData = [];
             foreach ($policies as $policy) {
-                if ($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
+                if ($policy->type == POLICY_TYPE['EC2_admin'] || $policy->type == POLICY_TYPE['EC2_deploy']) {
                     if (empty($publicKey)) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
                     }
@@ -134,7 +134,7 @@ class Common
 
                 foreach ($instance as $item) {
                     $project = $item['project_name'];
-                    if ($item['type'] == POLICY_TYPE['AWS_admin']) {
+                    if ($item['type'] == POLICY_TYPE['EC2_admin']) {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$project/*' >> /etc/sudoers";
                     } else {
                         $command [] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$project/*' >> /etc/sudoers";
@@ -161,7 +161,7 @@ class Common
             $instanceIds = [];
             $username = $user->name;
             foreach ($policies as $policy) {
-                if ($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
+                if ($policy->type == POLICY_TYPE['EC2_admin'] || $policy->type == POLICY_TYPE['EC2_deploy']) {
                     $instanceIds[] = $policy->instance_id;
                 }
             }
@@ -195,13 +195,13 @@ class Common
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
 
-        if($type == POLICY_TYPE['AWS_admin'] || $type == POLICY_TYPE['AWS_deploy']) {
+        if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
             $parameters = [
                 'InstanceIds' => [$instanceId],
                 'DocumentName' => 'AWS-RunShellScript'
             ];
             $command = [];
-            if ($type == POLICY_TYPE['AWS_admin']) {
+            if ($type == POLICY_TYPE['EC2_admin']) {
                 $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$project/*/d' /etc/sudoers";
             } else {
                 $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$project/*/d' /etc/sudoers";

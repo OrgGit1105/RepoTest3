@@ -96,16 +96,18 @@ class PolicyController extends Controller
      *            @OA\Property(
      *                property="type",
      *                type = "integer",
-     *                enum = {1,2,3},
-     *                description="1:V_FACE,2:AWS Admin, 3:AWS Deploy, 4:Google"
+     *                enum = {1,2,3,4,5},
+     *                description="1:V_FACE, 2:AWS, 3:EC2_admin, 4:EC2_deploy, 5:Git"
      *            ),
      *            @OA\Property(
      *                property="instance_id",
      *                type = "string",
+     *                description="required with type is EC2",
      *            ),
      *            @OA\Property(
      *                property="project_name",
      *                type = "string",
+     *                description="required with type is EC2",
      *            ),
      *         ),
      *       ),
@@ -206,8 +208,18 @@ class PolicyController extends Controller
      *            @OA\Property(
      *                property="type",
      *                type = "integer",
-     *                enum = {1,2,3},
-     *                description="1:V_FACE,2:AWS,3:Google"
+     *                enum = {1,2,3,4,5},
+     *                description="1:V_FACE, 2:AWS, 3:EC2_admin, 4:EC2_deploy, 5:Git"
+     *            ),
+     *            @OA\Property(
+     *                property="instance_id",
+     *                type = "string",
+     *                description="required with type is EC2",
+     *            ),
+     *            @OA\Property(
+     *                property="project_name",
+     *                type = "string",
+     *                description="required with type is EC2",
      *            ),
      *         ),
      *       ),

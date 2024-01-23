@@ -144,7 +144,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $instanceIds = [];
 
             foreach ($policies as $policy) {
-                if ($policy->type == POLICY_TYPE['AWS_admin'] || $policy->type == POLICY_TYPE['AWS_deploy']) {
+                if ($policy->type == POLICY_TYPE['EC2_admin'] || $policy->type == POLICY_TYPE['EC2_deploy']) {
                     if (empty($publicKey)) {
                         return false;
                     }

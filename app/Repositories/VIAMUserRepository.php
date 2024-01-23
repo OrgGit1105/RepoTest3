@@ -68,7 +68,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
         $isSame = Policy::whereIn('id', $policies)
             ->select('project_name', 'instance_id', DB::raw('COUNT(*) as count'))
-            ->whereIn('type', [POLICY_TYPE['AWS_admin'], POLICY_TYPE['AWS_deploy']])
+            ->whereIn('type', [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])
             ->groupBy('project_name', 'instance_id')
             ->having('count', '>', 1)
             ->exists();
