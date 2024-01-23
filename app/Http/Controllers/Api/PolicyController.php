@@ -283,4 +283,50 @@ class PolicyController extends Controller
     {
         return $this->repository->delete($id);
     }
+
+    /**
+     * @OA\Get(
+     *   path="/api/policy/project_name",
+     *   tags={"Policy"},
+     *   summary="List project in EC2",
+     *   operationId="policy_project",
+     *   @OA\Parameter(
+     *     name="instance_id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{"id": 1,"name":"......"}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProject(PolicyRequest $request)
+    {
+        try {
+            $data = $this->repository->getListProject($request->input('instance_id'));
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

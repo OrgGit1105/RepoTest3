@@ -34,6 +34,8 @@ class PolicyRequest extends FormRequest
                     return $this->getCustomRule();
                 case 'store':
                     return $this->getCustomRule();
+                case 'getProject':
+                    return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -56,6 +58,11 @@ class PolicyRequest extends FormRequest
                 'project_name' => 'string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
             ];
         }
+        if(Route::getCurrentRoute()->getActionMethod() == 'getProject'){
+             return  [
+                 'instance_id' => 'string|required',
+             ];
+         }
      }
 
     public function messages()

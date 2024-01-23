@@ -12,6 +12,7 @@ use App\Jobs\CreatePolicyUserJob;
 use App\Models\Policy;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
+use Aws\Ec2\Ec2Client;
 use Aws\Iam\IamClient;
 use Aws\Ssm\SsmClient;
 use Carbon\Carbon;
@@ -169,5 +170,40 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);
         return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
+    }
+
+    public function getListProject($instanceId)
+    {
+        $param = Common::configAwsSDK();
+        $ssmClient = new SsmClient($param);
+        $parameters = [
+            'InstanceIds' => [$instanceId],
+            'DocumentName' => 'AWS-RunShellScript',
+            'Parameters' => [
+                'commands' => ["cd /var/www && ls -d */ | sed 's#/##'"],
+            ],
+        ];
+        $response = $ssmClient->sendCommand($parameters);
+        $commandId = $response['Command']['CommandId'];
+
+        $waitTime = 1;
+        $maxAttempts = 10;
+        $attempts = 0;
+        $projects = [];
+
+        do {
+            $output = $ssmClient->getCommandInvocation([
+                'CommandId' => $commandId,
+                'InstanceId' => $instanceId,
+            ]);
+            $status = $output['Status'];
+            if($status == 'Success') {
+                $projects = explode("\n", $output['StandardOutputContent']);
+            }
+            sleep($waitTime);
+            $attempts++;
+        } while ($status != 'Success' && $attempts <= $maxAttempts);
+        dd($projects);
+        return $projects;
     }
 }
