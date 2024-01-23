@@ -224,7 +224,7 @@ class ArrivingReportController extends Controller
     }
 
     /**
-     * @OA\PUT(
+     * @OA\Put(
      *   path="/api/arriving_report/{id}",
      *   tags={"ArrivingReport"},
      *   summary="Update ArrivingReport",
