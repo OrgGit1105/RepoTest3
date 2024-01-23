@@ -17,7 +17,9 @@ define('IMAGE', 'upload/image');
 const POLICY_TYPE = [
     "V_FACE" => 1,
     "AWS" => 2,
-    "Google" => 3
+    "EC2_admin" => 3,
+    "EC2_deploy" => 4,
+    "Git" => 5
 ];
 
 const POLICY_V_FACE_NAME = [

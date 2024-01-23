@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Jobs\AutoDeleteIamUserJob;
+use App\Jobs\AutoDeleteEc2UserJob;
 use App\Jobs\PaidOffWithMonthJob;
 use App\Jobs\PaidOffWithYearJob;
 use Illuminate\Console\Scheduling\Schedule;
@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->job(new PaidOffWithMonthJob())->monthlyOn(1, '00:00');
         $schedule->job(new PaidOffWithYearJob())->yearlyOn(1, 1, '00:00');
-        $schedule->job(new AutoDeleteIamUserJob())->dailyAt('00:00');
+        $schedule->job(new AutoDeleteEc2UserJob())->dailyAt('00:00');
     }
 
     /**

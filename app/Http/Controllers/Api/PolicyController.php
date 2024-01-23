@@ -96,8 +96,18 @@ class PolicyController extends Controller
      *            @OA\Property(
      *                property="type",
      *                type = "integer",
-     *                enum = {1,2,3},
-     *                description="1:V_FACE,2:AWS,3:Google"
+     *                enum = {1,2,3,4,5},
+     *                description="1:V_FACE, 2:AWS, 3:EC2_admin, 4:EC2_deploy, 5:Git"
+     *            ),
+     *            @OA\Property(
+     *                property="instance_id",
+     *                type = "string",
+     *                description="required with type is EC2",
+     *            ),
+     *            @OA\Property(
+     *                property="project_name",
+     *                type = "string",
+     *                description="required with type is EC2",
      *            ),
      *         ),
      *       ),
@@ -118,8 +128,7 @@ class PolicyController extends Controller
     public function store(PolicyRequest $request)
     {
         try {
-            $data = $this->repository->create($request->all());
-            return $this->responseJson(CODE_SUCCESS, new EmotionResource($data));
+            return $this->repository->create($request->all());
         } catch (\Exception $e) {
             throw $e;
         }
@@ -199,8 +208,18 @@ class PolicyController extends Controller
      *            @OA\Property(
      *                property="type",
      *                type = "integer",
-     *                enum = {1,2,3},
-     *                description="1:V_FACE,2:AWS,3:Google"
+     *                enum = {1,2,3,4,5},
+     *                description="1:V_FACE, 2:AWS, 3:EC2_admin, 4:EC2_deploy, 5:Git"
+     *            ),
+     *            @OA\Property(
+     *                property="instance_id",
+     *                type = "string",
+     *                description="required with type is EC2",
+     *            ),
+     *            @OA\Property(
+     *                property="project_name",
+     *                type = "string",
+     *                description="required with type is EC2",
      *            ),
      *         ),
      *       ),
@@ -229,16 +248,7 @@ class PolicyController extends Controller
      */
     public function update(PolicyRequest $request, $id)
     {
-        try {
-            $data = $this->repository->update($request->all(), $id);
-            if(!$data) {
-                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.update_fail'));
-            }
-            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
-        } catch (Exception $exception) {
-            return $exception;
-        }
-
+        return $this->repository->update($request->except(['policy_arn']), $id);
     }
 
     /**
@@ -271,16 +281,52 @@ class PolicyController extends Controller
      */
     public function destroy($id)
     {
+        return $this->repository->delete($id);
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/policy/project_name",
+     *   tags={"Policy"},
+     *   summary="List project in EC2",
+     *   operationId="policy_project",
+     *   @OA\Parameter(
+     *     name="instance_id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{"id": 1,"name":"......"}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProject(PolicyRequest $request)
+    {
         try {
-            $data = $this->repository->delete($id);
-            if(!$data) {
-                return $this->responseJsonError(CODE_ERROR_SERVER, trans('messages.mes.delete_fail'));
-            }
-            return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));;
-        } catch (Exception $exception) {
-            return $exception;
+            $data = $this->repository->getListProject($request->input('instance_id'));
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
+        } catch (\Exception $e) {
+            throw $e;
         }
-        $this->repository->delete($id);
-        return $this->responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }
 }

@@ -129,7 +129,7 @@ class UserController extends Controller
      *       @OA\MediaType(
      *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"name", "email","viam_user_id","password","password_confirmation"},
+     *            required={"name", "email","viam_user_id", "password","password_confirmation"},
      *            @OA\Property(
      *              property="name",
      *              format="string",
@@ -181,6 +181,10 @@ class UserController extends Controller
      *            @OA\Property(
      *              property="viam_user_id",
      *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="ssh_public_key",
+     *              format="string",
      *            ),
      *            @OA\Property(
      *              property="status",
@@ -286,7 +290,7 @@ class UserController extends Controller
      *   @OA\RequestBody(
      *       @OA\MediaType(
      *          mediaType="application/json",
-     *          example={"name":"string", "email": "string", "viam_user_id": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
+     *          example={"name":"string", "email": "string", "viam_user_id": "string", "ssh_public_key": "string", "password": "string", "password_confirmation": "string","retirement_date": "string"},
      *          @OA\Schema(
      *            required={"name", "email","viam_user_id","password","password_confirmation"},
      *            @OA\Property(
@@ -300,6 +304,10 @@ class UserController extends Controller
      *            @OA\Property(
      *              property="viam_user_id",
      *              format="integer",
+     *            ),
+     *            @OA\Property(
+     *              property="ssh_public_key",
+     *              format="string",
      *            ),
      *            @OA\Property(
      *              property="password",
@@ -329,10 +337,9 @@ class UserController extends Controller
     public function update(UserRequest $request, $id)
     {
         if ($request->has('password')) {
-            $request->validate(['password' => 'nullable|min:3|confirmed']);
+            $request->validate(['password' => 'nullable|min:4|confirmed']);
         }
         $attributes = $request->except(['paid_off', 'paid_off_start']);
-//        $data = $this->repository->update($attributes, $id);
         return $this->repository->update($attributes, $id);
     }
 

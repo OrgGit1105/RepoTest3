@@ -42,9 +42,9 @@ class VIAMUserRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return [
-                'name' => 'required|unique:viam_users,name,max:255',
+                'name' => 'required|unique:viam_users,name|max:255',
                 'policy_id' => 'required|array',
-                'policy_id.*' => 'required|exists:policies,id',
+                'policy_id.*' => 'required|exists:policies,id,deleted_at,NULL',
                 'description' => 'nullable|string'
             ];
         }
@@ -52,7 +52,7 @@ class VIAMUserRequest extends FormRequest
             return  [
                 'name' => 'required|unique:viam_users,name,' . $this->route('viam_user'). '|max:255',
                 'policy_id' => 'required|array',
-                'policy_id.*' => 'required|exists:policies,id',
+                'policy_id.*' => 'required|exists:policies,id,deleted_at,NULL',
                 'description' => 'nullable|string'
             ];
         }

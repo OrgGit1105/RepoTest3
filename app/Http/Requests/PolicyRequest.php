@@ -34,6 +34,8 @@ class PolicyRequest extends FormRequest
                     return $this->getCustomRule();
                 case 'store':
                     return $this->getCustomRule();
+                case 'getProject':
+                    return $this->getCustomRule();
                 default:
                     return [];
           }
@@ -42,22 +44,32 @@ class PolicyRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-                'name' => 'required|unique:policies,name,' . $this->route('policy'). '|max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:policies,name,' . $this->route('policy'). ',id,deleted_at,NULL|max:255',
+                'type' => 'required|in:' . implode(',', POLICY_TYPE),
+                'instance_id' => 'string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
+                'project_name' => 'string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
-                'name' => 'required|unique:policies,name,max:255',
-                'type' => 'required|in:' . implode(',', POLICY_TYPE)
+                'name' => 'required|unique:policies,name,NULL,id,deleted_at,NULL|max:255',
+                'type' => 'required|in:' . implode(',', POLICY_TYPE),
+                'instance_id' => 'string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
+                'project_name' => 'string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
             ];
         }
+        if(Route::getCurrentRoute()->getActionMethod() == 'getProject'){
+             return  [
+                 'instance_id' => 'string|required',
+             ];
+         }
      }
 
     public function messages()
     {
         return [
-            'required' => ':attribute not null'
+            'required' => ':attribute not null',
+            'instance_id.required_if' => trans('api.policy.instance_id')
         ];
     }
 }

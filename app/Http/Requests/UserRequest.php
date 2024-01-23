@@ -7,6 +7,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SshKeyRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -42,7 +43,7 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
          if (Route::getCurrentRoute()->getActionMethod() == 'update') {
              return [
-                 'name' => 'required|unique:users,name,' . $this->route('id'). '|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                 'name' => 'required|unique:users,name,' . $this->route('id'). ',id,deleted_at,NULL|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
                  'email' => 'required|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',
@@ -53,13 +54,14 @@ class UserRequest extends FormRequest
                  'skype_id' => 'nullable|string',
                  'github_id' => 'nullable|string',
                  'viam_user_id' => 'required|numeric|exists:viam_users,id',
+                 'ssh_public_key' => ['nullable', new SshKeyRule()],
                  'retirement_date' => 'nullable|date-format:Y-m-d',
              ];
          }
          if (Route::getCurrentRoute()->getActionMethod() == 'store') {
              return [
-                 'name' => 'required|unique:users,name|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
-                 'email' => 'required|unique:users,email|email',
+                 'name' => 'required|unique:users,name,NULL,id,deleted_at,NULL|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                 'email' => 'required|unique:users,email,NULL,id,deleted_at,NULL|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',
                  'address' => 'nullable|string',
@@ -70,7 +72,8 @@ class UserRequest extends FormRequest
                  'skype_id' => 'nullable|string',
                  'github_id' => 'nullable|string',
                  'viam_user_id' => 'required|numeric|exists:viam_users,id',
-                 'password' => 'required|min:3|confirmed',
+                 'ssh_public_key' => ['nullable', new SshKeyRule()],
+                 'password' => 'required|min:4|confirmed',
              ];
          }
      }

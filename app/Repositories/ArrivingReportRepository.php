@@ -319,12 +319,12 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $messages = explode(',', str_replace(', ', ',', $input['text']));
 
         $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
-        $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
-        $dateOff = Carbon::parse($messages['1']);
-
         if (!$user) {
             return __('analytic.no_user');
         }
+
+        $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
+        $dateOff = Carbon::parse($messages['1']);
 
         if (count($messages) != 3 && count($messages) != 4) {
             return __('analytic.err_format');
