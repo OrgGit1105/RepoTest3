@@ -146,7 +146,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript',
             'Parameters' => [
-                'commands' => ["cd /var/www && ls -d */"],
+                'commands' => ["mkdir -p /var/www && cd /var/www && ls -d */"],
             ],
         ];
         $response = $ssmClient->sendCommand($parameters);
