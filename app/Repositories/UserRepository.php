@@ -63,6 +63,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function create(array $attributes)
     {
+        if($attributes['name'] == 'ec2-user') {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
+        }
         $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id']);
         if($crateUser->original['code'] != CODE_SUCCESS) {
             return $crateUser;

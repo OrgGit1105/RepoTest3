@@ -115,12 +115,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
         $removePolicies = array_diff($oldPolicies, $policies);
         foreach ($removePolicies as $removePolicy) {
             $policy = Policy::query()->find($removePolicy);
-            Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
-        }
-
-        foreach ($addPolicies as $addPolicy) {
-            $policy = Policy::query()->find($addPolicy);
-            CreatePolicyUserJob::dispatch($id, $policy->type, $policy->instance_id, $policy->project_name);
+            Common::deletePolicyUser($removePolicy, $policy->instance_id, $policy->project_name);
         }
 
         $model = parent::update($attributes, $id);
@@ -131,12 +126,23 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                 VIAMUserPolicy::POLICY_ID => $policy
             ]);
         }
+
+        foreach ($addPolicies as $addPolicy) {
+            $policy = Policy::query()->find($addPolicy);
+            CreatePolicyUserJob::dispatch($addPolicy, $policy->type, $policy->instance_id, $policy->project_name);
+        }
+
         $model->load('policies');
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }
 
     public function delete($id)
     {
+        $viamUser = $this->model->find($id);
+        if($viamUser == null) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
+        }
+
         $user = User::where(User::VIAM_USER_ID, $id)->count();
         if($user > 0) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.cannot_delete'));

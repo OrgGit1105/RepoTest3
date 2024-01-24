@@ -69,7 +69,8 @@ class PolicyRequest extends FormRequest
     {
         return [
             'required' => ':attribute not null',
-            'instance_id.required_if' => trans('api.policy.instance_id')
+            'instance_id.required_if' => trans('api.policy.instance_id'),
+            'project_name.required_if' => trans('api.policy.project_name')
         ];
     }
 }

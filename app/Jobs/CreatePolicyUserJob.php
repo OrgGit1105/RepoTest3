@@ -61,6 +61,7 @@ class CreatePolicyUserJob implements ShouldQueue
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$this->project/*' >> /etc/sudoers";
                     }
                 }
+                $command[] = "echo '' >> /etc/sudoers";
             }
             $commands = [];
             $userNotExists = Common::checkUserExist($ssmClient, $parameters, $this->instanceId, $names);
