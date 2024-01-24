@@ -54,7 +54,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 $projectName = $attributes['project_name'];
                 $instanceId = $attributes['instance_id'];
                 $projects = $this->getListProject($instanceId);
-                if(!array_search($projectName, $projects)) {
+                if(array_search($projectName, $projects) === false) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                 }
 
@@ -97,7 +97,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
             if(in_array($policyTypeNew, $typeAws)) {
                 $projects = $this->getListProject($instanceNew);
-                if(!array_search($projectNew, $projects)) {
+                if(array_search($projectNew, $projects) === false) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                 }
 
@@ -127,11 +127,15 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     public function delete($id)
     {
+        $policy = $this->model->find($id);
+        if($policy == null) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
+        }
+
         if(in_array($id, POLICY_V_FACE_ID)) {
             return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_fail'));
         }
 
-        $policy = Policy::query()->find($id);
         Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);

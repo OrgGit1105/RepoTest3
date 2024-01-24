@@ -72,6 +72,7 @@ class Common
         $attempts = 0;
 
         do {
+            sleep($waitTime);
             $output = $ssmClient->getCommandInvocation([
                 'CommandId' => $commandId,
                 'InstanceId' => $instanceId,
@@ -81,7 +82,6 @@ class Common
                 $names = explode("\n", $output['StandardOutputContent']);
                 return array_diff($username, $names); //return [] if user existed
             }
-            sleep($waitTime);
             $attempts++;
         } while ($status != 'Success' && $attempts <= $maxAttempts);
     }
@@ -202,10 +202,10 @@ class Common
             ];
             $command = [];
             if ($type == POLICY_TYPE['EC2_admin']) {
-                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$project/*/d' /etc/sudoers";
+                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
             } else {
-                $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$project/*/d' /etc/sudoers";
-                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$project/*/d' /etc/sudoers";
+                $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
+                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
             }
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);

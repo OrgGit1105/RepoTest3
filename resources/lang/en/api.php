@@ -21,7 +21,7 @@ return [
         'email' => [
             'exist' => 'User email exist'
         ],
-        'name_existed' => 'Name existed',
+        'name_existed' => 'User existed',
         'name_regex' => 'Name must contain only alphanumeric characters and/or the following: +=,.@_-',
         'ssh_key' => 'Please enter the ssh public key value'
     ],
@@ -44,9 +44,10 @@ return [
     ],
     'policy' => [
         'name_existed' => 'Policy name existed',
-        'instance_id' => 'The instance id field is required with types are AWS',
+        'instance_id' => 'The instance id field is required with types are EC2',
+        'project_name' => 'The project name field is required with types are EC2',
         'project_do_not_existed' => 'The project name does not exist',
-        'policy_existed' => 'On the same server, only one deploy policy and one admin policy can be created for each project'
+        'policy_existed' => 'On the same EC2 instance, only one deploy policy and one admin policy can be created for each project'
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working'
 ];
