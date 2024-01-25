@@ -102,8 +102,8 @@
                   <div class="text-error">
                     {{ errors[0] }}
                   </div>
-                  <div v-if="mesage_istance_err" class="text-error">
-                    instance_id does not exist
+                  <div v-if="form.instance_id && mesage_istance_err" class="text-error">
+                    Instance does not exist
                   </div>
                 </div>
               </ValidationProvider>
@@ -207,9 +207,21 @@ export default {
     currChange() {
       this.getListAllUser();
     },
+    'form.type'(newType) {
+      if (newType !== 3 && newType !== 4) {
+        this.form.instance_id = null;
+        this.form.project_name = null;
+      }
+    },
   },
   created() {
     this.getListAllUser();
+  },
+  mounted() {
+    if (this.form.instance_id) {
+      // Gọi hàm blurInput ngay khi component được mounted và instance_id đã có giá trị
+      this.blurInput();
+    }
   },
   methods: {
     openLoading() {
