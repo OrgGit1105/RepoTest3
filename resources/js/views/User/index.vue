@@ -195,6 +195,8 @@
             <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
             <label for="githubIdEmployee" class="mt-3">Github Id</label>
             <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
+            <label for="githubIdEmployee" class="mt-3">Ssh Public</label>
+            <el-input id="githubIdEmployee" v-model="formCreate.ssh_public_key" />
             <ValidationProvider
               v-slot="{ errors }"
               name="paid_off"
@@ -680,6 +682,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        ssh_public_key: '',
         paid_off: '',
         password: '',
         password_confirmation: '',

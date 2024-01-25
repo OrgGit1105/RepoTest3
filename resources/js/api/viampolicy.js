@@ -7,6 +7,7 @@ const urlAPI = {
   urlGETOneUser: template`/policy/${'id'}`,
   urlPUTOneUser: template`/policy/${'id'}`,
   urlDELETEOneUser: template`/policy/${'id'}`,
+  urlGETOneIstance: template`/policy/project_name`,
 };
 
 export function getAllUser(url) {
@@ -22,7 +23,12 @@ export function getAllPolicy(url) {
 //     }
 //     return request.getRequest(urlAPI.urlGETUser(), params);
 //   }
-
+export function getIstance(params) {
+  if (params.url) {
+    return request.getRequest(params.url, params);
+  }
+  return request.getRequest(urlAPI.urlGETOneIstance(), params);
+}
 export function postOneUser(data) {
   return request.postRequest(urlAPI.urlPOSTOneUser(), data);
 }
