@@ -66,9 +66,12 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         if($attributes['name'] == 'ec2-user') {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.name_existed'));
         }
-        $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id']);
-        if($crateUser->original['code'] != CODE_SUCCESS) {
-            return $crateUser;
+
+        if(config('app.env') === ENVIRONMENT_UPDATE) {
+            $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id']);
+            if ($crateUser->original['code'] != CODE_SUCCESS) {
+                return $crateUser;
+            }
         }
 
         if (!isset($attributes['entry_date']) || empty($attributes['entry_date'])) {
@@ -105,26 +108,28 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $updateViamUserId = $attributes['viam_user_id'];
         $publicKey = @$attributes['ssh_public_key'];
 
-        if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName) || ($oldViamUserId != $updateViamUserId)) {
-            if(($user->retirement_date != $attributes['retirement_date']) && (Carbon::now() >= Carbon::parse($updateRetirementDate))) {
-                $delete = Common::deleteUserEc2($user);
-                if($delete->original['code'] != CODE_SUCCESS) {
-                    return $delete;
+        if(config('app.env') === ENVIRONMENT_UPDATE) {
+            if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName) || ($oldViamUserId != $updateViamUserId)) {
+                if(($user->retirement_date != $attributes['retirement_date']) && (Carbon::now() >= Carbon::parse($updateRetirementDate))) {
+                    $delete = Common::deleteUserEc2($user);
+                    if($delete->original['code'] != CODE_SUCCESS) {
+                        return $delete;
+                    }
+                } else {
+                    $delete = Common::deleteUserEc2($user);
+                    if($delete->original['code'] != CODE_SUCCESS) {
+                        return $delete;
+                    }
+
+                    $crateUser = Common::createUserEc2($updateName, $publicKey, $updateViamUserId);
+                    if($crateUser->original['code'] != CODE_SUCCESS) {
+                        return $crateUser;
+                    }
                 }
             } else {
-                $delete = Common::deleteUserEc2($user);
-                if($delete->original['code'] != CODE_SUCCESS) {
-                    return $delete;
+                if(!$this->updateSshKey($user, $publicKey)) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
                 }
-
-                $crateUser = Common::createUserEc2($updateName, $publicKey, $updateViamUserId);
-                if($crateUser->original['code'] != CODE_SUCCESS) {
-                    return $crateUser;
-                }
-            }
-        } else {
-            if(!$this->updateSshKey($user, $publicKey)) {
-                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
             }
         }
 
@@ -196,9 +201,11 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         try {
-            $delete = Common::deleteUserEc2($user);
-            if($delete->original['code'] != CODE_SUCCESS) {
-                return $delete;
+            if(config('app.env') === ENVIRONMENT_UPDATE) {
+                $delete = Common::deleteUserEc2($user);
+                if ($delete->original['code'] != CODE_SUCCESS) {
+                    return $delete;
+                }
             }
             parent::delete($id);
             return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));

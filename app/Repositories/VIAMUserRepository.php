@@ -110,28 +110,38 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             return $check;
         }
 
-        $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
-        $addPolicies = array_diff($policies, $oldPolicies);
-        $removePolicies = array_diff($oldPolicies, $policies);
-        foreach ($removePolicies as $removePolicy) {
-            $policy = Policy::query()->find($removePolicy);
-            Common::deletePolicyUser($removePolicy, $policy->instance_id, $policy->project_name);
-        }
+        if (config('app.env')) {
+            $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
+            $addPolicies = array_diff($policies, $oldPolicies);
+            $removePolicies = array_diff($oldPolicies, $policies);
+            foreach ($removePolicies as $removePolicy) {
+                $policy = Policy::query()->find($removePolicy);
+                Common::deletePolicyUser($removePolicy, $policy->instance_id, $policy->project_name);
+            }
 
-        $model = parent::update($attributes, $id);
-        VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
-        foreach ($policies as $policy) {
-            VIAMUserPolicy::create([
-                VIAMUserPolicy::VIAM_USER_ID => $id,
-                VIAMUserPolicy::POLICY_ID => $policy
-            ]);
-        }
+            $model = parent::update($attributes, $id);
+            VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
+            foreach ($policies as $policy) {
+                VIAMUserPolicy::create([
+                    VIAMUserPolicy::VIAM_USER_ID => $id,
+                    VIAMUserPolicy::POLICY_ID => $policy
+                ]);
+            }
 
-        foreach ($addPolicies as $addPolicy) {
-            $policy = Policy::query()->find($addPolicy);
-            CreatePolicyUserJob::dispatch($addPolicy, $policy->type, $policy->instance_id, $policy->project_name);
+            foreach ($addPolicies as $addPolicy) {
+                $policy = Policy::query()->find($addPolicy);
+                CreatePolicyUserJob::dispatch($addPolicy, $policy->type, $policy->instance_id, $policy->project_name);
+            }
+        } else {
+            $model = parent::update($attributes, $id);
+            VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
+            foreach ($policies as $policy) {
+                VIAMUserPolicy::create([
+                    VIAMUserPolicy::VIAM_USER_ID => $id,
+                    VIAMUserPolicy::POLICY_ID => $policy
+                ]);
+            }
         }
-
         $model->load('policies');
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
     }

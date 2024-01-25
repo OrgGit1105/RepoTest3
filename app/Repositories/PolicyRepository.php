@@ -12,8 +12,6 @@ use App\Jobs\CreatePolicyUserJob;
 use App\Models\Policy;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
-use Aws\Ec2\Ec2Client;
-use Aws\Iam\IamClient;
 use Aws\Ssm\SsmClient;
 use Carbon\Carbon;
 use Helper\Common;
@@ -111,7 +109,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 }
             }
 
-            if(($projectNew != $projectOld) || ($policyTypeNew != $policyTypeOld) || ($instanceOld != $instanceNew)) {
+            if(config('app.env') === ENVIRONMENT_UPDATE && ($projectNew != $projectOld || $policyTypeNew != $policyTypeOld || $instanceOld != $instanceNew)) {
                 if(in_array($policyTypeOld, $typeAws) && !in_array($policyTypeNew, $typeAws)) { //AWS => other
                     Common::deletePolicyUser($id, $instanceOld, $projectOld);
                 } elseif (!in_array($policyTypeOld, $typeAws) && in_array($policyTypeNew, $typeAws)) { // other => AWS
@@ -135,8 +133,9 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         if(in_array($id, POLICY_V_FACE_ID)) {
             return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_fail'));
         }
-
-        Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
+        if(config('app.env') === ENVIRONMENT_UPDATE) {
+            Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
+        }
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);
         return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
