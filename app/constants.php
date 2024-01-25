@@ -38,3 +38,5 @@ const TYPE_DATE = [
     3 => 'Take off',
     4 => 'Special day off'
 ];
+
+const ENVIRONMENT_UPDATE = 'local';
