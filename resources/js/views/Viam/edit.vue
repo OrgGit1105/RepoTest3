@@ -88,7 +88,7 @@
                         </div>
                       </ValidationProvider>
                     </div>
-                    <div v-if="formEdit.type === 3 || formEdit.type === 4 || checkInstance">
+                    <div v-if="formEdit.project_name || checkInstance">
                       <ValidationProvider
                         v-slot="{ errors }"
                         name="Project Name"
@@ -188,18 +188,24 @@ export default {
   watch: {
     companyBranch() {
     },
-    // 'formEdit.instance_id'(newValue) {
-    //   if (newValue) {
-    //     // Gọi hàm API ở đây
-    //     this.callYourApiFunction(newValue);
-    //   }
-    // },
+    'formEdit.type'(newType) {
+      if (newType !== 3 && newType !== 4) {
+        this.formEdit.instance_id = null;
+        this.formEdit.project_name = null;
+      }
+    },
   },
   created() {
     this.getUserInfo();
     console.log('aaaa', this.formEdit.project_name);
   },
-
+  // mounted() {
+  //   this.getUserInfo().then(() => {
+  //     if (this.formEdit.instance_id) {
+  //       this.blurInput();
+  //     }
+  //   });
+  // },
   methods: {
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
