@@ -168,8 +168,18 @@
                       </b-input-group>
                     </div>
                   </div>
-                  <div class="employee-edit" style="justify-content: start">
-                    <div style="flex: 1">
+                  <div class="employee-edit">
+                    <div class="header-employee-edit">
+                      <p class="header-employee-edit fw-5">Ssh Public</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="paid_off"
+                          v-model="formEdit.ssh_public_key"
+                          class="p-1"
+                        />
+                      </b-input-group>
+                    </div>
+                    <div class="header-employee-edit">
                       <p class="header-employee-edit fw-5">Paid Off</p>
                       <b-input-group>
                         <b-form-input
@@ -558,6 +568,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        ssh_public_key: '',
         paid_off: '',
         password: '',
         password_confirmation: '',
@@ -649,6 +660,7 @@ export default {
           slack_id: response.data.slack_id,
           skype_id: response.data.skype_id,
           github_id: response.data.github_id,
+          ssh_public_key: response.data.ssh_public_key,
           paid_off: response.data.paid_off_start,
           password: '',
           password_confirmation: '',

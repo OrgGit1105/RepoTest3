@@ -70,6 +70,46 @@
                         </div>
                       </ValidationProvider>
                     </div>
+                    <div v-if="formEdit.type === 3 || formEdit.type === 4">
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="Instance"
+                        rules="required"
+                      >
+                        <p class="header-employee-edit-name fw-5">Instance</p>
+                        <div class="header-employee-edit">
+                          <el-input id="instance_id" v-model="formEdit.instance_id" @focus="focusInput" @blur="blurInput" />
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                          <div v-if="mesage_istance_err" class="text-error">
+                            instance_id does not exist
+                          </div>
+                        </div>
+                      </ValidationProvider>
+                    </div>
+                    <div v-if="formEdit.type === 3 || formEdit.type === 4 || checkInstance">
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="Project Name"
+                        rules="required"
+                      >
+                        <p class="header-employee-edit-name fw-5">Project Name</p>
+                        <div class="header-employee-edit">
+                          <el-select id="typeEmployee" v-model="formEdit.project_name" placeholder="Please select Type">
+                            <el-option
+                              v-for="item in OptionName"
+                              :key="item.id"
+                              :label="item.name"
+                              :value="item.id"
+                            />
+                          </el-select>
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                        </div>
+                      </ValidationProvider>
+                    </div>
                   </div>
                 </div>
               </h4>
@@ -116,11 +156,15 @@ export default {
       formEdit: {
         name: '',
         type: '',
+        instance_id: null,
+        project_name: null,
       },
       listType: [
-        { id: 1, name: 'V-Face' },
+        { id: 1, name: 'V-FACE' },
         { id: 2, name: 'AWS' },
-        { id: 3, name: 'Google' },
+        { id: 3, name: 'EC2-ADMIN' },
+        { id: 4, name: 'EC2-DEPLOY' },
+        { id: 5, name: 'GITHUB' },
       ],
       id: this.$route.params.id,
       userInfo: {},
@@ -128,6 +172,9 @@ export default {
       withoutMask: true,
       withMask: false,
       showModalDelete: false,
+      checkInstance: false,
+      OptionName: [],
+      mesage_istance_err: false,
     };
   },
   computed: {
@@ -141,9 +188,16 @@ export default {
   watch: {
     companyBranch() {
     },
+    // 'formEdit.instance_id'(newValue) {
+    //   if (newValue) {
+    //     // Gọi hàm API ở đây
+    //     this.callYourApiFunction(newValue);
+    //   }
+    // },
   },
   created() {
     this.getUserInfo();
+    console.log('aaaa', this.formEdit.project_name);
   },
 
   methods: {
@@ -153,14 +207,48 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
+    focusInput(){
+      this.checkInstance = true;
+    },
+    async blurInput(){
+      if (this.formEdit.instance_id){
+        const OPTION = [];
+        const PARAMS = {
+          instance_id: this.formEdit.instance_id,
+        };
+        const { code, data } = await UserApi.getIstance(PARAMS);
+        if (code === 200){
+          console.log('data istance', data);
+          this.mesage_istance_err = false;
+          this.OptionName = [];
+          if (data){
+            data.map(item => {
+              console.log('item', item);
+              OPTION.push({
+                id: item,
+                name: item,
+              });
+            });
+            this.OptionName.push(...OPTION);
+          }
+          this.checkInstance = true;
+        } else {
+          this.mesage_istance_err = false;
+          this.OptionName = [];
+        }
+      }
+      console.log('first', this.formEdit.instance_id);
+    },
     async getUserInfo() {
       this.openLoading();
       await UserApi.getOneUser(this.id)
         .then((response) => {
-          // console.log('response', response);
+          console.log('response edit', response);
           this.formEdit = {
             name: response.data.name,
             type: response.data.type,
+            instance_id: response.data.instance_id,
+            project_name: response.data.project_name,
           };
           this.closeLoading();
         })
@@ -177,8 +265,10 @@ export default {
       e.preventDefault();
       const isValid = await this.$refs.obsEditEmployee.validate();
       if (isValid === true) {
+        console.log('dddd', this.formEdit);
         await UserApi.putOneUser(this.id, this.formEdit)
           .then(async(response) => {
+            console.log('first response', response);
             if (response.code === 200) {
               // this.closeLoading();
               MakeToast({
@@ -186,7 +276,7 @@ export default {
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
                 content: 'Edit policy success',
               });
-              await this.$router.push('/viam/index');
+              this.$router.push('/viam/index');
             } else {
               // this.closeLoading();
               MakeToast({

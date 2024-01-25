@@ -90,6 +90,46 @@
                 </div>
               </div>
             </ValidationProvider>
+            <div v-if="form.type === 3 || form.type === 4">
+              <ValidationProvider
+                v-slot="{ errors }"
+                name="Instance"
+                rules="required"
+              >
+                <label class="mt-3">Instance Id</label>
+                <div class="header-employee-edit">
+                  <el-input id="instance_id" v-model="form.instance_id" @focus="focusInput" @blur="blurInput" />
+                  <div class="text-error">
+                    {{ errors[0] }}
+                  </div>
+                  <div v-if="mesage_istance_err" class="text-error">
+                    instance_id does not exist
+                  </div>
+                </div>
+              </ValidationProvider>
+            </div>
+            <div v-if="checkInstance && form.type === 3 || form.type === 4">
+              <ValidationProvider
+                v-slot="{ errors }"
+                name="Project Name"
+                rules="required"
+              >
+                <label class="mt-3">Project Name</label>
+                <div class="header-employee-edit">
+                  <el-select id="project_name" v-model="form.project_name" placeholder="Please select Type">
+                    <el-option
+                      v-for="item in OptionName"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id"
+                    />
+                  </el-select>
+                  <div class="text-error">
+                    {{ errors[0] }}
+                  </div>
+                </div>
+              </ValidationProvider>
+            </div>
           </ValidationObserver>
           <span slot="footer" class="dialog-footer mt-3">
             <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
@@ -108,7 +148,7 @@
 </template>
 
 <script>
-import { deleteOneUser, getAllUser, postOneUser } from '../../api/viampolicy';
+import { deleteOneUser, getAllUser, postOneUser, getIstance } from '../../api/viampolicy';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
@@ -135,11 +175,15 @@ export default {
       form: {
         name: '',
         type: '',
+        instance_id: null,
+        project_name: null,
       },
       listType: [
-        { id: 1, name: 'V-Face' },
+        { id: 1, name: 'V-FACE' },
         { id: 2, name: 'AWS' },
-        { id: 3, name: 'Google' },
+        { id: 3, name: 'EC2-ADMIN' },
+        { id: 4, name: 'EC2-DEPLOY' },
+        { id: 5, name: 'GITHUB' },
       ],
       selectedWithMaskFiles: [],
       selectedWithoutMaskFiles: [],
@@ -149,7 +193,9 @@ export default {
       messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
-
+      checkInstance: false,
+      OptionName: [],
+      mesage_istance_err: false,
     };
   },
   computed: {
@@ -171,6 +217,38 @@ export default {
     },
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
+    },
+    focusInput(){
+      this.checkInstance = true;
+    },
+    async blurInput(){
+      if (this.form.instance_id){
+        const OPTION = [];
+        const PARAMS = {
+          instance_id: this.form.instance_id,
+        };
+        const { code, data } = await getIstance(PARAMS);
+        if (code === 200){
+          console.log('data istance', data);
+          this.mesage_istance_err = false;
+          this.OptionName = [];
+          if (data){
+            data.map(item => {
+              console.log('item', item);
+              OPTION.push({
+                id: item,
+                name: item,
+              });
+            });
+            this.OptionName.push(...OPTION);
+          }
+          this.checkInstance = true;
+        } else {
+          this.mesage_istance_err = true;
+          this.OptionName = [];
+        }
+      }
+      console.log('first', this.form.instance_id);
     },
     async getListAllUser() {
       const url = `/policy`;
@@ -219,6 +297,8 @@ export default {
       this.form = {
         name: '',
         type: '',
+        instance_id: '',
+        project_name: '',
       };
       this.openModalAdd = false;
     },
@@ -251,6 +331,8 @@ export default {
             this.form = {
               name: '',
               type: '',
+              instance_id: '',
+              project_name: '',
             };
             this.waitCreate = false;
             this.openModalAdd = false;
