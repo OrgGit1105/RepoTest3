@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Policy;
+use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
 use Helper\Common;
 use Illuminate\Bus\Queueable;
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class CreatePolicyUserJob implements ShouldQueue
+class CreatePolicyViamUserJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -22,9 +22,9 @@ class CreatePolicyUserJob implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($policyId, $type, $instanceId, $project)
+    public function __construct($viamUserId, $type, $instanceId, $project)
     {
-        $this->id = $policyId;
+        $this->id = $viamUserId;
         $this->type = $type;
         $this->instanceId = $instanceId;
         $this->project = $project;
@@ -37,7 +37,7 @@ class CreatePolicyUserJob implements ShouldQueue
      */
     public function handle()
     {
-        $policy = Policy::query()->find($this->id);
+        $viamUser = VIAMUser::query()->find($this->id);
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
 
@@ -49,20 +49,18 @@ class CreatePolicyUserJob implements ShouldQueue
             $command = [];
             $names = [];
             $sshKey = [];
-            foreach ($policy->viam_users as $viam) {
-                foreach ($viam->users as $user) {
-                    $username = $user->name;
-                    $names[] = $username;
-                    $sshKey[$username] = $user->ssh_public_key;
-                    if ($this->type == POLICY_TYPE['EC2_admin']) {
-                        $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$this->project/*' >> /etc/sudoers";
-                    } else {
-                        $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$this->project/*' >> /etc/sudoers";
-                        $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$this->project/*' >> /etc/sudoers";
-                    }
+            foreach ($viamUser->users as $user) {
+                $username = $user->name;
+                $names[] = $username;
+                $sshKey[$username] = $user->ssh_public_key;
+                if ($this->type == POLICY_TYPE['EC2_admin']) {
+                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$this->project/*' >> /etc/sudoers";
+                } else {
+                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$this->project/*' >> /etc/sudoers";
+                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$this->project/*' >> /etc/sudoers";
                 }
-                $command[] = "echo '' >> /etc/sudoers";
             }
+            $command[] = "echo '' >> /etc/sudoers";
             $commands = [];
             $userNotExists = Common::checkUserExist($ssmClient, $parameters, $this->instanceId, $names);
             if (!empty($userNotExist)) {

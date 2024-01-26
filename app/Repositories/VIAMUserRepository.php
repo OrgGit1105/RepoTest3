@@ -8,7 +8,7 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Jobs\CreatePolicyUserJob;
+use App\Jobs\CreatePolicyViamUserJob;
 use App\Models\Policy;
 use App\Models\User;
 use App\Models\VIAMUser;
@@ -116,7 +116,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             $removePolicies = array_diff($oldPolicies, $policies);
             foreach ($removePolicies as $removePolicy) {
                 $policy = Policy::query()->find($removePolicy);
-                Common::deletePolicyUser($removePolicy, $policy->instance_id, $policy->project_name);
+                Common::deletePolicyViamUser($id, $policy->type, $policy->instance_id, $policy->project_name);
             }
 
             $model = parent::update($attributes, $id);
@@ -130,7 +130,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
 
             foreach ($addPolicies as $addPolicy) {
                 $policy = Policy::query()->find($addPolicy);
-                CreatePolicyUserJob::dispatch($addPolicy, $policy->type, $policy->instance_id, $policy->project_name);
+                CreatePolicyViamUserJob::dispatch($id, $policy->type, $policy->instance_id, $policy->project_name);
             }
         } else {
             $model = parent::update($attributes, $id);
