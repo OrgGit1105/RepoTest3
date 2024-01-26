@@ -131,7 +131,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         }
 
         if(in_array($id, POLICY_V_FACE_ID)) {
-            return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_fail'));
+            return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
         if(config('app.env') === ENVIRONMENT_UPDATE) {
             Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
