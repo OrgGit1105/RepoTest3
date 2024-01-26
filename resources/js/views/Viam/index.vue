@@ -217,12 +217,6 @@ export default {
   created() {
     this.getListAllUser();
   },
-  mounted() {
-    if (this.form.instance_id) {
-      // Gọi hàm blurInput ngay khi component được mounted và instance_id đã có giá trị
-      this.blurInput();
-    }
-  },
   methods: {
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
