@@ -318,14 +318,32 @@ export default {
     },
     async submitDelete() {
       if (this.id) {
-        await deleteOneUser(this.id).then(() => {
-          MakeToast({
-            variant: 'success',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-            content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
+        await deleteOneUser(this.id)
+          .then(async(response) => {
+            if (response.code === 200){
+              this.showModalDelete = false;
+              MakeToast({
+                variant: 'success',
+                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
+              });
+              this.$router.push('/viam/index');
+            } else {
+              this.showModalDelete = false;
+              MakeToast({
+                variant: 'warning',
+                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                content: response.message,
+              });
+              this.$router.push('/viam/index');
+            }
+          }).catch((error) => {
+            MakeToast({
+              variant: 'warning',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+              content: error.message,
+            });
           });
-          this.$router.push('/viam/index');
-        });
       }
     },
     listPolicy(){
