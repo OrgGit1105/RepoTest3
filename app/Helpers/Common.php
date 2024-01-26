@@ -188,9 +188,9 @@ class Common
         }
     }
 
-    public function deletePolicyUser($id, $instanceId, $project)
+    public function deletePolicyUser($policyId, $instanceId, $project)
     {
-        $policy = Policy::query()->find($id);
+        $policy = Policy::query()->find($policyId);
         $type = $policy->type;
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
@@ -206,6 +206,31 @@ class Common
             } else {
                 $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
                 $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
+            }
+            $parameters['Parameters']['commands'] = $command;
+            $ssmClient->sendCommand($parameters);
+        }
+    }
+
+    public function deletePolicyViamUser($viamUserId, $type, $instanceId, $project)
+    {
+        $param = Common::configAwsSDK();
+        $ssmClient = new SsmClient($param);
+        $viamUser = VIAMUser::query()->find($viamUserId);
+        if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
+            $parameters = [
+                'InstanceIds' => [$instanceId],
+                'DocumentName' => 'AWS-RunShellScript'
+            ];
+            $command = [];
+            foreach ($viamUser->users as $user) {
+                $username = $user->name;
+                if ($type == POLICY_TYPE['EC2_admin']) {
+                    $command[] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
+                } else {
+                    $command [] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
+                    $command[] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
+                }
             }
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);
