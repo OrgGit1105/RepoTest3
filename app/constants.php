@@ -39,4 +39,4 @@ const TYPE_DATE = [
     4 => 'Special day off'
 ];
 
-const ENVIRONMENT_UPDATE = 'local';
+const ENVIRONMENT_UPDATE = 'staging';
