@@ -63,7 +63,7 @@ class CreatePolicyViamUserJob implements ShouldQueue
             $command[] = "echo '' >> /etc/sudoers";
             $commands = [];
             $userNotExists = Common::checkUserExist($ssmClient, $parameters, $this->instanceId, $names);
-            if (!empty($userNotExist)) {
+            if (!empty($userNotExists)) {
                 foreach ($userNotExists as $userNotExist) {
                     $commands[] = "sudo adduser $userNotExist";
                     $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
