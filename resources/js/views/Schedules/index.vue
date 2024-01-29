@@ -50,6 +50,7 @@
 <script>
 import { getAllSchedules } from '../../api/schedules';
 import axios from 'axios';
+import { getToken } from '../../utils/getToken';
 export default {
   name: 'SchedulesManagement',
   components: {
@@ -154,8 +155,12 @@ export default {
     },
     async exportDataSchedules() {
       const URL = `/api/schedule/export?year_month=${this.year_months}`;
+      const token = getToken();
       axios.get(URL, {
         responseType: 'blob',
+        headers: {
+          Authorization: token,
+        },
       }).then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
