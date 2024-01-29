@@ -163,11 +163,32 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             foreach ($instanceIds as $instanceId) {
                 $parameters = [
                     'InstanceIds' => [$instanceId],
-                    'DocumentName' => 'AWS-RunShellScript',
-                    'Parameters' => [
-                        'commands' => ["echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"]
-                    ]
+                    'DocumentName' => 'AWS-RunShellScript'
                 ];
+                $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, [$username]);
+                $command = [];
+                if (!empty($userNotExists)) {
+                    foreach ($userNotExists as $userNotExist) {
+                        $command[] = "sudo adduser $userNotExist";
+                        $command[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
+                        $command = array_merge($command, [
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/ls,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/rm /etc/httpd/conf.d/*i' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/systemctl restart httpd.service' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers"
+                        ]);
+                    }
+                } else {
+                    $command = [
+                        "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"
+                    ];
+                }
+                $parameters['Parameters']['commands'] = array_merge($command);
                 $ssmClient->sendCommand($parameters);
             }
         }
