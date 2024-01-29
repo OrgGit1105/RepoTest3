@@ -110,7 +110,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             return $check;
         }
 
-        if (config('app.env')) {
+        if (config('app.env') === ENVIRONMENT_UPDATE) {
             $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
             $addPolicies = array_diff($policies, $oldPolicies);
             $removePolicies = array_diff($oldPolicies, $policies);
