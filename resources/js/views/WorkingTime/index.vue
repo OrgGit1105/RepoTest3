@@ -222,6 +222,7 @@ import { MakeToast } from '../../utils/toast_message';
 import moment from 'moment';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getToken } from '../../utils/getToken';
 export default {
   name: 'WorkingTimeManagement',
   data() {
@@ -416,8 +417,12 @@ export default {
     async exportDataWorkingTime() {
       const URL = '/api/arriving_report/download?start_date=' + this.formSearch.date[0] +
         '&end_date=' + this.formSearch.date[1] + '&key_search=' + this.formSearch.search + '&user_id=' + this.employeeValue;
+      const token = getToken();
       axios.get(URL, {
         responseType: 'blob',
+        headers: {
+          Authorization: token,
+        },
       }).then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
