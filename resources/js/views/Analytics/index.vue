@@ -65,7 +65,11 @@
               <el-table-column
                 prop="work_day"
                 label="Work Day"
-                width="350"
+                align="center"
+              />
+              <el-table-column
+                prop="late_day"
+                label="Late Day"
                 align="center"
               />
               <el-table-column

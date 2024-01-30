@@ -66,10 +66,14 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
             $numberDayRemote = [];
             $numberDayOff = [];
             $numberDaySpecialOff = [];
+            $numberDayLate = [];
 
             foreach ($analytic as $k => $v) {
+                $late = $v['late'];
                 if (date("H:i:s", strtotime($v['out_time'])) == "12:00:00" || date("H:i:s", strtotime($v['in_time'])) == "13:30:00") {
                     if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
+                        if($late)
+                            $numberDayLate[] = 1;
                         $numberDayWork[] = 0.5;
                     } elseif ($v['type_date'] == config('analytic.type.remote')) {
                         $numberDayRemote[] = 0.5;
@@ -81,6 +85,8 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
                 } else {
                     if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
                         $numberDayWork[] = 1;
+                        if($late)
+                            $numberDayLate[] = 1;
                     } elseif ($v['type_date'] == config('analytic.type.remote')) {
                         $numberDayRemote[] = 1;
                     } elseif ($v['type_date'] == config('analytic.type.special')) {
@@ -100,7 +106,8 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
                     'work_day' => array_sum($numberDayWork),
                     'remote_day' => array_sum($numberDayRemote),
                     'off_day' => array_sum($numberDayOff),
-                    'special_off_day' => array_sum($numberDaySpecialOff)
+                    'special_off_day' => array_sum($numberDaySpecialOff),
+                    'late_day' => array_sum($numberDayLate)
                 ];
             }
         }

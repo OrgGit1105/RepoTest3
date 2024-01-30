@@ -69,7 +69,7 @@
               <el-table-column
                 prop="warning"
                 label=""
-                width="250"
+                width="150"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -80,9 +80,22 @@
                 </template>
               </el-table-column>
               <el-table-column
+                prop="late"
+                label=""
+                width="150"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  <div :class="scope.row.late ? 'warning' : ''">
+                    <i :class="scope.row.late ? 'el-icon-warning' : ''" />
+                    <span>{{ scope.row.late }}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column
                 prop="type_date"
                 label="Type"
-                width="350"
+                width="250"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -562,28 +575,28 @@ export default {
 ::v-deep .type_remote {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 50%;
+  width: 70%;
   border-radius: 10px;
   background-color: #80ffbf;
 }
 ::v-deep .type_working {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 50%;
+  width: 70%;
   border-radius: 10px;
   background-color: #ccf2ff;
 }
 ::v-deep .type_day_off {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 50%;
+  width: 70%;
   border-radius: 10px;
   background-color: #ffcc99;
 }
 ::v-deep .type_special_day_off {
   margin: auto;
   padding: 7px 0 5px 0;
-  width: 50%;
+  width: 70%;
   border-radius: 10px;
   background-color: #ea805d;
 }
@@ -640,8 +653,8 @@ export default {
 ::v-deep .warning {
   color: red;
   border: 1px solid;
-  width: 40%;
-  margin-left: 60%;
+  width: 70%;
+  margin-left: 30%;
 }
 
 ::v-deep .el-form-item__error {
