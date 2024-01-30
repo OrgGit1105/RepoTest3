@@ -8,7 +8,7 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Jobs\CreatePolicyViamUserJob;
+use App\Jobs\UpdateUserEC2WithViamUser;
 use App\Models\Policy;
 use App\Models\User;
 use App\Models\VIAMUser;
@@ -114,10 +114,12 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
             $addPolicies = array_diff($policies, $oldPolicies);
             $removePolicies = array_diff($oldPolicies, $policies);
-            foreach ($removePolicies as $removePolicy) {
-                $policy = Policy::query()->find($removePolicy);
-                Common::deletePolicyViamUser($id, $policy->type, $policy->instance_id, $policy->project_name);
-            }
+            $instanceList = [];
+
+            $policyEc2Old = VIAMUser::query()->where('id', $id)
+                ->whereHas('policies', function ($e) {
+                    $e->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                })->exists();
 
             $model = parent::update($attributes, $id);
             VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
@@ -128,9 +130,22 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                 ]);
             }
 
-            foreach ($addPolicies as $addPolicy) {
-                $policy = Policy::query()->find($addPolicy);
-                CreatePolicyViamUserJob::dispatch($id, $policy->type, $policy->instance_id, $policy->project_name);
+            $policyEc2Update = VIAMUser::query()->where('id', $id)
+                ->whereHas('policies', function ($e) {
+                    $e->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                })->exists();
+
+            if(!$policyEc2Update && $policyEc2Old) {
+                foreach ($removePolicies as $removePolicy) {
+                    $instanceList[] = Policy::query()->find($removePolicy)->instance_id;
+                }
+                UpdateUserEC2WithViamUser::dispatch($viamUser, $removePolicies, 'delete'); //can't ssh EC2
+            } else {
+                foreach ($removePolicies as $removePolicy) {
+                    $policy = Policy::query()->find($removePolicy);
+                    Common::deletePolicyViamUser($id, $policy->type, $policy->instance_id, $policy->project_name); //delete visudo
+                }
+                UpdateUserEC2WithViamUser::dispatch($viamUser, $addPolicies, 'create');
             }
         } else {
             $model = parent::update($attributes, $id);
