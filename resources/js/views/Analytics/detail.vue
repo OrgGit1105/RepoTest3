@@ -103,6 +103,7 @@ import { getEmotions } from '../../api/analytic';
 import * as UserApi from '../../api/user';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getToken } from '../../utils/getToken';
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -168,8 +169,12 @@ export default {
     },
     async exportDataEmotions() {
       const URL = '/api/analytic/export-emotions?user_id=' + this.$route.params.id;
+      const token = getToken();
       axios.get(URL, {
         responseType: 'blob',
+        headers: {
+          Authorization: token,
+        },
       }).then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

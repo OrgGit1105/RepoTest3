@@ -221,9 +221,9 @@ class ImageFaceController extends Controller
    *          mediaType="multipart/form-data",
    *          example={"file":"file|string", "time": "string"},
    *          @OA\Schema(
-   *            required={"file","type"},
+   *            required={"file","time"},
    *            @OA\Property(
-   *              property="file[]",
+   *              property="file",
    *              description="The file or string base64",
    *              type="file",
    *            ),
@@ -244,7 +244,7 @@ class ImageFaceController extends Controller
    *     )
    *   ),
    * )
-   * @param int $id
+   * @param Request $request
    * @return \Illuminate\Http\JsonResponse
    * @throws \Exception
    */
