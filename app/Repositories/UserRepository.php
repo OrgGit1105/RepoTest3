@@ -171,7 +171,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     foreach ($userNotExists as $userNotExist) {
                         $command[] = "sudo adduser $userNotExist";
                         $command[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
-                        $command = array_merge($command, [
+                        array_push($command,
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/ls,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
@@ -180,8 +180,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
                             "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
-                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers"
-                        ]);
+                            "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers",
+                            "echo '' >> /etc/sudoers"
+                        );
                     }
                 } else {
                     $command = [
