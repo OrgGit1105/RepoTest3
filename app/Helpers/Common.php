@@ -4,6 +4,7 @@
 namespace Helper;
 
 
+use App\Jobs\UpdateUserEC2WithViamUser;
 use App\Models\Policy;
 use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
@@ -188,9 +189,11 @@ class Common
         }
     }
 
-    public function deletePolicyUser($policyId, $instanceId, $project)
+    public function deletePolicyUser($policy, $deleteAccountUser = false)
     {
-        $policy = Policy::query()->find($policyId);
+        $policyId = $policy->id;
+        $instanceId = $policy->instance_id;
+        $project = $policy->project_name;
         $type = $policy->type;
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
@@ -200,15 +203,43 @@ class Common
                 'InstanceIds' => [$instanceId],
                 'DocumentName' => 'AWS-RunShellScript'
             ];
-            $command = [];
-            if ($type == POLICY_TYPE['EC2_admin']) {
-                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
-            } else {
-                $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
-                $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
+            $delete = false;
+
+            // trường hợp policy bị xóa là policy có type = EC2 duy nhất trong VIAM_USER liên quan đến policy bị xóa
+            // => xóa tài khoản user trên EC2
+            if($deleteAccountUser) {
+                $policyEc2Update = VIAMUser::query()
+                    ->whereHas('policies', function ($e) use ($policyId) {
+                        $e->where('policies.id', $policyId);
+                    })
+                    ->get();
+                foreach ($policyEc2Update as $value) {
+                    $test= VIAMUser::query()->where('id', $value->id)
+                        ->whereHas('policies', function ($e) use ($policyId) {
+                            $e->where('policies.id', '!=', $policyId)
+                                ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                        })->exists();
+
+                    if($test) {
+                        $delete = true;
+                    }
+                    if(!$test) {
+                        UpdateUserEC2WithViamUser::dispatch($value, null, 'deleteWithViamUser', [$instanceId]);
+                    }
+                }
             }
-            $parameters['Parameters']['commands'] = $command;
-            $ssmClient->sendCommand($parameters);
+            // trường hợp chỉ cần xóa quyền trong visudo, ko xóa tài khoản
+            if($delete) {
+                $command = [];
+                if ($type == POLICY_TYPE['EC2_admin']) {
+                    $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
+                } else {
+                    $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
+                    $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
+                }
+                $parameters['Parameters']['commands'] = $command;
+                $ssmClient->sendCommand($parameters);
+            }
         }
     }
 

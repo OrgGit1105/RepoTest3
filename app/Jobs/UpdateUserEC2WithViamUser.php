@@ -18,17 +18,18 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private $viamUser, $policies, $action;
+    private $viamUser, $policies, $action, $instanceIds;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($viamUser, $policies, $action)
+    public function __construct($viamUser, $policies = null, $action, $instanceIds = null)
     {
         $this->viamUser = $viamUser;
         $this->policies = $policies;
         $this->action = $action;
+        $this->instanceIds = $instanceIds;
     }
 
     /**
@@ -44,8 +45,9 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
             foreach ($this->policies as $addPolicy) {
                 $policy = Policy::query()->find($addPolicy);
                 $this->createUser($ssmClient, $policy);
-                sleep(10);
             }
+        } elseif ($this->action === 'deleteWithViamUser') {
+            $this->deleteUser($ssmClient, $this->instanceIds);
         } else {
             $instanceList = [];
             foreach ($this->policies as $removePolicy) {
@@ -86,7 +88,7 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
                     $commands[] = "sudo adduser $userNotExist";
                     $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
                     $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
-                    $command = array_merge($command, [
+                    array_push($command,
                         "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/ls,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
                         "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
                         "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
@@ -97,13 +99,14 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
                         "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
                         "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers",
                         "echo '' >> /etc/sudoers"
-                    ]);
+                    );
                 }
             }
 
             $commandAdd = implode(' && ', $commands);
             $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
             $ssmClient->sendCommand($parameters);
+            sleep(count($userNotExists));
         }
     }
 

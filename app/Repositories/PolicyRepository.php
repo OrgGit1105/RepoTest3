@@ -74,26 +74,26 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     public function update(array $attributes, $id)
     {
-        if(in_array($id, POLICY_V_FACE_ID)) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.update_fail'));
-        }
-
         $policy = $this->model->find($id);
         if($policy == null) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        $typeAws = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
+        if(in_array($id, POLICY_V_FACE_ID)) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.update_fail'));
+        }
+
+        $typeEC2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
         $policyTypeOld = $policy->type;
         $policyTypeNew = $attributes['type'];
 
-        if(in_array($policyTypeOld, $typeAws) || in_array($policyTypeNew, $typeAws)) {
+        if(in_array($policyTypeOld, $typeEC2) || in_array($policyTypeNew, $typeEC2)) {
             $instanceOld = $policy->instance_id;
             $projectOld = $policy->project_name;
             $instanceNew = @$attributes['instance_id'];
             $projectNew = @$attributes['project_name'];
 
-            if(in_array($policyTypeNew, $typeAws)) {
+            if(in_array($policyTypeNew, $typeEC2)) {
                 $projects = $this->getListProject($instanceNew);
                 if(array_search($projectNew, $projects) === false) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
@@ -110,12 +110,12 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             }
 
             if(config('app.env') === ENVIRONMENT_UPDATE && ($projectNew != $projectOld || $policyTypeNew != $policyTypeOld || $instanceOld != $instanceNew)) {
-                if(in_array($policyTypeOld, $typeAws) && !in_array($policyTypeNew, $typeAws)) { //AWS => other
-                    Common::deletePolicyUser($id, $instanceOld, $projectOld);
-                } elseif (!in_array($policyTypeOld, $typeAws) && in_array($policyTypeNew, $typeAws)) { // other => AWS
+                if(in_array($policyTypeOld, $typeEC2) && !in_array($policyTypeNew, $typeEC2)) { //AWS => other
+                    Common::deletePolicyUser($policy, true);
+                } elseif (!in_array($policyTypeOld, $typeEC2) && in_array($policyTypeNew, $typeEC2)) { // other => AWS
                     CreatePolicyUserJob::dispatch($id,$policyTypeNew, $instanceNew, $projectNew);
                 } else { //AWS <=> AWS
-                    Common::deletePolicyUser($id, $instanceOld, $projectOld);
+                    Common::deletePolicyUser($policy, false);
                     CreatePolicyUserJob::dispatch($id,$policyTypeNew, $instanceNew, $projectNew);
                 }
             }
@@ -134,7 +134,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
         if(config('app.env') === ENVIRONMENT_UPDATE) {
-            Common::deletePolicyUser($id, $policy->instance_id, $policy->project_name);
+            Common::deletePolicyUser($policy, true);
         }
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);

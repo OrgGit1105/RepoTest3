@@ -136,9 +136,6 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                 })->exists();
 
             if(!$policyEc2Update && $policyEc2Old) {
-                foreach ($removePolicies as $removePolicy) {
-                    $instanceList[] = Policy::query()->find($removePolicy)->instance_id;
-                }
                 UpdateUserEC2WithViamUser::dispatch($viamUser, $removePolicies, 'delete'); //can't ssh EC2
             } else {
                 foreach ($removePolicies as $removePolicy) {
