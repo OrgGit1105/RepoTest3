@@ -101,13 +101,13 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         $oldName = $user->name;
-        $oldRetirementDate = Carbon::parse($user->retirement_date)->format('Y-m-d');
+        $oldRetirementDate = $user->retirement_date ? Carbon::parse($user->retirement_date)->format('Y-m-d') : null;
         $oldViamUserId = $user->viam_user_id;
         $updateName = $attributes['name'];
-        $updateRetirementDate = $attributes['retirement_date'];
+        $updateRetirementDate = $attributes['retirement_date'] ? Carbon::parse($attributes['retirement_date'])->format('Y-m-d') : null;
         $updateViamUserId = $attributes['viam_user_id'];
         $publicKey = @$attributes['ssh_public_key'];
-
+        
         if(config('app.env') === ENVIRONMENT_UPDATE) {
             if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName) || ($oldViamUserId != $updateViamUserId)) {
                 if(($user->retirement_date != $attributes['retirement_date']) && (Carbon::now() >= Carbon::parse($updateRetirementDate))) {
