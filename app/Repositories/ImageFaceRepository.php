@@ -306,22 +306,12 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         $arrivingIn_time = ArrivingReport::query()
             ->whereDate("in_time", $dateNow)
             ->where("user_id", $user->id)
-            ->when($timeNow < $morning, function ($e) use($morning){
-                $e->whereTime("in_time", "<", $morning);
-            }, function ($e) use ($morning) {
-                $e->whereTime('in_time', '>=', $morning);
-            })
             ->first();
 
         // Kiểm tra nhân viên này hôm nay đã check out chưa?
         $arrivingOut_time = ArrivingReport::query()
             ->whereDate("out_time", $dateNow)
             ->where("user_id", $user->id)
-            ->when($timeNow <= $afternoon, function ($e) use ($afternoon) {
-                $e->whereTime("out_time", "<=", $afternoon);
-            }, function ($e) use ($afternoon) {
-                $e->whereTime('out_time', '>=', $afternoon);
-            })
             ->first();
 
         $isCheckIn = false;
