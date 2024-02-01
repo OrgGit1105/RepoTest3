@@ -14,7 +14,7 @@ class AddColumnLateToArrivingReportsTable extends Migration
     public function up()
     {
         Schema::table('arriving_reports', function (Blueprint $table) {
-            $table->boolean('late')->after('remark');
+            $table->boolean('late')->after('remark')->default(0);
         });
     }
 

@@ -186,6 +186,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
 
     public function compareFace(array $attributes)
     {
+        $timeNow = Carbon::now()->format('H:i:s');
+        $now = Carbon::now();
+
         $rekognitionClient = $this->configRekognitionClient();
         $createEmotions = [];
         if (request()->hasFile('file')) {
@@ -296,38 +299,30 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
             return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login_not_granted'));
         }
 
-        // Kiểm tra ngày hôm nay in hay out đã check chưa?
-        $timeNow = Carbon::now()->format('H:i:s');
         $dateNow = Carbon::now()->format('Y-m-d');
         $morning = Carbon::parse('12:00')->format('H:i:s');
         $afternoon = Carbon::parse('13:30')->format('H:i:s');
-
-        // Kiểm tra nhân viên này hôm nay đã check in chưa?
-        $arrivingIn_time = ArrivingReport::query()
-            ->whereDate("in_time", $dateNow)
-            ->where("user_id", $user->id)
-            ->first();
-
-        // Kiểm tra nhân viên này hôm nay đã check out chưa?
-        $arrivingOut_time = ArrivingReport::query()
-            ->whereDate("out_time", $dateNow)
-            ->where("user_id", $user->id)
-            ->first();
-
         $isCheckIn = false;
         $isCheckOut = false;
-
         switch ($attributes['time']) {
             case 'in':
+                // Kiểm tra nhân viên này hôm nay đã check in chưa?
+                $arrivingIn_time = ArrivingReport::query()
+                    ->whereDate("in_time", $dateNow)
+                    ->where("user_id", $user->id)
+                    ->when($timeNow < $morning, function ($e) use($morning){
+                        $e->whereTime("in_time", "<", $morning);
+                    }, function ($e) use ($morning) {
+                        $e->whereTime('in_time', '>=', $morning);
+                    })->first();
+
                 if ($arrivingIn_time) {
                     $isCheckIn = true;
-//            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
                 } else {
                     $arrivingIn_time = new ArrivingReport();
-                    $arrivingIn_time->in_time = Carbon::now();
-                    $now = Carbon::now();
+                    $arrivingIn_time->in_time = $now;
                     $late = 0;
-                    if($now->hour <= 12 && $now->between($now->copy()->setHour(9)->setMinute(0), $now->copy()->setHour(18)->setMinute(0))) {
+                    if($now->hour <= 12 && $now->between($now->copy()->setHour(9)->setMinute(1), $now->copy()->setHour(18)->setMinute(0))) {
                         $late = 1;
                     }
                     $arrivingIn_time->late = $late;
@@ -349,33 +344,48 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 }
                 break;
             case 'out':
-                if ($arrivingIn_time) {
-                    $isCheckIn = true;
-                } else {
-                    return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
-                }
+                // Kiểm tra nhân viên này hôm nay đã check out chưa?
+                $arrivingOut_time = ArrivingReport::query()
+                    ->whereDate("out_time", $dateNow)
+                    ->where("user_id", $user->id)
+                    ->when($timeNow <= $afternoon, function ($e) use ($afternoon) {
+                        $e->whereTime("out_time", "<=", $afternoon);
+                    }, function ($e) use ($afternoon) {
+                        $e->whereTime('out_time', '>=', $afternoon);
+                    })->first();
+
                 if ($arrivingOut_time) {
                     $isCheckOut = true;
-//            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.time_in_is_check'), trans('api.arriving_report.time_in_is_check'));
                 } else {
-                    // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
-                    $arrivingOut_time = $arrivingIn_time;
-                    $arrivingOut_time->user_id = $user->id;
-                    $arrivingOut_time->out_time = Carbon::now();
-                    $arrivingOut_time->link_face_out = $image->file;
-                    if (request()->hasFile('file')) {
-                        $arrivingOut_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'], "CheckOut");
+                    $arrivingIn_time = ArrivingReport::query()
+                        ->whereDate("in_time", $dateNow)
+                        ->where("user_id", $user->id)
+                        ->whereNotNull('in_time')
+                        ->whereNull('out_time')
+                        ->first();
+                    if ($arrivingIn_time) {
+                        $isCheckIn = true;
+                        // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
+                        $arrivingOut_time = $arrivingIn_time;
+                        $arrivingOut_time->user_id = $user->id;
+                        $arrivingOut_time->out_time = $now;
+                        $arrivingOut_time->link_face_out = $image->file;
+                        if (request()->hasFile('file')) {
+                            $arrivingOut_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'], "CheckOut");
+                        } else {
+                            $arrivingOut_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'], "CheckOut", $user->name);
+                        }
+                        $arrivingOut_time->type_date = 1;
+                        $arrivingOut_time->status = 1;
+                        $arrivingOut_time->updated_at = Carbon::now();
+                        if (array_key_exists("registration_type", $attributes)) {
+                            $arrivingOut_time->registration_type = $attributes['registration_type'];
+                        }
+                        $arrivingOut_time->save();
+                        $this->saveEmotion($createEmotions, $arrivingOut_time->id, $user->id, 'out');
                     } else {
-                        $arrivingOut_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'], "CheckOut", $user->name);
+                        return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
                     }
-                    $arrivingOut_time->type_date = 1;
-                    $arrivingOut_time->status = 1;
-                    $arrivingOut_time->updated_at = Carbon::now();
-                    if (array_key_exists("registration_type", $attributes)) {
-                        $arrivingOut_time->registration_type = $attributes['registration_type'];
-                    }
-                    $arrivingOut_time->save();
-                    $this->saveEmotion($createEmotions, $arrivingOut_time->id, $user->id, 'out');
                 }
                 break;
         }
@@ -391,9 +401,9 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         return ResponseService::responseJson(200, [
             'access_token' => "Bearer " . $token,
             'profile' => new UserResource($user),
-            'in_time' => $arrivingIn_time,
+            'in_time' => @$arrivingIn_time,
             'is_check_in' => $isCheckIn,
-            'out_time' => $arrivingOut_time,
+            'out_time' => @$arrivingOut_time,
             'is_check_out' => $isCheckOut,
             'imageLink' => config('services.aws.urlImage') . $image->file
         ]);
