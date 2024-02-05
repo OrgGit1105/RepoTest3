@@ -8,7 +8,6 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Jobs\CreatePolicyUserJob;
 use App\Jobs\CreateUserAdminOrDeployWithPolicyJob;
 use App\Jobs\DeleteUserAdminOrDeployWithPolicyJob;
 use App\Models\Policy;
