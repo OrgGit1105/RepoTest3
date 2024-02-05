@@ -43,7 +43,7 @@ class UserRequest extends FormRequest
      public function getCustomRule(){
          if (Route::getCurrentRoute()->getActionMethod() == 'update') {
              return [
-                 'name' => 'required|unique:users,name,' . $this->route('id'). ',id,deleted_at,NULL|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                 'name' => 'required|unique:users,name,' . $this->route('id'). ',id,deleted_at,NULL|max:32|regex:/^[a-zA-Z][a-zA-Z0-9._-]{0,31}$/',
                  'email' => 'required|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',
@@ -60,7 +60,7 @@ class UserRequest extends FormRequest
          }
          if (Route::getCurrentRoute()->getActionMethod() == 'store') {
              return [
-                 'name' => 'required|unique:users,name,NULL,id,deleted_at,NULL|max:255|regex:/^[a-zA-Z0-9+=,.@_-]+$/',
+                 'name' => 'required|unique:users,name,NULL,id,deleted_at,NULL|max:32|regex:/^[a-zA-Z][a-zA-Z0-9._-]{0,31}$/',
                  'email' => 'required|unique:users,email,NULL,id,deleted_at,NULL|email',
                  'gender' => 'nullable|in:0,1',
                  'birthday' => 'nullable|date-format:Y-m-d',

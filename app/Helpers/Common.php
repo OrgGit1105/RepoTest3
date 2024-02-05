@@ -3,9 +3,6 @@
 
 namespace Helper;
 
-
-use App\Jobs\UpdateUserEC2WithViamUser;
-use App\Models\Policy;
 use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
 use Illuminate\Http\Response;
@@ -102,7 +99,7 @@ class Common
 
                     $instanceData[$policy->instance_id][] = [
                         'type' => $policy->type,
-                        'project_name' => $policy->project_name
+                        'name' => $policy->name
                     ];
                 }
             }
@@ -116,34 +113,19 @@ class Common
                 if (self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $commands[] = "sudo adduser $username";
                     $commands[] = "sudo -u $username mkdir -p /home/$username/.ssh";
-                    $command = [
-                        "echo '$username ALL=(ALL) NOPASSWD:/bin/ls,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /etc/httpd/conf.d/*i' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/systemctl restart httpd.service' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
-                        "echo '$username ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers"
-                    ];
                 }
                 $commands[] = "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                 $commandAdd = implode(' && ', $commands);
-                $parameters['Parameters']['commands'] = [$commandAdd];
-                $ssmClient->sendCommand($parameters);
 
                 foreach ($instance as $item) {
-                    $project = $item['project_name'];
+                    $groupName = $item['name'];
                     if ($item['type'] == POLICY_TYPE['EC2_admin']) {
-                        $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$project/*' >> /etc/sudoers";
+                        $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
                     } else {
-                        $command [] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$project/*' >> /etc/sudoers";
-                        $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$project/*' >> /etc/sudoers";
+                        $command [] = "sudo usermod -aG $groupName $username";
                     }
                 }
-                $command[] = "echo '' >> /etc/sudoers";
-                $parameters['Parameters']['commands'] = $command;
+                $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
                 $ssmClient->sendCommand($parameters);
             }
             return ResponseService::responseJson(CODE_SUCCESS);
@@ -175,7 +157,7 @@ class Common
 
                 if(!self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
-                    $command[] = "sudo sed -i '/^\s*$username ALL=(ALL) NOPASSWD:/d' /etc/sudoers";
+                    $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
                     $command[] = "sudo pkill -u $username";
                     $command[] = "sudo userdel -r $username";
                     $parameters['Parameters']['commands'] = $command;
@@ -189,58 +171,24 @@ class Common
         }
     }
 
-    public function deletePolicyUser($policy, $deleteAccountUser = false)
+    public function createGroupEc2($instanceId, $groupName, $projectName)
     {
-        $policyId = $policy->id;
-        $instanceId = $policy->instance_id;
-        $project = $policy->project_name;
-        $type = $policy->type;
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
 
-        if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
-            $parameters = [
-                'InstanceIds' => [$instanceId],
-                'DocumentName' => 'AWS-RunShellScript'
-            ];
-            $delete = false;
-
-            // trường hợp policy bị xóa là policy có type = EC2 duy nhất trong VIAM_USER liên quan đến policy bị xóa
-            // => xóa tài khoản user trên EC2
-            if($deleteAccountUser) {
-                $policyEc2Update = VIAMUser::query()
-                    ->whereHas('policies', function ($e) use ($policyId) {
-                        $e->where('policies.id', $policyId);
-                    })
-                    ->get();
-                foreach ($policyEc2Update as $value) {
-                    $test= VIAMUser::query()->where('id', $value->id)
-                        ->whereHas('policies', function ($e) use ($policyId) {
-                            $e->where('policies.id', '!=', $policyId)
-                                ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
-                        })->exists();
-
-                    if($test) {
-                        $delete = true;
-                    }
-                    if(!$test) {
-                        UpdateUserEC2WithViamUser::dispatch($value, null, 'deleteWithViamUser', [$instanceId]);
-                    }
-                }
-            }
-            // trường hợp chỉ cần xóa quyền trong visudo, ko xóa tài khoản
-            if($delete) {
-                $command = [];
-                if ($type == POLICY_TYPE['EC2_admin']) {
-                    $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
-                } else {
-                    $command [] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
-                    $command[] = "sudo sed -i '/ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
-                }
-                $parameters['Parameters']['commands'] = $command;
-                $ssmClient->sendCommand($parameters);
-            }
-        }
+        $parameters = [
+            'InstanceIds' => [$instanceId],
+            'DocumentName' => 'AWS-RunShellScript',
+            'Parameters' => [
+                'commands' => [
+                    "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
+                    "sudo chown -R root:$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
+                    "sudo chmod -R g=rwx,o= /var/www/$projectName", // các user thuộc group sẽ có quyền rwx với thư mục
+                    "sudo chmod g+s /var/www/$projectName" // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
+                ],
+            ],
+        ];
+        $ssmClient->sendCommand($parameters);
     }
 
     public function deletePolicyViamUser($viamUserId, $type, $instanceId, $project)

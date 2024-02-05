@@ -63,17 +63,16 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
     private function checkPolicy($policies)
     {
         if(count(array_intersect(POLICY_V_FACE_ID, $policies)) >= 2) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id_v-face'));
         }
 
         $isSame = Policy::whereIn('id', $policies)
-            ->select('project_name', 'instance_id', DB::raw('COUNT(*) as count'))
-            ->whereIn('type', [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])
-            ->groupBy('project_name', 'instance_id')
-            ->having('count', '>', 1)
+            ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])
+            ->groupBy('instance_id')
+            ->havingRaw('COUNT(DISTINCT type) = 2')
             ->exists();
         if($isSame) {
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id'));
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id_ec2'));
         }
         return ResponseService::responseJson(CODE_SUCCESS);
     }
@@ -110,12 +109,10 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             return $check;
         }
 
-        if (config('app.env') === ENVIRONMENT_UPDATE) {
-            $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
-            $addPolicies = array_diff($policies, $oldPolicies);
-            $removePolicies = array_diff($oldPolicies, $policies);
-            $instanceList = [];
-
+        $oldPolicies = VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->pluck(VIAMUserPolicy::POLICY_ID)->toArray();
+        $addPolicies = array_diff($policies, $oldPolicies);
+        $removePolicies = array_diff($oldPolicies, $policies);
+        if (config('app.env') === ENVIRONMENT_UPDATE && ($addPolicies || $removePolicies)) {
             $policyEc2Old = VIAMUser::query()->where('id', $id)
                 ->whereHas('policies', function ($e) {
                     $e->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
@@ -135,15 +132,9 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                     $e->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
                 })->exists();
 
-            if(!$policyEc2Update && $policyEc2Old) {
-                UpdateUserEC2WithViamUser::dispatch($viamUser, $removePolicies, 'delete'); //can't ssh EC2
-            } else {
-                foreach ($removePolicies as $removePolicy) {
-                    $policy = Policy::query()->find($removePolicy);
-                    Common::deletePolicyViamUser($id, $policy->type, $policy->instance_id, $policy->project_name); //delete visudo
-                }
-                UpdateUserEC2WithViamUser::dispatch($viamUser, $addPolicies, 'create');
-            }
+            $deleteAccountUser = !$policyEc2Update && $policyEc2Old;
+            UpdateUserEC2WithViamUser::dispatch($viamUser, $removePolicies, 'delete', $deleteAccountUser);
+            UpdateUserEC2WithViamUser::dispatch($viamUser, $addPolicies, 'create');
         } else {
             $model = parent::update($attributes, $id);
             VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
