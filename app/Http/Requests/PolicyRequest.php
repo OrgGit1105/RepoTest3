@@ -44,18 +44,18 @@ class PolicyRequest extends FormRequest
      public function getCustomRule(){
         if(Route::getCurrentRoute()->getActionMethod() == 'update'){
             return [
-                'name' => 'required|unique:policies,name,' . $this->route('policy'). ',id,deleted_at,NULL|max:255',
+                'name' => 'required|unique:policies,name,' . $this->route('policy'). ',id,deleted_at,NULL|max:32|regex:/^[a-zA-Z_][a-zA-Z0-9._-]{0,31}$/',
                 'type' => 'required|in:' . implode(',', POLICY_TYPE),
                 'instance_id' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
-                'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
+                'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_deploy'],
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
             return  [
-                'name' => 'required|unique:policies,name,NULL,id,deleted_at,NULL|max:255',
+                'name' => 'required|unique:policies,name,NULL,id,deleted_at,NULL|max:32|regex:/^[a-zA-Z_][a-zA-Z0-9._-]{0,31}$/',
                 'type' => 'required|in:' . implode(',', POLICY_TYPE),
                 'instance_id' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
-                'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
+                'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_deploy'],
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'getProject'){
@@ -70,7 +70,8 @@ class PolicyRequest extends FormRequest
         return [
             'required' => ':attribute not null',
             'instance_id.required_if' => trans('api.policy.instance_id'),
-            'project_name.required_if' => trans('api.policy.project_name')
+            'project_name.required_if' => trans('api.policy.project_name'),
+            'name.regex' => trans('api.policy.name_regex')
         ];
     }
 }

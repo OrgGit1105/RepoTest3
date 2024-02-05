@@ -22,7 +22,7 @@ return [
             'exist' => 'User email exist'
         ],
         'name_existed' => 'User existed',
-        'name_regex' => 'Name must contain only alphanumeric characters and/or the following: +=,.@_-',
+        'name_regex' => 'Username must start with a letter, can only contain letters, numbers and underscores (_), periods (.), dashes (-) and cannot contain spaces or special characters special',
         'ssh_key' => 'Please enter the ssh public key value'
     ],
     'token' => [
@@ -39,15 +39,17 @@ return [
         'out_time_exist' => 'This out time data already exists',
     ],
     'viam_user' => [
-        'policy_id' => 'Policies are overlapping. Please select again',
+        'policy_id_v-face' => 'V-face admin and V-face normal cannot be selected at the same time',
+        'policy_id_ec2' => 'On an EC2 instance, deploy policy and admin policy cannot be selected at the same time',
         'cannot_delete' => 'This user cannot be deleted because there are already employees belonging to this user',
     ],
     'policy' => [
-        'name_existed' => 'Policy name existed',
+        'name_existed' => 'Please enter another name',
+        'name_regex' => 'The name must start with a letter or an underscore character (_), can only contain letters, numbers and underscores (_), cannot contain spaces or special characters',
         'instance_id' => 'The instance id field is required with types are EC2',
-        'project_name' => 'The project name field is required with types are EC2',
+        'project_name' => 'The project name field is required with types are EC2 deploy',
         'project_do_not_existed' => 'The project name does not exist',
-        'policy_existed' => 'On the same EC2 instance, only one deploy policy and one admin policy can be created for each project'
+        'policy_existed' => 'On an EC2 instance, only one admin policy can be created and only one deploy policy can be created for each project',
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working'
 ];

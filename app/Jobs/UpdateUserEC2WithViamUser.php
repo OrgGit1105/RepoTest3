@@ -18,18 +18,21 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private $viamUser, $policies, $action, $instanceIds;
+    private $viamUser, $policies, $action, $deleteAccountUser;
+
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param VIAMUser $viamUser
+     * @param array $policies
+     * @param string $action
      */
-    public function __construct($viamUser, $policies = null, $action, $instanceIds = null)
+    public function __construct(VIAMUser $viamUser, array $policies, string $action, $deleteAccountUser = false)
     {
         $this->viamUser = $viamUser;
         $this->policies = $policies;
         $this->action = $action;
-        $this->instanceIds = $instanceIds;
+        $this->deleteAccountUser = $deleteAccountUser;
     }
 
     /**
@@ -41,103 +44,104 @@ class UpdateUserEC2WithViamUser implements ShouldQueue
     {
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
-        if($this->action === 'create') {
+        if ($this->action === 'create') {
             foreach ($this->policies as $addPolicy) {
                 $policy = Policy::query()->find($addPolicy);
-                $this->createUser($ssmClient, $policy);
+                if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+                    $this->createUser($ssmClient, $policy);
+                }
             }
-        } elseif ($this->action === 'deleteWithViamUser') {
-            $this->deleteUser($ssmClient, $this->instanceIds);
-        } else {
-            $instanceList = [];
+        }
+        if ($this->action === 'delete') {
             foreach ($this->policies as $removePolicy) {
-                $instanceList[] = Policy::query()->find($removePolicy)->instance_id;
+                $policy = Policy::query()->find($removePolicy);
+                if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+                    $this->deleteUser($ssmClient, $policy);
+                }
             }
-            $this->deleteUser($ssmClient, $instanceList);
         }
     }
 
-    private function createUser(SsmClient $ssmClient, $policy) {
+    private function createUser(SsmClient $ssmClient, $policy)
+    {
         $type = $policy->type;
-        $project = $policy->project_name;
+        $groupName = $policy->name;
         $instanceId = $policy->instance_id;
         $parameters = [
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript'
         ];
-        if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
-            $command = [];
-            $names = [];
-            $sshKey = [];
-            foreach ($this->viamUser->users as $user) {
-                $username = $user->name;
-                $names[] = $username;
-                $sshKey[$username] = $user->ssh_public_key;
-                if ($type == POLICY_TYPE['EC2_admin']) {
-                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/* /var/www/$project/*' >> /etc/sudoers";
-                } else {
-                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /var/www/$project/*' >> /etc/sudoers";
-                    $command[] = "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /var/www/$project/*' >> /etc/sudoers";
-                }
+        $command = [];
+        $names = [];
+        $sshKey = [];
+        foreach ($this->viamUser->users as $user) {
+            $username = $user->name;
+            $names[] = $username;
+            $sshKey[$username] = $user->ssh_public_key;
+            if ($type == POLICY_TYPE['EC2_admin']) {
+                $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
+            } else {
+                $command[] = "sudo usermod -aG $groupName $username";
             }
-            $command[] = "echo '' >> /etc/sudoers";
-            $commands = [];
-            $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $names);
-            if (!empty($userNotExists)) {
-                foreach ($userNotExists as $userNotExist) {
-                    $commands[] = "sudo adduser $userNotExist";
-                    $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
-                    $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
-                    array_push($command,
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/ls,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/rm /etc/httpd/conf.d/*i' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/systemctl restart httpd.service' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
-                        "echo '$userNotExist ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers",
-                        "echo '' >> /etc/sudoers"
-                    );
-                }
-            }
-
-            $commandAdd = implode(' && ', $commands);
-            $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
-            $ssmClient->sendCommand($parameters);
-            sleep(count($userNotExists));
         }
+        $commands = [];
+        $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $names);
+        if (!empty($userNotExists)) {
+            foreach ($userNotExists as $userNotExist) {
+                $commands[] = "sudo adduser $userNotExist";
+                $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
+                $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
+            }
+        }
+
+        $commandAdd = implode(' && ', $commands);
+        $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
+        $ssmClient->sendCommand($parameters);
+        sleep(count($userNotExists));
     }
 
-    private function deleteUser(SsmClient $ssmClient, $instanceList)
+    private function deleteUser(SsmClient $ssmClient, $policy)
     {
+        $instanceId = $policy->instance_id;
         $usernames = [];
         foreach ($this->viamUser->users as $user) {
             $usernames[] = $user->name;
         }
-        foreach ($instanceList as $instanceId) {
-            $parameters = [
-                'InstanceIds' => [$instanceId],
-                'DocumentName' => 'AWS-RunShellScript'
-            ];
-            $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $usernames);
-            $userExists = $usernames;
-            if($userNotExists) {
-                $userExists = array_diff($usernames, $userNotExists);
-            }
+        $parameters = [
+            'InstanceIds' => [$instanceId],
+            'DocumentName' => 'AWS-RunShellScript'
+        ];
+        $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $usernames);
+        $userExists = $usernames;
+        if ($userNotExists) {
+            $userExists = array_diff($usernames, $userNotExists);
+        }
 
-            $command = [];
+        $command = [];
+        if ($this->deleteAccountUser) {
             foreach ($userExists as $username) {
                 $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                 $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD:/d' /etc/sudoers";
                 $command[] = "sudo pkill -u $username";
                 $command[] = "sudo userdel -r $username";
             }
-            if($command) {
-                $parameters['Parameters']['commands'] = $command;
-                $ssmClient->sendCommand($parameters);
+        } else {
+            $type = $policy->type;
+            if ($type == POLICY_TYPE['EC2_admin']) {
+                foreach ($userExists as $username) {
+                    $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                }
+            } else {
+                $groupName = $policy->name;
+                foreach ($userExists as $username) {
+                    $command[] = "sudo gpasswd -d $username $groupName";
+                }
             }
+        }
+
+        if ($command) {
+            $parameters['Parameters']['commands'] = $command;
+            $ssmClient->sendCommand($parameters);
         }
     }
 }
