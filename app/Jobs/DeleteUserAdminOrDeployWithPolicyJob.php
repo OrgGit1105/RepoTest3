@@ -101,6 +101,7 @@ class DeleteUserAdminOrDeployWithPolicyJob implements ShouldQueue
             $groupName = $this->policy->name;
             $command[] = "sudo chown -R root:root /var/www/$projectName";
             $command[] = "sudo chmod -R 775 /var/www/$projectName";
+            $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
             $command[] = "sudo chmod g+s /var/www/$projectName";
             $command[] = "sudo groupdel $groupName";
         }
