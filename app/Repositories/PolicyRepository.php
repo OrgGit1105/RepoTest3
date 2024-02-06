@@ -101,9 +101,12 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.update_fail'));
         }
 
-        $updateEc2 = $this->updatePolicyEc2($id, $policy, $attributes);
-        if($updateEc2->original['code'] != CODE_SUCCESS) {
-            return $updateEc2;
+        if($policy->name != $attributes['name'] || $policy->type != $attributes['type']
+            || $policy->instance_id != $attributes['instance_id'] || $policy->project_name != $attributes['project_name']) {
+            $updateEc2 = $this->updatePolicyEc2($id, $policy, $attributes);
+            if($updateEc2->original['code'] != CODE_SUCCESS) {
+                return $updateEc2;
+            }
         }
         if($attributes['type'] == POLICY_TYPE['EC2_admin']) {
             $attributes['project_name'] = null;
@@ -286,7 +289,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
             $command[] = "sudo chmod -R 775 /var/www/$projectNew";
             $command[] = "sudo chmod -R 777 /var/www/$projectNew/storage/";
-            $command[] = "sudo chmod -R 777 /var/www/$projectOld/.git/";
+            $command[] = "sudo chmod -R 777 /var/www/$projectNew/.git/";
             $command[] = "sudo chmod g+s /var/www/$projectNew";
         }
 
