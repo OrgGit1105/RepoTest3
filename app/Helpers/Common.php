@@ -183,7 +183,7 @@ class Common
                 'commands' => [
                     "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
                     "sudo chown -R root:$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
-                    "sudo chmod -R g=rwx,o= /var/www/$projectName", // các user thuộc group sẽ có quyền rwx với thư mục
+                    "sudo chmod -R g=rwx,o=r-x /var/www/$projectName", // các user thuộc group sẽ có quyền rwx với thư mục
                     "sudo chmod g+s /var/www/$projectName" // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
                 ],
             ],
