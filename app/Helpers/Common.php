@@ -182,7 +182,7 @@ class Common
             'Parameters' => [
                 'commands' => [
                     "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
-                    "sudo chown -R root:$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
+                    "sudo chown -R :$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
                     "sudo chmod -R 775 /var/www/$projectName", // các user thuộc group sẽ có quyền rwx với thư mục
                     "sudo chmod -R 777 /var/www/$projectName/storage/",
                     "sudo chmod g+s /var/www/$projectName" // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
@@ -190,30 +190,5 @@ class Common
             ],
         ];
         $ssmClient->sendCommand($parameters);
-    }
-
-    public function deletePolicyViamUser($viamUserId, $type, $instanceId, $project)
-    {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
-        $viamUser = VIAMUser::query()->find($viamUserId);
-        if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
-            $parameters = [
-                'InstanceIds' => [$instanceId],
-                'DocumentName' => 'AWS-RunShellScript'
-            ];
-            $command = [];
-            foreach ($viamUser->users as $user) {
-                $username = $user->name;
-                if ($type == POLICY_TYPE['EC2_admin']) {
-                    $command[] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/\* \/var\/www\/$project\//d' /etc/sudoers";
-                } else {
-                    $command [] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/chmod 775 \/var\/www\/$project\//d' /etc/sudoers";
-                    $command[] = "sudo sed -i '/$username ALL=(ALL) NOPASSWD:\/usr\/bin\/rm \/var\/www\/$project\//d' /etc/sudoers";
-                }
-            }
-            $parameters['Parameters']['commands'] = $command;
-            $ssmClient->sendCommand($parameters);
-        }
     }
 }
