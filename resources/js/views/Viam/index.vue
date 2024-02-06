@@ -108,7 +108,7 @@
                 </div>
               </ValidationProvider>
             </div>
-            <div v-if="checkInstance && form.type === 3 || form.type === 4">
+            <div v-if="checkInstance && form.type === 4">
               <ValidationProvider
                 v-slot="{ errors }"
                 name="Project Name"
