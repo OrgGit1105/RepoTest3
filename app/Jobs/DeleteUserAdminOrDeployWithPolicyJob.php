@@ -96,10 +96,10 @@ class DeleteUserAdminOrDeployWithPolicyJob implements ShouldQueue
                 $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
             }
         }
-        if($delete && $this->typeAccount == POLICY_TYPE['EC2_deploy']) {
+        if($this->typeAccount == POLICY_TYPE['EC2_deploy']) {
             $projectName = $this->policy->project_name;
             $groupName = $this->policy->name;
-            $command[] = "sudo chown -R root:root /var/www/$projectName";
+            $command[] = "sudo chown -R :root /var/www/$projectName";
             $command[] = "sudo chmod -R 775 /var/www/$projectName";
             $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
             $command[] = "sudo chmod g+s /var/www/$projectName";
