@@ -276,13 +276,13 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
         } else {
             $command[] = "sudo chown -R root:root /var/www/$projectOld";
-            $command[] = "sudo chmod -R g=rwx,o= /var/www/$projectOld";
+            $command[] = "sudo chmod -R g=rwx,o=r-x /var/www/$projectOld";
             $command[] = "sudo chmod g+s /var/www/$projectOld";
 
             $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
 
             $command[] = "sudo chown -R root:$groupNew /var/www/$projectNew";
-            $command[] = "sudo chmod -R g=rwx,o= /var/www/$projectNew";
+            $command[] = "sudo chmod -R g=rwx,o=r-w /var/www/$projectNew";
             $command[] = "sudo chmod g+s /var/www/$projectNew";
         }
 

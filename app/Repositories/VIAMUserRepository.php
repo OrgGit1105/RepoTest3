@@ -8,7 +8,7 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Jobs\UpdateUserEC2WithViamUser;
+use App\Jobs\UpdateUserEC2WithViamUserJob;
 use App\Models\Policy;
 use App\Models\User;
 use App\Models\VIAMUser;
@@ -133,8 +133,8 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                 })->exists();
 
             $deleteAccountUser = !$policyEc2Update && $policyEc2Old;
-            UpdateUserEC2WithViamUser::dispatch($viamUser, $removePolicies, 'delete', $deleteAccountUser);
-            UpdateUserEC2WithViamUser::dispatch($viamUser, $addPolicies, 'create');
+            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $removePolicies, 'delete', $deleteAccountUser);
+            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $addPolicies, 'create');
         } else {
             $model = parent::update($attributes, $id);
             VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();
