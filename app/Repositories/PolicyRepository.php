@@ -8,9 +8,8 @@
 namespace Repository;
 
 use App\Http\Resources\BaseResource;
-use App\Jobs\CreateUserAdminOrDeployWithPolicyJob;
-use App\Jobs\DeleteUserAdminOrDeployWithPolicyJob;
 use App\Models\Policy;
+use App\Models\VIAMUser;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
 use Aws\Ssm\SsmClient;
@@ -77,7 +76,9 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     if(array_search($attributes['name'], $groups) !== false) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.name_existed'));
                     }
-                    Common::createGroupEc2($instanceId, $attributes['name'], $projectName);
+                    if($attributes['name'] && $projectName) {
+                        Common::createGroupEc2($instanceId, $attributes['name'], $projectName);
+                    }
                 }
             } else {
                 $attributes['project_name'] = null;
@@ -156,23 +157,23 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 $deleteAccountUser = $instanceOld != $instanceNew; //xóa luôn quyền ssh nếu đổi instanceId và policy là duy nhất trong nhóm quyền
                 if(in_array(POLICY_TYPE['EC2_admin'], [$policyTypeNew, $policyTypeOld]) && !in_array(POLICY_TYPE['EC2_deploy'], [$policyTypeNew, $policyTypeOld])) {
                     if($policyTypeOld != POLICY_TYPE['EC2_admin'] && $policyTypeNew == POLICY_TYPE['EC2_admin']) { // other -> admin: create admin
-                        CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, null, null);
+                        $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, null, null);
                     }
                     elseif ($policyTypeOld == POLICY_TYPE['EC2_admin'] && $policyTypeNew != POLICY_TYPE['EC2_admin']) { //admin => other: delete
-                        DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, true, POLICY_TYPE['EC2_admin']);
+                        $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, true, POLICY_TYPE['EC2_admin']);
                     }
                     else { // admin <=> admin
-                        DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_admin']);
+                        $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_admin']);
                         sleep(2);
-                        CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, null, null);
+                        $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, null, null);
                     }
                 }
                 if (in_array(POLICY_TYPE['EC2_deploy'], [$policyTypeNew, $policyTypeOld]) && !in_array(POLICY_TYPE['EC2_admin'], [$policyTypeNew, $policyTypeOld])) {
                     if($policyTypeOld != POLICY_TYPE['EC2_deploy'] && $policyTypeNew == POLICY_TYPE['EC2_deploy']) { // other -> deploy: create group with user of group
-                        CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew);
+                        $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew);
                     }
                     elseif ($policyTypeOld == POLICY_TYPE['EC2_deploy'] && $policyTypeNew != POLICY_TYPE['EC2_deploy']) { //deploy => other: delete group
-                        DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, true, POLICY_TYPE['EC2_deploy']);
+                        $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, true, POLICY_TYPE['EC2_deploy']);
                     }
                     else { // deploy <=> deploy
                         if($instanceNew == $instanceOld) { // only update name, project_name => update group/project
@@ -182,19 +183,19 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                             }
                             $this->updateGroupEc2($instanceNew, $projectOld, $projectNew, $nameOld, $nameNew);
                         } else {
-                            DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_deploy']);
+                            $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_deploy']);
                             sleep(2);
-                            CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew);
+                            $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew);
                         }
                     }
                 }
                 if ($policyTypeOld == POLICY_TYPE['EC2_deploy'] && $policyTypeNew == POLICY_TYPE['EC2_admin']) { // deploy => admin
-                    DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_deploy']); //delete deploy
-                    CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, null, null); //create user admin
+                    $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_deploy']); //delete deploy
+                    $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, null, null); //create user admin
                 }
                 if ($policyTypeOld == POLICY_TYPE['EC2_admin'] && $policyTypeNew == POLICY_TYPE['EC2_deploy']) { //admin =>deploy
-                    DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_admin']); //delete admin
-                    CreateUserAdminOrDeployWithPolicyJob::dispatch($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew); //create user deploy
+                    $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, $deleteAccountUser, POLICY_TYPE['EC2_admin']); //delete admin
+                    $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew); //create user deploy
                 }
             }
         }
@@ -212,7 +213,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
         if(config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-            DeleteUserAdminOrDeployWithPolicyJob::dispatch($policy, $policy->instance_id, true, $policy->type); //delete admin
+            $this->deleteUserAdminOrDeployWithPolicy($policy, $policy->instance_id, true, $policy->type); //delete admin
         }
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);
@@ -300,5 +301,123 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 'commands' => $commands,
             ],
         ]);
+    }
+
+    private function deleteUserAdminOrDeployWithPolicy(Policy $policy, string $instanceId, $deleteAccountUser = false, int $typeAccount)
+    {
+        $param = Common::configAwsSDK();
+        $ssmClient = new SsmClient($param);
+        $parameters = [
+            'InstanceIds' => [$instanceId],
+            'DocumentName' => 'AWS-RunShellScript'
+        ];
+        $command = [];
+        $id = $policy->id;
+        $delete = false;
+        $usernames = [];
+        foreach ($policy->viam_users as $viam) {
+            foreach ($viam->users as $user) {
+                $usernames[] = $user->name;
+            }
+        }
+
+        $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $usernames);
+        $userExists = $usernames;
+        if ($userNotExists) {
+            $userExists = array_diff($usernames, $userNotExists);
+        }
+        // trường hợp policy bị xóa là policy có type = EC2 duy nhất trong VIAM_USER liên quan đến policy bị xóa
+        // => xóa tài khoản user trên EC2
+        if($deleteAccountUser) {
+            $viamUserOfPolicy = VIAMUser::query()
+                ->whereHas('policies', function ($e) use ($id) {
+                    $e->where('policies.id', $id);
+                })
+                ->get();
+            foreach ($viamUserOfPolicy as $viamUser) {
+                $viamUserOfPolicyEC2Other = VIAMUser::query()->where('id', $viamUser->id)
+                    ->whereHas('policies', function ($e) use ($id) {
+                        $e->where('policies.id', '!=', $id)
+                            ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                    })->exists();
+
+                if ($viamUserOfPolicyEC2Other) {
+                    $delete = true;
+                }
+                if (!$viamUserOfPolicyEC2Other) {
+                    foreach ($userExists as $username) {
+                        $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
+                        $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                        $command[] = "sudo pkill -u $username";
+                        $command[] = "sudo userdel -r $username";
+                    }
+                }
+            }
+        } else {
+            $delete = true;
+        }
+        if($delete && $typeAccount == POLICY_TYPE['EC2_admin']) {
+            foreach ($userExists as $username) {
+                $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+            }
+        }
+        if($typeAccount == POLICY_TYPE['EC2_deploy']) {
+            $projectName = $policy->project_name;
+            $groupName = $policy->name;
+            if($projectName && $groupName) {
+                $command[] = "sudo chown -R :root /var/www/$projectName";
+                $command[] = "sudo chmod -R 775 /var/www/$projectName";
+                $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
+                $command[] = "sudo chmod -R 777 /var/www/$projectName/.git/";
+                $command[] = "sudo chmod g+s /var/www/$projectName";
+                $command[] = "sudo groupdel $groupName";
+            }
+        }
+        if($command) {
+            $parameters['Parameters']['commands'] = $command;
+            $ssmClient->sendCommand($parameters);
+        }
+    }
+
+    private function createUserAdminOrDeployWithPolicy($policy, $instanceId, $type, $groupName = null, $projectName = null)
+    {
+        $param = Common::configAwsSDK();
+        $ssmClient = new SsmClient($param);
+
+        $parameters = [
+            'InstanceIds' => [$instanceId],
+            'DocumentName' => 'AWS-RunShellScript'
+        ];
+        $command = [];
+        $names = [];
+        $sshKey = [];
+        if ($type == POLICY_TYPE['EC2_deploy'] && $groupName && $projectName) {
+            Common::createGroupEc2($instanceId, $groupName, $projectName);
+        }
+        foreach ($policy->viam_users as $viam) {
+            foreach ($viam->users as $user) {
+                $username = $user->name;
+                $names[] = $username;
+                $sshKey[$username] = $user->ssh_public_key;
+                if ($type == POLICY_TYPE['EC2_admin']) {
+                    $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
+                } else {
+                    $command [] = "sudo usermod -aG $groupName $username";
+                }
+            }
+        }
+        $commands = [];
+        $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $names);
+        if (!empty($userNotExists)) {
+            foreach ($userNotExists as $userNotExist) {
+                $commands[] = "sudo adduser $userNotExist";
+                $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
+                $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
+            }
+        }
+
+        $commandAdd = implode(' && ', $commands);
+        $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
+        $ssmClient->sendCommand($parameters);
     }
 }
