@@ -18,6 +18,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $timeout = 300;
     private $viamUser, $policies, $action, $deleteAccountUser;
 
     /**
