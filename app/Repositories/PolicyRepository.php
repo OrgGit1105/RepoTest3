@@ -279,19 +279,23 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         if($projectOld == $projectNew) {
             $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
         } else {
-            $command[] = "sudo chown -R :root /var/www/$projectOld";
-            $command[] = "sudo chmod -R 775 /var/www/$projectOld";
-            $command[] = "sudo chmod -R 777 /var/www/$projectOld/storage/";
-            $command[] = "sudo chmod -R 777 /var/www/$projectOld/.git/";
-            $command[] = "sudo chmod g+s /var/www/$projectOld";
+            if($projectOld) {
+                $command[] = "sudo chown -R :root /var/www/$projectOld";
+                $command[] = "sudo chmod -R 775 /var/www/$projectOld";
+                $command[] = "sudo chmod -R 777 /var/www/$projectOld/storage/";
+                $command[] = "sudo chmod -R 777 /var/www/$projectOld/.git/";
+                $command[] = "sudo chmod g+s /var/www/$projectOld";
+            }
 
-            $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
+            if($groupNew && $groupOld && $projectNew) {
+                $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
 
-            $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
-            $command[] = "sudo chmod -R 775 /var/www/$projectNew";
-            $command[] = "sudo chmod -R 777 /var/www/$projectNew/storage/";
-            $command[] = "sudo chmod -R 777 /var/www/$projectNew/.git/";
-            $command[] = "sudo chmod g+s /var/www/$projectNew";
+                $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
+                $command[] = "sudo chmod -R 775 /var/www/$projectNew";
+                $command[] = "sudo chmod -R 777 /var/www/$projectNew/storage/";
+                $command[] = "sudo chmod -R 777 /var/www/$projectNew/.git/";
+                $command[] = "sudo chmod g+s /var/www/$projectNew";
+            }
         }
 
         $ssmClient->sendCommand([
