@@ -458,7 +458,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             if ($projectOld) {
                 $command[] = "sudo chown -R :root /var/www/$projectOld";
                 $command[] = "sudo chmod -R 777 /var/www/$projectOld/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectOld/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectOld/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectOld";
             }
 
@@ -467,7 +467,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
                 $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
                 $command[] = "sudo chmod -R 777 /var/www/$projectNew/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectNew/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectNew/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectNew";
             }
         }
@@ -545,7 +545,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             if ($projectName && $groupName) {
                 $command[] = "sudo chown -R :root /var/www/$projectName";
                 $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectName/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectName/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectName";
                 $command[] = "sudo groupdel $groupName";
             }
