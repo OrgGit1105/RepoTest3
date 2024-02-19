@@ -17,9 +17,10 @@ class Policy extends Model
     const TYPE = 'type';
     const INSTANCE_ID = 'instance_id';
     const PROJECT_NAME = 'project_name';
+    const ARN_ROLE = 'arn_role';
 
     protected $fillable = [
-        self::NAME, self::TYPE, self::INSTANCE_ID, self::PROJECT_NAME
+        self::NAME, self::TYPE, self::INSTANCE_ID, self::PROJECT_NAME, self::ARN_ROLE
     ];
 
     protected $casts = [
