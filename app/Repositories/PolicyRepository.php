@@ -39,9 +39,14 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         return Policy::class;
     }
 
-    public function list($attributes)
+    public function listAll($attributes)
     {
         return $this->model->get();
+    }
+
+    public function listOption()
+    {
+        return $this->model->where(Policy::TYPE, '!=', POLICY_TYPE['AWS'])->get();
     }
 
     public function create(array $attributes)

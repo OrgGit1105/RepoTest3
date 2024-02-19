@@ -410,7 +410,7 @@ export default {
       return { 'cursor': 'pointer' };
     },
     async getListPolicy() {
-      const url = `/policy`;
+      const url = `/policy-option`;
       await getAllPolicy(url)
         .then((response) => {
           if (response.code === 200) {

@@ -302,7 +302,7 @@ export default {
       this.$router.push({ path: `/viam-user/index` });
     },
     async getListPolicy() {
-      const url = `/policy`;
+      const url = `/policy-option`;
       await getAllPolicy(url)
         .then((response) => {
           if (response.code === 200) {
