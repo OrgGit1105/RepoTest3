@@ -70,6 +70,21 @@
                         </div>
                       </ValidationProvider>
                     </div>
+                    <div v-if="formEdit.type === 2">
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="Arn Role"
+                        rules="required"
+                      >
+                        <p class="header-employee-edit-name fw-5">Arn Role</p>
+                        <div class="header-employee-edit">
+                          <el-input id="arn_role" v-model="formEdit.arn_role" />
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                        </div>
+                      </ValidationProvider>
+                    </div>
                     <div v-if="formEdit.type === 3 || formEdit.type === 4">
                       <ValidationProvider
                         v-slot="{ errors }"
@@ -156,6 +171,7 @@ export default {
       formEdit: {
         name: '',
         type: '',
+        arn_role: '',
         instance_id: null,
         project_name: null,
       },
@@ -189,8 +205,13 @@ export default {
     companyBranch() {
     },
     'formEdit.type'(newType) {
+      if (newType !== 2) {
+        this.formEdit.arn_role = '';
+      }
       if (newType !== 3 && newType !== 4) {
         this.formEdit.instance_id = null;
+      }
+      if (newType !== 4) {
         this.formEdit.project_name = null;
       }
     },
@@ -255,6 +276,7 @@ export default {
             type: response.data.type,
             instance_id: response.data.instance_id,
             project_name: response.data.project_name,
+            arn_role: response.data.arn_role,
           };
           this.closeLoading();
         })
@@ -272,6 +294,7 @@ export default {
       const isValid = await this.$refs.obsEditEmployee.validate();
       if (isValid === true) {
         console.log('dddd', this.formEdit);
+        this.openLoading();
         await UserApi.putOneUser(this.id, this.formEdit)
           .then(async(response) => {
             console.log('first response', response);
@@ -291,6 +314,7 @@ export default {
                 content: response.message,
               });
             }
+            this.closeLoading();
           })
           .catch((error) => {
             MakeToast({
