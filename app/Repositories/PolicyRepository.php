@@ -12,7 +12,11 @@ use App\Models\Policy;
 use App\Models\VIAMUser;
 use App\Models\VIAMUserPolicy;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
+use Aws\Ec2\Ec2Client;
+use Aws\Exception\AwsException;
+use Aws\Iam\IamClient;
 use Aws\Ssm\SsmClient;
+use Aws\Sts\StsClient;
 use Helper\Common;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
@@ -22,33 +26,38 @@ use Illuminate\Foundation\Application;
 class PolicyRepository extends BaseRepository implements PolicyRepositoryInterface
 {
 
-     public function __construct(Application $app)
-     {
-         parent::__construct($app);
+    public function __construct(Application $app)
+    {
+        parent::__construct($app);
 
-     }
+    }
 
     /**
-       * Instantiate model
-       *
-       * @param Policy $model
-       */
+     * Instantiate model
+     *
+     * @param Policy $model
+     */
 
     public function model()
     {
         return Policy::class;
     }
 
-    public function list($attributes)
+    public function listAll($attributes)
     {
         return $this->model->get();
+    }
+
+    public function listOption()
+    {
+        return $this->model->where(Policy::TYPE, '!=', POLICY_TYPE['AWS'])->get();
     }
 
     public function create(array $attributes)
     {
         $type = $attributes['type'];
         try {
-            if($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
+            if ($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
                 $instanceId = $attributes['instance_id'];
                 $projectName = @$attributes['project_name'];
                 $isExisted = $this->model
@@ -58,31 +67,50 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     })
                     ->where(Policy::INSTANCE_ID, $instanceId)
                     ->exists();
-                if($isExisted) {
+                if ($isExisted) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
                 }
 
-                if($type == POLICY_TYPE['EC2_admin']) {
+                if ($type == POLICY_TYPE['EC2_admin']) {
                     $attributes['project_name'] = null;
                 }
-                if($type == POLICY_TYPE['EC2_deploy'] && config('app.env') === ENVIRONMENT_UPDATE) {
+                if ($type == POLICY_TYPE['EC2_deploy'] && config('app.env') === ENVIRONMENT_UPDATE) {
                     $projectName = $attributes['project_name'];
                     $instanceId = $attributes['instance_id'];
                     $projects = $this->getListData($instanceId, 'project');
                     $groups = $this->getListData($instanceId, 'group');
-                    if(array_search($projectName, $projects) === false) {
+                    if (array_search($projectName, $projects) === false) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                     }
-                    if(array_search($attributes['name'], $groups) !== false) {
+                    if (array_search($attributes['name'], $groups) !== false) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.name_existed'));
                     }
-                    if($attributes['name'] && $projectName) {
+                    if ($attributes['name'] && $projectName) {
                         Common::createGroupEc2($instanceId, $attributes['name'], $projectName);
                     }
                 }
-            } else {
+            }
+
+            if ($type == POLICY_TYPE['AWS']) {
+                $arnRoleExist = $this->model->where(Policy::ARN_ROLE, $attributes['arn_role'])
+                    ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                    ->exists();
+                if ($arnRoleExist) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.aws_existed'), trans('api.policy.aws_existed'));
+                }
+                $createAws = $this->createPolicyAws($attributes['arn_role']);
+                if ($createAws->original['code'] != CODE_SUCCESS) {
+                    return $createAws;
+                }
+            }
+            if ($type != POLICY_TYPE['EC2_deploy']) {
                 $attributes['project_name'] = null;
+            }
+            if (!in_array($type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
                 $attributes['instance_id'] = null;
+            }
+            if ($type != POLICY_TYPE['AWS']) {
+                $attributes['arn_role'] = null;
             }
             $model = $this->model->create($attributes);
             return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));
@@ -91,30 +119,106 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         }
     }
 
+    private function getInfoIamRoleSelf(Ec2Client $ec2Client, IamClient $iamClient)
+    {
+        $instanceIdSelf = 'i-0553d99830b279164';
+        $result = $ec2Client->describeInstances();
+        $instances = $result->get('Reservations');
+        $arnIamRoleSelf = null;
+        $ec2Exist = false;
+
+        foreach ($instances as $instance) {
+            if ($instance['Instances'][0]['InstanceId'] == $instanceIdSelf) {
+                $ec2Exist = true;
+                $arnIamRoleSelf = @$instance['Instances'][0]['IamInstanceProfile']['Arn'] ?? null;
+                break;
+            }
+        }
+        if (!$ec2Exist || !$arnIamRoleSelf) {
+            return false;
+        }
+
+        $iamInstanceProfileArn = explode('/', $arnIamRoleSelf);
+        $iamRoleSelf = end($iamInstanceProfileArn);
+        $result = $iamClient->getRole([
+            'RoleName' => $iamRoleSelf,
+        ]);
+        $currentTrustPolicy = json_decode(urldecode($result['Role']['AssumeRolePolicyDocument']), true);
+
+        return [
+            'iamRoleSelf' => $iamRoleSelf,
+            'currentTrustPolicy' => $currentTrustPolicy
+        ];
+    }
+
+    private function createPolicyAws($arnIamRoleAdd)
+    {
+        if (config('app.env') === ENVIRONMENT_UPDATE) {
+            $param = Common::configAwsSDK();
+            $ec2Client = new Ec2Client($param);
+            $iamClient = new IamClient($param);
+            try {
+                $infoIamRoleSelf = $this->getInfoIamRoleSelf($ec2Client, $iamClient);
+                if (!$infoIamRoleSelf) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.instance_id_not_found'), trans('api.policy.instance_id_not_found'));
+                }
+
+                $currentTrustPolicy = $infoIamRoleSelf['currentTrustPolicy'];
+                $currentTrustPolicy['Statement'][] = [
+                    'Effect' => 'Allow',
+                    'Principal' => ['AWS' => $arnIamRoleAdd],
+                    'Action' => 'sts:AssumeRole'
+                ];
+                $iamClient->updateAssumeRolePolicy([
+                    'PolicyDocument' => json_encode($currentTrustPolicy),
+                    'RoleName' => $infoIamRoleSelf['iamRoleSelf'],
+                ]);
+                return ResponseService::responseJson(CODE_SUCCESS);
+            } catch (AwsException $e) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e->getMessage());
+            }
+        }
+    }
+
     public function update(array $attributes, $id)
     {
         $policy = $this->model->find($id);
-        if($policy == null) {
+        if ($policy == null) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        if(in_array($id, POLICY_V_FACE_ID)) {
+        if (in_array($id, POLICY_V_FACE_ID)) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.update_fail'));
         }
 
-        if($policy->name != $attributes['name'] || $policy->type != $attributes['type']
-            || $policy->instance_id != $attributes['instance_id'] || $policy->project_name != $attributes['project_name']) {
+        $typeEC2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
+        $policyTypeOld = $policy->type;
+        $policyTypeNew = $attributes['type'];
+        if (in_array($policyTypeOld, $typeEC2) || in_array($policyTypeNew, $typeEC2)) {
             $updateEc2 = $this->updatePolicyEc2($id, $policy, $attributes);
-            if($updateEc2->original['code'] != CODE_SUCCESS) {
+            if ($updateEc2->original['code'] != CODE_SUCCESS) {
                 return $updateEc2;
             }
         }
-        if($attributes['type'] == POLICY_TYPE['EC2_admin']) {
+
+        if (in_array(POLICY_TYPE['AWS'], [$policyTypeOld, $policyTypeNew])) {
+            $updateAws = $this->updatePolicyAws($policy, $attributes);
+            if ($updateAws->original['code'] != CODE_SUCCESS) {
+                return $updateAws;
+            }
+        }
+
+        if($policyTypeNew == POLICY_TYPE['AWS'] && $policyTypeOld != POLICY_TYPE['AWS']) {
+            VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete(); // loại policy có type là AWS ra khỏi viam_user
+        }
+        if ($attributes['type'] != POLICY_TYPE['EC2_deploy']) {
             $attributes['project_name'] = null;
         }
-        if(!in_array($attributes['type'], [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-            $attributes['project_name'] = null;
+        if (!in_array($attributes['type'], [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
             $attributes['instance_id'] = null;
+        }
+        if ($attributes['type'] != POLICY_TYPE['AWS']) {
+            $attributes['arn_role'] = null;
         }
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
@@ -124,7 +228,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $typeEC2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
         $policyTypeOld = $policy->type;
         $policyTypeNew = $attributes['type'];
-        if(in_array($policyTypeOld, $typeEC2) || in_array($policyTypeNew, $typeEC2)) {
+        if($policy->name != $attributes['name'] || $policyTypeOld != $policyTypeNew
+            || $policy->instance_id != $attributes['instance_id'] || $policy->project_name != $attributes['project_name']) {
             $instanceOld = $policy->instance_id;
             $projectOld = $policy->project_name;
             $instanceNew = @$attributes['instance_id'];
@@ -132,7 +237,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $nameNew = $attributes['name'];
             $nameOld = $policy->name;
 
-            if(in_array($policyTypeNew, $typeEC2)) {
+            if (in_array($policyTypeNew, $typeEC2)) {
                 $isExisted = $this->model
                     ->where(Policy::TYPE, $policyTypeNew)
                     ->when($policyTypeNew == POLICY_TYPE['EC2_deploy'], function ($query) use ($projectNew) {
@@ -141,22 +246,22 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     ->where(Policy::INSTANCE_ID, $instanceNew)
                     ->where('id', '!=', $id)
                     ->exists();
-                if($isExisted) {
+                if ($isExisted) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
                 }
 
-                if($policyTypeNew == POLICY_TYPE['EC2_deploy'] && config('app.env') === ENVIRONMENT_UPDATE) {
+                if ($policyTypeNew == POLICY_TYPE['EC2_deploy'] && config('app.env') === ENVIRONMENT_UPDATE) {
                     $projects = $this->getListData($instanceNew, 'project');
-                    if(array_search($projectNew, $projects) === false) {
+                    if (array_search($projectNew, $projects) === false) {
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.project_do_not_existed'));
                     }
                 }
             }
 
-            if(config('app.env') === ENVIRONMENT_UPDATE) {
+            if (config('app.env') === ENVIRONMENT_UPDATE) {
                 $deleteAccountUser = $instanceOld != $instanceNew; //xóa luôn quyền ssh nếu đổi instanceId và policy là duy nhất trong nhóm quyền
-                if(in_array(POLICY_TYPE['EC2_admin'], [$policyTypeNew, $policyTypeOld]) && !in_array(POLICY_TYPE['EC2_deploy'], [$policyTypeNew, $policyTypeOld])) {
-                    if($policyTypeOld != POLICY_TYPE['EC2_admin'] && $policyTypeNew == POLICY_TYPE['EC2_admin']) { // other -> admin: create admin
+                if (in_array(POLICY_TYPE['EC2_admin'], [$policyTypeNew, $policyTypeOld]) && !in_array(POLICY_TYPE['EC2_deploy'], [$policyTypeNew, $policyTypeOld])) {
+                    if ($policyTypeOld != POLICY_TYPE['EC2_admin'] && $policyTypeNew == POLICY_TYPE['EC2_admin']) { // other -> admin: create admin
                         $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, null, null);
                     }
                     elseif ($policyTypeOld == POLICY_TYPE['EC2_admin'] && $policyTypeNew != POLICY_TYPE['EC2_admin']) { //admin => other: delete
@@ -169,16 +274,16 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     }
                 }
                 if (in_array(POLICY_TYPE['EC2_deploy'], [$policyTypeNew, $policyTypeOld]) && !in_array(POLICY_TYPE['EC2_admin'], [$policyTypeNew, $policyTypeOld])) {
-                    if($policyTypeOld != POLICY_TYPE['EC2_deploy'] && $policyTypeNew == POLICY_TYPE['EC2_deploy']) { // other -> deploy: create group with user of group
+                    if ($policyTypeOld != POLICY_TYPE['EC2_deploy'] && $policyTypeNew == POLICY_TYPE['EC2_deploy']) { // other -> deploy: create group with user of group
                         $this->createUserAdminOrDeployWithPolicy($policy, $instanceNew, $policyTypeNew, $nameNew, $projectNew);
                     }
                     elseif ($policyTypeOld == POLICY_TYPE['EC2_deploy'] && $policyTypeNew != POLICY_TYPE['EC2_deploy']) { //deploy => other: delete group
                         $this->deleteUserAdminOrDeployWithPolicy($policy, $instanceOld, true, POLICY_TYPE['EC2_deploy']);
                     }
                     else { // deploy <=> deploy
-                        if($instanceNew == $instanceOld) { // only update name, project_name => update group/project
+                        if ($instanceNew == $instanceOld) { // only update name, project_name => update group/project
                             $groups = $this->getListData($instanceNew, 'group');
-                            if(array_search($nameNew, $groups) !== false && $nameNew != $nameOld) {
+                            if (array_search($nameNew, $groups) !== false && $nameNew != $nameOld) {
                                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.name_existed'));
                             }
                             $this->updateGroupEc2($instanceNew, $projectOld, $projectNew, $nameOld, $nameNew);
@@ -202,18 +307,89 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         return ResponseService::responseJson(CODE_SUCCESS);
     }
 
+    private function updatePolicyAws(Policy $policy, array $attributes)
+    {
+        if (config('app.env') === ENVIRONMENT_UPDATE && ($policy->type != $attributes['type'] || $policy->arn_role != $attributes['arn_role'])) {
+            $arnRoleExist = $this->model->where(Policy::ARN_ROLE, $attributes['arn_role'])
+                ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                ->where('id', '!=', $policy->id)
+                ->exists();
+            if ($arnRoleExist) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.aws_existed'), trans('api.policy.aws_existed'));
+            }
+
+            $typeAws = POLICY_TYPE['AWS'];
+            $arnIamRoleAdd = $attributes['arn_role'];
+            $typeOld = $policy->type;
+            $typeNew = $attributes['type'];
+            $param = Common::configAwsSDK();
+            $ec2Client = new Ec2Client($param);
+            $iamClient = new IamClient($param);
+            try {
+                $infoIamRoleSelf = $this->getInfoIamRoleSelf($ec2Client, $iamClient);
+                if (!$infoIamRoleSelf) {
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.instance_id_not_found'), trans('api.policy.instance_id_not_found'));
+                }
+                $currentTrustPolicy = $infoIamRoleSelf['currentTrustPolicy'];
+
+                if ($typeOld != $typeAws && $typeNew == $typeAws) {//other => AWS
+                    $currentTrustPolicy['Statement'][] = [
+                        'Effect' => 'Allow',
+                        'Principal' => ['AWS' => $arnIamRoleAdd],
+                        'Action' => 'sts:AssumeRole'
+                    ];
+                } elseif ($typeOld == $typeAws && $typeNew != $typeAws) {//AWS => other
+                    $policyDelete = [
+                        'Effect' => 'Allow',
+                        'Principal' => ['AWS' => $policy->arn_role],
+                        'Action' => 'sts:AssumeRole'
+                    ];
+                    $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
+                        return $policy != $policyDelete;
+                    });
+                } else { //AWS -> AWS
+                    $policyDelete = [
+                        'Effect' => 'Allow',
+                        'Principal' => ['AWS' => $policy->arn_role],
+                        'Action' => 'sts:AssumeRole'
+                    ];
+                    $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
+                        return $policy != $policyDelete;
+                    });
+                    $currentTrustPolicy['Statement'][] = [
+                        'Effect' => 'Allow',
+                        'Principal' => ['AWS' => $arnIamRoleAdd],
+                        'Action' => 'sts:AssumeRole'
+                    ];
+                }
+                $iamClient->updateAssumeRolePolicy([
+                    'PolicyDocument' => json_encode($currentTrustPolicy),
+                    'RoleName' => $infoIamRoleSelf['iamRoleSelf'],
+                ]);
+            } catch (AwsException $e) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e->getMessage());
+            }
+        }
+        return ResponseService::responseJson(CODE_SUCCESS);
+    }
+
     public function delete($id)
     {
         $policy = $this->model->find($id);
-        if($policy == null) {
+        if ($policy == null) {
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        if(in_array($id, POLICY_V_FACE_ID)) {
+        if (in_array($id, POLICY_V_FACE_ID)) {
             return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
-        if(config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+        if (config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
             $this->deleteUserAdminOrDeployWithPolicy($policy, $policy->instance_id, true, $policy->type); //delete admin
+        }
+        if (config('app.env') === ENVIRONMENT_UPDATE && $policy->type == POLICY_TYPE['AWS']) {
+            $deleteAws = $this->deletePolicyAws($policy);
+            if ($deleteAws->original['code'] != CODE_SUCCESS)
+                return $deleteAws;
         }
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);
@@ -225,7 +401,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
 
-        if($typeList == 'project') {
+        if ($typeList == 'project') {
             $command = "mkdir -p /var/www && cd /var/www && ls -d */";
         } else {
             $command = "cat /etc/group";
@@ -252,8 +428,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 'InstanceId' => $instanceId,
             ]);
             $status = $output['Status'];
-            if($status == 'Success') {
-                if($typeList == 'project') {
+            if ($status == 'Success') {
+                if ($typeList == 'project') {
                     $outputs = explode("/\n", $output['StandardOutputContent']);
                     $data = array_filter($outputs, function ($value) {
                         return $value !== "" && $value !== "conf.d";
@@ -276,24 +452,22 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
         $commands = [];
-        if($projectOld == $projectNew) {
+        if ($projectOld == $projectNew) {
             $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
         } else {
-            if($projectOld) {
+            if ($projectOld) {
                 $command[] = "sudo chown -R :root /var/www/$projectOld";
-                $command[] = "sudo chmod -R 775 /var/www/$projectOld";
                 $command[] = "sudo chmod -R 777 /var/www/$projectOld/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectOld/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectOld/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectOld";
             }
 
-            if($groupNew && $groupOld && $projectNew) {
+            if ($groupNew && $groupOld && $projectNew) {
                 $commands[] = "sudo groupmod --new-name $groupNew $groupOld";
 
                 $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
-                $command[] = "sudo chmod -R 775 /var/www/$projectNew";
                 $command[] = "sudo chmod -R 777 /var/www/$projectNew/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectNew/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectNew/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectNew";
             }
         }
@@ -317,7 +491,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         ];
         $command = [];
         $id = $policy->id;
-        $delete = false;
+        $doNotDeleteUser = false;
         $usernames = [];
         foreach ($policy->viam_users as $viam) {
             foreach ($viam->users as $user) {
@@ -332,7 +506,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         }
         // trường hợp policy bị xóa là policy có type = EC2 duy nhất trong VIAM_USER liên quan đến policy bị xóa
         // => xóa tài khoản user trên EC2
-        if($deleteAccountUser) {
+        if ($deleteAccountUser) {
             $viamUserOfPolicy = VIAMUser::query()
                 ->whereHas('policies', function ($e) use ($id) {
                     $e->where('policies.id', $id);
@@ -340,13 +514,13 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 ->get();
             foreach ($viamUserOfPolicy as $viamUser) {
                 $viamUserOfPolicyEC2Other = VIAMUser::query()->where('id', $viamUser->id)
-                    ->whereHas('policies', function ($e) use ($id) {
+                    ->whereHas('policies', function ($e) use ($id, $instanceId) {
                         $e->where('policies.id', '!=', $id)
+                            ->where(Policy::INSTANCE_ID, $instanceId)
                             ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
                     })->exists();
-
                 if ($viamUserOfPolicyEC2Other) {
-                    $delete = true;
+                    $doNotDeleteUser = true;
                 }
                 if (!$viamUserOfPolicyEC2Other) {
                     foreach ($userExists as $username) {
@@ -358,26 +532,25 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 }
             }
         } else {
-            $delete = true;
+            $doNotDeleteUser = true;
         }
-        if($delete && $typeAccount == POLICY_TYPE['EC2_admin']) {
+        if ($doNotDeleteUser && $typeAccount == POLICY_TYPE['EC2_admin']) {
             foreach ($userExists as $username) {
                 $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
             }
         }
-        if($typeAccount == POLICY_TYPE['EC2_deploy']) {
+        if ($typeAccount == POLICY_TYPE['EC2_deploy']) {
             $projectName = $policy->project_name;
             $groupName = $policy->name;
-            if($projectName && $groupName) {
+            if ($projectName && $groupName) {
                 $command[] = "sudo chown -R :root /var/www/$projectName";
-                $command[] = "sudo chmod -R 775 /var/www/$projectName";
                 $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
-                $command[] = "sudo chmod -R 777 /var/www/$projectName/.git/";
+                $command[] = "sudo chmod -R 775 /var/www/$projectName/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectName";
                 $command[] = "sudo groupdel $groupName";
             }
         }
-        if($command) {
+        if ($command) {
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);
         }
@@ -423,5 +596,36 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $commandAdd = implode(' && ', $commands);
         $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
         $ssmClient->sendCommand($parameters);
+    }
+
+    private function deletePolicyAws(Policy $policy)
+    {
+        $param = Common::configAwsSDK();
+        $ec2Client = new Ec2Client($param);
+        $iamClient = new IamClient($param);
+        try {
+            $infoIamRoleSelf = $this->getInfoIamRoleSelf($ec2Client, $iamClient);
+            if (!$infoIamRoleSelf) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.instance_id_not_found'), trans('api.policy.instance_id_not_found'));
+            }
+            $currentTrustPolicy = $infoIamRoleSelf['currentTrustPolicy'];
+
+            $policyDelete = [
+                'Effect' => 'Allow',
+                'Principal' => ['AWS' => $policy->arn_role],
+                'Action' => 'sts:AssumeRole'
+            ];
+            $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
+                return $policy != $policyDelete;
+            });
+
+            $iamClient->updateAssumeRolePolicy([
+                'PolicyDocument' => json_encode($currentTrustPolicy),
+                'RoleName' => $infoIamRoleSelf['iamRoleSelf'],
+            ]);
+            return ResponseService::responseJson(CODE_SUCCESS);
+        } catch (AwsException $e) {
+            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e->getMessage());
+        }
     }
 }

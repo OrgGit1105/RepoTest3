@@ -72,7 +72,41 @@ class PolicyController extends Controller
      */
     public function index(PolicyRequest $request)
     {
-        $data = $this->repository->list($request->all());
+        $data = $this->repository->listAll($request->all());
+        return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/policy-option",
+     *   tags={"Policy"},
+     *   summary="List policy option",
+     *   operationId="policy_option",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{{"id": 1,"name": "..........."}}}
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function listOption()
+    {
+        $data = $this->repository->listOption();
         return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
     }
 
@@ -108,6 +142,11 @@ class PolicyController extends Controller
      *                property="project_name",
      *                type = "string",
      *                description="required with type is EC2",
+     *            ),
+     *          @OA\Property(
+     *                property="arn_role",
+     *                type = "string",
+     *                description="required with type is AWS",
      *            ),
      *         ),
      *       ),
@@ -220,6 +259,11 @@ class PolicyController extends Controller
      *                property="project_name",
      *                type = "string",
      *                description="required with type is EC2",
+     *            ),
+     *          @OA\Property(
+     *                property="arn_role",
+     *                type = "string",
+     *                description="required with type is AWS",
      *            ),
      *         ),
      *       ),

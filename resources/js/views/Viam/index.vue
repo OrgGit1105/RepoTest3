@@ -90,6 +90,21 @@
                 </div>
               </div>
             </ValidationProvider>
+            <div v-if="form.type === 2">
+              <ValidationProvider
+                v-slot="{ errors }"
+                name="Arn Role"
+                rules="required"
+              >
+                <label class="mt-3">Arn Role</label>
+                <div class="header-employee-edit">
+                  <el-input id="arn_role" v-model="form.arn_role" />
+                  <div class="text-error">
+                    {{ errors[0] }}
+                  </div>
+                </div>
+              </ValidationProvider>
+            </div>
             <div v-if="form.type === 3 || form.type === 4">
               <ValidationProvider
                 v-slot="{ errors }"
@@ -175,6 +190,7 @@ export default {
       form: {
         name: '',
         type: '',
+        arn_role: '',
         instance_id: null,
         project_name: null,
       },

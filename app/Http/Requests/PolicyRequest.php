@@ -48,6 +48,7 @@ class PolicyRequest extends FormRequest
                 'type' => 'required|in:' . implode(',', POLICY_TYPE),
                 'instance_id' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
                 'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_deploy'],
+                'arn_role' => 'nullable|string|required_if:type,' . POLICY_TYPE['AWS'] . '|regex:/^arn:aws:iam::[0-9]+:role\/[\w+=,.@-]+$/'
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'store'){
@@ -56,6 +57,7 @@ class PolicyRequest extends FormRequest
                 'type' => 'required|in:' . implode(',', POLICY_TYPE),
                 'instance_id' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_admin'] . ',' . POLICY_TYPE['EC2_deploy'],
                 'project_name' => 'nullable|string|required_if:type,' . POLICY_TYPE['EC2_deploy'],
+                'arn_role' => 'nullable|string|required_if:type,' . POLICY_TYPE['AWS'] . '|regex:/^arn:aws:iam::[0-9]+:role\/[\w+=,.@-]+$/'
             ];
         }
         if(Route::getCurrentRoute()->getActionMethod() == 'getProject'){
