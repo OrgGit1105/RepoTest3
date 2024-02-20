@@ -250,6 +250,22 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
                 }
 
+                if($policyTypeOld != $policyTypeNew) {
+                    //case: tồn tại viam_user thuộc policy hiện tại có chứa 1 policy khác có type là EC2 nhưng khác type EC2 của policy hiện tại
+                    // => không cho phép 1 viam_user vừa có quyền deploy, vừa có quyền admin trên cùng 1 instance
+                    $typeToFind = array_diff($typeEC2, [$policyTypeNew]);
+                    $isSame = VIAMUser::whereHas('policies', function ($query) use ($id, $typeToFind, $instanceNew) {
+                        $query->where('policies.id', '!=', $id)
+                            ->where('type', $typeToFind)
+                            ->where(Policy::INSTANCE_ID, $instanceNew);
+                    })->whereHas('policies', function ($query) use ($id) {
+                        $query->where('policies.id', $id);
+                    })->get();
+                    if($isSame->count() > 0) {
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.viam_user.policy_id_ec2'));
+                    }
+                }
+
                 if ($policyTypeNew == POLICY_TYPE['EC2_deploy'] && config('app.env') === ENVIRONMENT_UPDATE) {
                     $projects = $this->getListData($instanceNew, 'project');
                     if (array_search($projectNew, $projects) === false) {
@@ -491,7 +507,6 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         ];
         $command = [];
         $id = $policy->id;
-        $doNotDeleteUser = false;
         $usernames = [];
         foreach ($policy->viam_users as $viam) {
             foreach ($viam->users as $user) {
@@ -510,8 +525,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $viamUserOfPolicy = VIAMUser::query()
                 ->whereHas('policies', function ($e) use ($id) {
                     $e->where('policies.id', $id);
-                })
-                ->get();
+                })->get();
             foreach ($viamUserOfPolicy as $viamUser) {
                 $viamUserOfPolicyEC2Other = VIAMUser::query()->where('id', $viamUser->id)
                     ->whereHas('policies', function ($e) use ($id, $instanceId) {
@@ -519,26 +533,30 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                             ->where(Policy::INSTANCE_ID, $instanceId)
                             ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
                     })->exists();
-                if ($viamUserOfPolicyEC2Other) {
-                    $doNotDeleteUser = true;
+                $userOfViamUser = $viamUser->users->pluck('name')->toArray();
+                $userDel = array_intersect($userOfViamUser, $userExists);
+                if ($viamUserOfPolicyEC2Other && $typeAccount == POLICY_TYPE['EC2_admin']) {
+                    foreach ($userDel as $name) {
+                        $command[] = "sudo sed -i '/^$name ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                    }
                 }
                 if (!$viamUserOfPolicyEC2Other) {
-                    foreach ($userExists as $username) {
-                        $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
-                        $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
-                        $command[] = "sudo pkill -u $username";
-                        $command[] = "sudo userdel -r $username";
+                    foreach ($userDel as $nameDel) {
+                        $command[] = "echo '' | sudo -u $nameDel tee /home/$nameDel/.ssh/authorized_keys > /dev/null";
+                        $command[] = "sudo sed -i '/^$nameDel ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                        $command[] = "sudo pkill -u $nameDel";
+                        $command[] = "sudo userdel -r $nameDel";
                     }
                 }
             }
         } else {
-            $doNotDeleteUser = true;
-        }
-        if ($doNotDeleteUser && $typeAccount == POLICY_TYPE['EC2_admin']) {
-            foreach ($userExists as $username) {
-                $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+            if ($typeAccount == POLICY_TYPE['EC2_admin']) {
+                foreach ($userExists as $username) {
+                    $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                }
             }
         }
+
         if ($typeAccount == POLICY_TYPE['EC2_deploy']) {
             $projectName = $policy->project_name;
             $groupName = $policy->name;
@@ -583,19 +601,25 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 }
             }
         }
-        $commands = [];
         $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $names);
         if (!empty($userNotExists)) {
             foreach ($userNotExists as $userNotExist) {
+                $commands = [];
                 $commands[] = "sudo adduser $userNotExist";
                 $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
                 $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
+                $commandAdd = implode(' && ', $commands);
+                $commandNode = ["grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"];
+
+                $parameters['Parameters']['commands'] = array_merge([$commandAdd], $commandNode);
+                $ssmClient->sendCommand($parameters);
             }
         }
 
-        $commandAdd = implode(' && ', $commands);
-        $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
-        $ssmClient->sendCommand($parameters);
+        if($command) {
+            $parameters['Parameters']['commands'] = $command;
+            $ssmClient->sendCommand($parameters);
+        }
     }
 
     private function deletePolicyAws(Policy $policy)
