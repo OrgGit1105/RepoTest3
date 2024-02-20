@@ -110,18 +110,21 @@ class Common
                 ];
 
                 $commands = [];
+                $command = [];
                 if (self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $commands[] = "sudo adduser $username";
                     $commands[] = "sudo -u $username mkdir -p /home/$username/.ssh";
+                    $command[] = "grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
                 }
                 $commands[] = "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                 $commandAdd = implode(' && ', $commands);
 
+                //thêm đường dẫn đến thư mục chứa tệp thực thi Node.js vào biến PATH
                 foreach ($instance as $item) {
-                    $groupName = $item['name'];
                     if ($item['type'] == POLICY_TYPE['EC2_admin']) {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
                     } else {
+                        $groupName = $item['name'];
                         $command [] = "sudo usermod -aG $groupName $username";
                     }
                 }

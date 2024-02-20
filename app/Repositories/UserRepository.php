@@ -168,16 +168,15 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, [$username]);
                 $command = [];
                 if (!empty($userNotExists)) {
-                    foreach ($userNotExists as $userNotExist) {
-                        $command[] = "sudo adduser $userNotExist";
-                        $command[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
-                    }
+                    $command[] = "sudo adduser $username";
+                    $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
+                    $command[] = "grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
                 } else {
                     $command = [
                         "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"
                     ];
                 }
-                $parameters['Parameters']['commands'] = array_merge($command);
+                $parameters['Parameters']['commands'] = $command;
                 $ssmClient->sendCommand($parameters);
             }
         }
