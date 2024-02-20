@@ -561,7 +561,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $projectName = $policy->project_name;
             $groupName = $policy->name;
             if ($projectName && $groupName) {
-                $command[] = "sudo chown -R :root /var/www/$projectName";
+                $command[] = "sudo chown -R :apache /var/www/$projectName";
                 $command[] = "sudo chmod -R 777 /var/www/$projectName/storage/";
                 $command[] = "sudo chmod -R 775 /var/www/$projectName/.git/";
                 $command[] = "sudo chmod g+s /var/www/$projectName";
