@@ -474,7 +474,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             if ($projectOld) {
                 $command[] = "sudo chown -R :apache /var/www/$projectOld";
                 $command[] = "find /var/www/$projectOld -type d -name \"storage\" -exec chmod -R 777 {} \;";
-                $command[] = "find /var/www/$projectOld -type d -name \".git\" -exec chmod -R 775 {} \;";
+                $command[] = "find /var/www/$projectOld -type d -name \".git\" -exec chmod -R 777 {} \;";
                 $command[] = "sudo chmod g+s /var/www/$projectOld";
             }
 
@@ -483,7 +483,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
                 $command[] = "sudo chown -R :$groupNew /var/www/$projectNew";
                 $command[] = "find /var/www/$projectNew -type d -name \"storage\" -exec chmod -R 777 {} \;";
-                $command[] = "find /var/www/$projectNew -type d -name \".git\" -exec chmod -R 775 {} \;";
+                $command[] = "find /var/www/$projectNew -type d -name \".git\" -exec chmod -R 777 {} \;";
                 $command[] = "sudo chmod g+s /var/www/$projectNew";
             }
         }
@@ -563,7 +563,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             if ($projectName && $groupName) {
                 $command[] = "sudo chown -R :apache /var/www/$projectName";
                 $command[] = "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;";
-                $command[] = "find /var/www/$projectName -type d -name \". git\" -exec chmod -R 775 {} \;";
+                $command[] = "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;";
                 $command[] = "sudo chmod g+s /var/www/$projectName";
                 $command[] = "sudo groupdel $groupName";
             }
