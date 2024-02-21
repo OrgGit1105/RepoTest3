@@ -330,14 +330,18 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         if (count($messages) != 3 && count($messages) != 4) {
             return __('analytic.err_format');
         }
+
+        if (Carbon::parse($messages['1']) < Carbon::now()) {
+            return __('analytic.check_date');
+        }
         if (count($messages) == 3) {
             if (!$this->validateDate($messages['1'])) {
                 return __('analytic.err_format_one_date');
             }
 
-            // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-            //     return __('analytic.check_date');
-            // }
+//             if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+//                 return __('analytic.check_date');
+//             }
             if (!$this->holiday($messages['1'])) {
                 return __('analytic.holiday');
             } else {
