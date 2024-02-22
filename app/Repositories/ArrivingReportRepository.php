@@ -332,13 +332,12 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             return __('analytic.err_format_one_date');
         }
 
-        if (Carbon::parse($messages['1']) < Carbon::now()) {
+        if (Carbon::parse($messages['1'])->format('Y-m-d') < Carbon::now()->format('Y-m-d')) {
             return __('analytic.check_date');
         }
 
         $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
         $dateOff = Carbon::parse($messages['1']);
-
         if (count($messages) == 3) {
 //             if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
 //                 return __('analytic.check_date');
