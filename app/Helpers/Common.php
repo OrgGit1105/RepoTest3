@@ -211,6 +211,7 @@ class Common
                     "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
                     "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
                     "sudo chmod g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
+                    "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
                     "for user in \$(getent group $groupOldOfProject | cut -d: -f4 | tr ',' ' '); do sudo usermod -aG $groupName \$user; done", // thêm tk ec2-user, apache, deploy vào nhóm
                 ],
             ],
