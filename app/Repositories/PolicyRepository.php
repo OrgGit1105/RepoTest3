@@ -603,13 +603,14 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         }
         $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, $names);
         if (!empty($userNotExists)) {
+            $nodePath = Common::getNodePath($instanceId);
             foreach ($userNotExists as $userNotExist) {
                 $commands = [];
                 $commands[] = "sudo adduser $userNotExist";
                 $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
                 $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
                 $commandAdd = implode(' && ', $commands);
-                $commandNode = ["grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"];
+                $commandNode = !empty($nodePath) ? ["grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"] : [];
 
                 $parameters['Parameters']['commands'] = array_merge([$commandAdd], $commandNode);
                 $ssmClient->sendCommand($parameters);

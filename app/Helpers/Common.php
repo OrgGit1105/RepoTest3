@@ -84,6 +84,19 @@ class Common
         } while ($status != 'Success' && $attempts <= $maxAttempts);
     }
 
+    public function getNodePath($instanceId)
+    {
+        $path = '';
+        switch ($instanceId) {
+            case INSTANCE_ID_240:
+                $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin'; //node của 240
+//            case INSTANCE_ID_240:
+//                $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin';
+        }
+
+        return $path;
+    }
+
     public function createUserEc2($username, $publicKey, $viam_user_id)
     {
         $param = Common::configAwsSDK();
@@ -114,12 +127,14 @@ class Common
                 if (self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $commands[] = "sudo adduser $username";
                     $commands[] = "sudo -u $username mkdir -p /home/$username/.ssh";
-                    $command[] = "grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                    $nodePath = self::getNodePath($instanceId); //thêm đường dẫn đến thư mục chứa tệp thực thi Node.js vào biến PATH
+                    if($nodePath) {
+                        $commands[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                    }
                 }
                 $commands[] = "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                 $commandAdd = implode(' && ', $commands);
 
-                //thêm đường dẫn đến thư mục chứa tệp thực thi Node.js vào biến PATH
                 foreach ($instance as $item) {
                     if ($item['type'] == POLICY_TYPE['EC2_admin']) {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
@@ -189,7 +204,8 @@ class Common
                     "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
                     "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
                     "sudo chmod g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
-                    "sudo usermod -aG $groupName ec2-user" // cho phép ec2-user thực hiện pm2
+                    "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
+                    "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi" // thêm tk apache vào nhóm
                 ],
             ],
         ];

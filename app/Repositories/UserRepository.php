@@ -170,7 +170,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 if (!empty($userNotExists)) {
                     $command[] = "sudo adduser $username";
                     $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
-                    $command[] = "grep -qxF 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"/home/ec2-user/.nvm/versions/node/v14.5.0/bin:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                    $nodePath = self::getNodePath($instanceId);
+                    if($nodePath) {
+                        $commands[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                    }
                 } else {
                     $command = [
                         "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null"

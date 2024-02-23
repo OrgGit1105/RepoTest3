@@ -40,3 +40,4 @@ const TYPE_DATE = [
 ];
 
 const ENVIRONMENT_UPDATE = 'production';
+const INSTANCE_ID_240 = 'i-0553d99830b279164';
