@@ -23,7 +23,8 @@ return [
         ],
         'name_existed' => 'User existed',
         'name_regex' => 'Username must start with a letter, can only contain letters, numbers and underscores (_), periods (.), dashes (-) and cannot contain spaces or special characters special',
-        'ssh_key' => 'Please enter the ssh public key value'
+        'ssh_key' => 'Please enter the ssh public key value',
+        'gmail_github' => 'Please enter the gmail for account Github your'
     ],
     'token' => [
         'false' => 'Token not provided',

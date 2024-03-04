@@ -187,6 +187,10 @@ class UserController extends Controller
      *              format="string",
      *            ),
      *            @OA\Property(
+     *              property="github_gmail",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
      *              property="status",
      *              format="integer",
      *              example=1,
@@ -307,6 +311,10 @@ class UserController extends Controller
      *            ),
      *            @OA\Property(
      *              property="ssh_public_key",
+     *              format="string",
+     *            ),
+     *            @OA\Property(
+     *              property="github_gmail",
      *              format="string",
      *            ),
      *            @OA\Property(

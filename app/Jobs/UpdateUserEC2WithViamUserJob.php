@@ -75,10 +75,12 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         $command = [];
         $names = [];
         $sshKey = [];
+        $githubGmail = [];
         foreach ($this->viamUser->users as $user) {
             $username = $user->name;
             $names[] = $username;
             $sshKey[$username] = $user->ssh_public_key;
+            $githubGmail[$username] = $user->github_gmail;
             if ($type == POLICY_TYPE['EC2_admin']) {
                 $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
             } else {
@@ -93,9 +95,9 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
                 $commands[] = "sudo adduser $userNotExist";
                 $commands[] = "sudo -u $userNotExist mkdir -p /home/$userNotExist/.ssh";
                 $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
-                $commandAdd = implode(' && ', $commands);
+                $commands[] =  "sudo -u $userNotExist ssh-keygen -t rsa -b 4096 -C $githubGmail[$userNotExist] -N \"\" -f \"/home/$userNotExist/.ssh/id_rsa\" > /dev/null";
                 $commandNode = !empty($nodePath) ? ["grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"] : [];
-                $parameters['Parameters']['commands'] = array_merge([$commandAdd], $commandNode);
+                $parameters['Parameters']['commands'] = array_merge($commands, $commandNode);
                 $ssmClient->sendCommand($parameters);
             }
         }

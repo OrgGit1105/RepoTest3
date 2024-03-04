@@ -97,7 +97,7 @@ class Common
         return $path;
     }
 
-    public function createUserEc2($username, $publicKey, $viam_user_id)
+    public function createUserEc2($username, $publicKey, $viam_user_id, $gmailGithub)
     {
         $param = Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
@@ -106,8 +106,8 @@ class Common
             $instanceData = [];
             foreach ($policies as $policy) {
                 if ($policy->type == POLICY_TYPE['EC2_admin'] || $policy->type == POLICY_TYPE['EC2_deploy']) {
-                    if (empty($publicKey)) {
-                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
+                    if (empty($publicKey) || empty($gmailGithub)) {
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key_and_gmail_github'));
                     }
 
                     $instanceData[$policy->instance_id][] = [
@@ -122,18 +122,18 @@ class Common
                     'DocumentName' => 'AWS-RunShellScript'
                 ];
 
-                $commands = [];
                 $command = [];
                 if (self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
-                    $commands[] = "sudo adduser $username";
-                    $commands[] = "sudo -u $username mkdir -p /home/$username/.ssh";
+                    $command[] = "sudo adduser $username";
+                    $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
+                    $command[] =  "sudo -u $username ssh-keygen -t rsa -b 4096 -C \"$gmailGithub\" -N \"\" -f \"/home/$username/.ssh/id_rsa\" > /dev/null";
+
                     $nodePath = self::getNodePath($instanceId); //thêm đường dẫn đến thư mục chứa tệp thực thi Node.js vào biến PATH
                     if($nodePath) {
-                        $commands[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                        $command[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
                     }
                 }
-                $commands[] = "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
-                $commandAdd = implode(' && ', $commands);
+                $command[] = "echo $publicKey | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
 
                 foreach ($instance as $item) {
                     if ($item['type'] == POLICY_TYPE['EC2_admin']) {
@@ -143,7 +143,7 @@ class Common
                         $command [] = "sudo usermod -aG $groupName $username";
                     }
                 }
-                $parameters['Parameters']['commands'] = array_merge([$commandAdd], $command);
+                $parameters['Parameters']['commands'] = $command;
                 $ssmClient->sendCommand($parameters);
             }
             return ResponseService::responseJson(CODE_SUCCESS);

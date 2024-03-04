@@ -39,6 +39,7 @@ class User extends Authenticatable implements JWTSubject
     const SKYPE_ID = 'skype_id';
     const GITHUB_ID = 'github_id';
     const SSH_PUBLIC_KEY = 'ssh_public_key';
+    const GITHUB_GMAIL = 'github_gmail';
 
     protected $fillable = [
         self::NAME,
@@ -58,6 +59,7 @@ class User extends Authenticatable implements JWTSubject
         self::SKYPE_ID,
         self::GITHUB_ID,
         self::SSH_PUBLIC_KEY,
+        self::GITHUB_GMAIL,
         self::CREATED_AT,
         self::UPDATED_AT,
         'jwt_active'
@@ -105,8 +107,8 @@ class User extends Authenticatable implements JWTSubject
 
     public function scopeFindByVIAMUser($query)
     {
-        if (request()->filled('viam_user_id')) {
-            $query->where(User::VIAM_USER_ID, request()->get(User::VIAM_USER_ID));
+        if (request()->filled('role_id')) {
+            $query->where(User::VIAM_USER_ID, request()->get('role_id'));
         }
         return $query;
     }
