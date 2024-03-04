@@ -195,6 +195,8 @@
             <el-input id="skypeIdEmployee" v-model="formCreate.skype_id" />
             <label for="githubIdEmployee" class="mt-3">Github Id</label>
             <el-input id="githubIdEmployee" v-model="formCreate.github_id" />
+            <label for="githubGmailEmployee" class="mt-3">Github Gmail</label>
+            <el-input id="githubGmailEmployee" v-model="formCreate.github_gmail" />
             <label for="githubIdEmployee" class="mt-3">Ssh Public</label>
             <el-input id="githubIdEmployee" v-model="formCreate.ssh_public_key" />
             <ValidationProvider
@@ -550,6 +552,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        github_gmail: '',
         paid_off: '',
         password: '',
         password_confirmation: '',
@@ -682,6 +685,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        github_gmail: '',
         ssh_public_key: '',
         paid_off: '',
         password: '',
@@ -796,6 +800,7 @@ export default {
               slack_id: '',
               skype_id: '',
               github_id: '',
+              github_gmail: '',
               paid_off: '',
               password: '',
               password_confirmation: '',

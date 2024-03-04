@@ -170,11 +170,11 @@
                   </div>
                   <div class="employee-edit">
                     <div class="header-employee-edit">
-                      <p class="header-employee-edit fw-5">Ssh Public</p>
+                      <p class="header-employee-edit fw-5">Github Gmail</p>
                       <b-input-group>
                         <b-form-input
-                          id="paid_off"
-                          v-model="formEdit.ssh_public_key"
+                          id="github_gmail"
+                          v-model="formEdit.github_gmail"
                           class="p-1"
                         />
                       </b-input-group>
@@ -187,6 +187,18 @@
                           v-model="formEdit.paid_off"
                           class="p-1"
                           disabled="disabled"
+                        />
+                      </b-input-group>
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">Ssh Public</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="ssh_public"
+                          v-model="formEdit.ssh_public_key"
+                          class="p-1"
                         />
                       </b-input-group>
                     </div>
@@ -568,6 +580,7 @@ export default {
         slack_id: '',
         skype_id: '',
         github_id: '',
+        github_gmail: '',
         ssh_public_key: '',
         paid_off: '',
         password: '',
@@ -660,6 +673,7 @@ export default {
           slack_id: response.data.slack_id,
           skype_id: response.data.skype_id,
           github_id: response.data.github_id,
+          github_gmail: response.data.github_gmail,
           ssh_public_key: response.data.ssh_public_key,
           paid_off: response.data.paid_off_start,
           password: '',

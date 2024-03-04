@@ -55,6 +55,7 @@ class UserRequest extends FormRequest
                  'github_id' => 'nullable|string',
                  'viam_user_id' => 'required|numeric|exists:viam_users,id',
                  'ssh_public_key' => ['nullable', new SshKeyRule()],
+                 'github_gmail' => 'nullable|email',
                  'retirement_date' => 'nullable|date-format:Y-m-d',
              ];
          }
@@ -73,6 +74,7 @@ class UserRequest extends FormRequest
                  'github_id' => 'nullable|string',
                  'viam_user_id' => 'required|numeric|exists:viam_users,id',
                  'ssh_public_key' => ['nullable', new SshKeyRule()],
+                 'github_gmail' => 'nullable|email',
                  'password' => 'required|min:4|confirmed',
              ];
          }

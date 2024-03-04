@@ -68,7 +68,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         if(config('app.env') === ENVIRONMENT_UPDATE) {
-            $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id']);
+            $crateUser = Common::createUserEc2($attributes['name'], @$attributes['ssh_public_key'], $attributes['viam_user_id'], @$attributes['github_gmail']);
             if ($crateUser->original['code'] != CODE_SUCCESS) {
                 return $crateUser;
             }
@@ -103,13 +103,16 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $oldName = $user->name;
         $oldRetirementDate = $user->retirement_date ? Carbon::parse($user->retirement_date)->format('Y-m-d') : null;
         $oldViamUserId = $user->viam_user_id;
+        $oldGithubGmail = $user->github_gmail;
         $updateName = $attributes['name'];
         $updateRetirementDate = $attributes['retirement_date'] ? Carbon::parse($attributes['retirement_date'])->format('Y-m-d') : null;
         $updateViamUserId = $attributes['viam_user_id'];
+        $updateGithubGmail = @$attributes['github_gmail'];
         $publicKey = @$attributes['ssh_public_key'];
 
         if(config('app.env') === ENVIRONMENT_UPDATE) {
-            if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName) || ($oldViamUserId != $updateViamUserId)) {
+            if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName)
+                || ($oldViamUserId != $updateViamUserId) || $oldGithubGmail != $updateGithubGmail) {
                 if(($user->retirement_date != $attributes['retirement_date']) && (Carbon::now() >= Carbon::parse($updateRetirementDate))) {
                     $delete = Common::deleteUserEc2($user);
                     if($delete->original['code'] != CODE_SUCCESS) {
@@ -121,14 +124,14 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                         return $delete;
                     }
                     sleep(2);
-                    $crateUser = Common::createUserEc2($updateName, $publicKey, $updateViamUserId);
+                    $crateUser = Common::createUserEc2($updateName, $publicKey, $updateViamUserId, $updateGithubGmail);
                     if($crateUser->original['code'] != CODE_SUCCESS) {
                         return $crateUser;
                     }
                 }
             } else {
                 if(!$this->updateSshKey($user, $publicKey)) {
-                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key'));
+                    return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key_and_gmail_github'));
                 }
             }
         }
@@ -149,6 +152,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $ssmClient = new SsmClient($param);
             $policies = $user->viam_user->policies;
             $username = $user->name;
+            $gmailGithub = $user->github_gmail;
             $instanceIds = [];
 
             foreach ($policies as $policy) {
@@ -170,9 +174,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 if (!empty($userNotExists)) {
                     $command[] = "sudo adduser $username";
                     $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
+                    $command[] =  "sudo -u $username ssh-keygen -t rsa -b 4096 -C \"$gmailGithub\" -N \"\" -f \"/home/$username/.ssh/id_rsa\" > /dev/null";
                     $nodePath = self::getNodePath($instanceId);
                     if($nodePath) {
-                        $commands[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
+                        $command[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
                     }
                 } else {
                     $command = [
