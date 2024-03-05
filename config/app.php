@@ -231,4 +231,5 @@ return [
 
     ],
 
+    'channel' => env('CHANNEL'),
 ];
