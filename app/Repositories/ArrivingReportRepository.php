@@ -313,7 +313,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     public function createArriving($input = [])
     {
         // check channel
-        if ($input['channel_name'] != env('CHANNEL')) {
+        if ($input['channel_name'] != config('app.channel')) {
             return __('analytic.not_found_bot');
         }
 
