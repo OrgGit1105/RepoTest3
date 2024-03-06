@@ -9,5 +9,6 @@ export const MakeToast = ({ variant = null, title, content }) => {
     solid: true,
     autoHideDelay: 2500,
     appendToast: true,
+    toastClass: 'custom-toast',
   });
 };
