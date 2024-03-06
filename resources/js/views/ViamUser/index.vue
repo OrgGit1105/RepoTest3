@@ -280,12 +280,12 @@ export default {
       this.$router.push('/user/create');
     },
     createForm(){
-      this.form = {
-        name: '',
-        description: '',
-      };
-      this.selectedTagPolicy = [];
-      this.selectedTagPolicy_id = [];
+      // this.form = {
+      //   name: '',
+      //   description: '',
+      // };
+      // this.selectedTagPolicy = [];
+      // this.selectedTagPolicy_id = [];
       this.openModalAdd = true;
       // this.$bvModal.show('bv-modal-create');
     },
