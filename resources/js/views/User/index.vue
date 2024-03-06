@@ -733,11 +733,7 @@ export default {
       this.checkNumImage();
       const isValid = await this.$refs.obsAddEmployee.validate();
       if (!isValid && this.validateFile) {
-        MakeToast({
-          variant: 'warning',
-          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: 'Still error',
-        });
+        return;
       } else {
         this.waitCreate = true;
         await postOneUser(this.formCreate).then(async(response) => {
@@ -825,14 +821,16 @@ export default {
             });
             await this.getListAllUser();
           } else {
+            this.openModalAdd = false;
+            this.waitCreate = false;
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
               content: response.message,
             });
-            this.waitCreate = false;
           }
         }).catch((error) => {
+          this.openModalAdd = false;
           MakeToast({
             variant: 'warning',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
@@ -997,6 +995,9 @@ export default {
 </script>
 
 <style scoped>
+::v-deep .custom-toast {
+  z-index: 2001 !important; /* Sử dụng !important để đảm bảo nó ghi đè lên các giá trị mặc định */
+}
 #screen-title {
   display: flex;
   text-align: center;
