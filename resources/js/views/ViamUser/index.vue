@@ -6,7 +6,7 @@
           <div class="card-body p-5">
             <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
-                <h1 class="title">{{ $t('LANGUAGES.TEXT_VIAM_USER') }}</h1>
+                <h1 class="title">VIAM User Management</h1>
               </div>
             </div>
           </div>
@@ -75,35 +75,6 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <!-- <ValidationProvider
-              v-slot="{ errors }"
-              name="policy"
-              rules="required"
-            >
-              <label for="tagsPolicy" class="mt-3">VIAM Policy</label>
-              <div id="tagsPolicy" class="form-tag">
-                <b-form-tags
-                  id="tagsPolicy-tags"
-                  v-model="selectedTagPolicy"
-                  placeholder="入力してください"
-                  @focus="showDropdownPolicy = true"
-                  @blur="hideDropdownPolicy"
-                  @remove="onTagRemoveEdit"
-                />
-                <div v-if="showDropdownPolicy" class="dropdown-menu" style="display:block;">
-                  <b-dropdown-item
-                    v-for="(tag, index) in availableTags"
-                    :key="index"
-                    @click="addTagPolicy(tag)"
-                  >
-                    {{ tag.name }}
-                  </b-dropdown-item>
-                </div>
-                <div class="text-error">
-                  {{ errors[0] }}
-                </div>
-              </div>
-            </ValidationProvider> -->
           </ValidationObserver>
 
           <ValidationObserver
@@ -353,7 +324,6 @@ export default {
     async submitCreate() {
       const isValid = await this.$refs.obsAddEmployee.validate();
       const isValidTagsPolicy = await this.$refs.obsAddEmployeeTagsPolicy.validate();
-      console.log('isValid', isValid);
       if (isValid && isValidTagsPolicy) {
         this.waitCreate = true;
         const DATA = {
@@ -379,6 +349,7 @@ export default {
             });
             await this.getListAllUser();
           } else {
+            this.openModalAdd = false;
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
@@ -387,6 +358,7 @@ export default {
             this.waitCreate = false;
           }
         }).catch((error) => {
+          this.openModalAdd = false;
           MakeToast({
             variant: 'warning',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),

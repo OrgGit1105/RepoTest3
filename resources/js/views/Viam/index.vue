@@ -6,7 +6,7 @@
           <div class="card-body p-5">
             <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
-                <h1 class="title">{{ $t('LANGUAGES.TEXT_VIAM_POLICY') }}</h1>
+                <h1 class="title">VIAM Policy Management</h1>
               </div>
             </div>
           </div>
@@ -360,6 +360,7 @@ export default {
             this.openModalAdd = false;
             await this.getListAllUser();
           } else {
+            this.openModalAdd = false;
             MakeToast({
               variant: 'warning',
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
@@ -368,6 +369,7 @@ export default {
             this.waitCreate = false;
           }
         }).catch((error) => {
+          this.openModalAdd = false;
           MakeToast({
             variant: 'warning',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
