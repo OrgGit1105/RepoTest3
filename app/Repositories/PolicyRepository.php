@@ -535,7 +535,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     })->exists();
                 $userOfViamUser = $viamUser->users->pluck('name')->toArray();
                 $userDel = array_intersect($userOfViamUser, $userExists);
-                if ($viamUserOfPolicyEC2Other && $typeAccount == POLICY_TYPE['EC2_admin']) {
+                if ($viamUserOfPolicyEC2Other && $typeAccount == POLICY_TYPE['EC2_admin']) { // chỉ xóa quyền admin của tk, ko xóa tk
                     foreach ($userDel as $name) {
                         $command[] = "sudo sed -i '/^$name ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
                     }
@@ -543,7 +543,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 if (!$viamUserOfPolicyEC2Other) {
                     foreach ($userDel as $nameDel) {
                         $command[] = "echo '' | sudo -u $nameDel tee /home/$nameDel/.ssh/authorized_keys > /dev/null";
-                        $command[] = "sudo sed -i '/^$nameDel ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                        $command[] = "sudo sed -i '/^$nameDel ALL=(ALL) NOPASSWD:/d' /etc/sudoers";
                         $command[] = "sudo pkill -u $nameDel";
                         $command[] = "sudo userdel -r $nameDel";
                     }
@@ -587,6 +587,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $names = [];
         $sshKey = [];
         $githubGmail = [];
+        $isUserDeploy = false;
         if ($type == POLICY_TYPE['EC2_deploy'] && $groupName && $projectName) {
             Common::createGroupEc2($instanceId, $groupName, $projectName);
         }
@@ -599,6 +600,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 if ($type == POLICY_TYPE['EC2_admin']) {
                     $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
                 } else {
+                    $isUserDeploy = true;
                     $command [] = "sudo usermod -aG $groupName $username";
                 }
             }
@@ -613,8 +615,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
                 $commands[] =  "sudo -u $userNotExist ssh-keygen -t rsa -b 4096 -C \"$githubGmail[$userNotExist]\" -N \"\" -f \"/home/$userNotExist/.ssh/id_rsa\" > /dev/null";
                 $commandNode = !empty($nodePath) ? ["grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"] : [];
-
-                $parameters['Parameters']['commands'] = array_merge($commands, $commandNode);
+                $commandSudo = $isUserDeploy ? Common::addCommandSudo($userNotExist) : [];
+                $parameters['Parameters']['commands'] = array_merge($commands, $commandNode, $commandSudo);
                 $ssmClient->sendCommand($parameters);
             }
         }

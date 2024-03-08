@@ -76,6 +76,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         $names = [];
         $sshKey = [];
         $githubGmail = [];
+        $isUserDeploy = false;
         foreach ($this->viamUser->users as $user) {
             $username = $user->name;
             $names[] = $username;
@@ -84,6 +85,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
             if ($type == POLICY_TYPE['EC2_admin']) {
                 $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
             } else {
+                $isUserDeploy = true;
                 $command[] = "sudo usermod -aG $groupName $username";
             }
         }
@@ -97,7 +99,8 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
                 $commands[] = "echo $sshKey[$userNotExist] | sudo -u $userNotExist tee /home/$userNotExist/.ssh/authorized_keys > /dev/null";
                 $commands[] =  "sudo -u $userNotExist ssh-keygen -t rsa -b 4096 -C $githubGmail[$userNotExist] -N \"\" -f \"/home/$userNotExist/.ssh/id_rsa\" > /dev/null";
                 $commandNode = !empty($nodePath) ? ["grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$userNotExist/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$userNotExist/.bashrc"] : [];
-                $parameters['Parameters']['commands'] = array_merge($commands, $commandNode);
+                $commandSudo = $isUserDeploy ? Common::addCommandSudo($userNotExist) : [];
+                $parameters['Parameters']['commands'] = array_merge($commands, $commandNode, $commandSudo);
                 $ssmClient->sendCommand($parameters);
             }
         }

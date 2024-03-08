@@ -97,6 +97,23 @@ class Common
         return $path;
     }
 
+    public function addCommandSudo($username)
+    {
+        return [
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod -R 777 storage/' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /etc/httpd/conf.d/*i' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/systemctl restart httpd.service' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers",
+            "echo '' >> /etc/sudoers"
+        ];
+    }
+
     public function createUserEc2($username, $publicKey, $viam_user_id, $gmailGithub)
     {
         $param = Common::configAwsSDK();
@@ -123,7 +140,10 @@ class Common
                 ];
 
                 $command = [];
+                $isCreateAccount = false;
+                $isUserDeploy = false;
                 if (self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
+                    $isCreateAccount = true;
                     $command[] = "sudo adduser $username";
                     $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
                     $command[] =  "sudo -u $username ssh-keygen -t rsa -b 4096 -C \"$gmailGithub\" -N \"\" -f \"/home/$username/.ssh/id_rsa\" > /dev/null";
@@ -139,9 +159,14 @@ class Common
                     if ($item['type'] == POLICY_TYPE['EC2_admin']) {
                         $command[] = "echo '$username ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers";
                     } else {
+                        $isUserDeploy = true;
                         $groupName = $item['name'];
                         $command [] = "sudo usermod -aG $groupName $username";
                     }
+                }
+                if($isCreateAccount && $isUserDeploy) {
+                    $commandSudo = self::addCommandSudo($username);
+                    $command = array_merge($command, $commandSudo);
                 }
                 $parameters['Parameters']['commands'] = $command;
                 $ssmClient->sendCommand($parameters);
@@ -175,7 +200,7 @@ class Common
 
                 if(!self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
-                    $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers";
+                    $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD:/d' /etc/sudoers";
                     $command[] = "sudo pkill -u $username";
                     $command[] = "sudo userdel -r $username";
                     $parameters['Parameters']['commands'] = $command;
