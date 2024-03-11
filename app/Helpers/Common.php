@@ -100,16 +100,13 @@ class Common
     public function addCommandSudo($username)
     {
         return [
-            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod -R 777 storage/' >> /etc/sudoers",
-            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
-            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod 775 /etc/httpd/conf.d/*' >> /etc/sudoers",
+            "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/chmod,/usr/bin/yum,/usr/bin/systemctl' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/cp /etc/httpd/conf.d/*' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/rm /etc/httpd/conf.d/*i' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/systemctl restart httpd.service' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/sbin/service httpd restart' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/vim' >> /etc/sudoers",
             "echo '$username ALL=(ALL) NOPASSWD:/usr/bin/certbot' >> /etc/sudoers",
-            "echo '$username ALL=(ALL) NOPASSWD:/bin/chmod 777 /var/log/letsencrypt/*' >> /etc/sudoers",
             "echo '' >> /etc/sudoers"
         ];
     }
@@ -235,6 +232,7 @@ class Common
                     "sudo chown -R :$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
                     "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
                     "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
+                    "find /var/www/$projectName -type d -path \"*/public/js\" -exec chmod -R 775 {} \;",
                     "sudo chmod g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
                     "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
                     "for user in \$(getent group $groupOldOfProject | cut -d: -f4 | tr ',' ' '); do sudo usermod -aG $groupName \$user; done", // thêm tk ec2-user, apache, deploy vào nhóm
