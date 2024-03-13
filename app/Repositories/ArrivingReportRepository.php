@@ -170,9 +170,17 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $user->save();
         }
 
+        $late = 0;
+        if($type_date == config('analytic.type.work')) {
+            $checkin_time = Carbon::parse($in_time);
+            if($checkin_time->hour <= 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
+                $late = 1;
+            }
+        }
+
         $attributes['status'] = 1;
         $attributes['created_at'] = Carbon::now();
-
+        $attributes['late'] = $late;
         return ResponseService::responseJson(200, new BaseResource(parent::create($attributes)));
     }
 
@@ -247,6 +255,14 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
         $this->updatePaidOff($report, $in_time, $out_time, $type_update);
 
+        $late = 0;
+        if($type_update == config('analytic.type.work')) {
+            $checkin_time = Carbon::parse($in_time);
+            if($checkin_time->hour <= 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
+                $late = 1;
+            }
+        }
+        $attributes['late'] = $late;
         $attributes['updated_at'] = Carbon::now();
         HistoryEditReport::create([
             'in_time' => $report->in_time,
