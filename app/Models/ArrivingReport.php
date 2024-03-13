@@ -30,6 +30,7 @@ class ArrivingReport extends Model
       'link_face_out',
       'link_check_in',
       'link_check_out',
+      'late',
       'status',
       'created_at',
       'updated_at',
