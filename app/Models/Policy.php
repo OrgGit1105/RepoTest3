@@ -30,6 +30,6 @@ class Policy extends Model
 
     public function viam_users()
     {
-        return $this->belongsToMany(VIAMUser::class, 'viam_user_policy','policy_id', 'viam_user_id', );
+        return $this->belongsToMany(VIAMUser::class, 'viam_user_policy','policy_id', 'viam_user_id');
     }
 }
