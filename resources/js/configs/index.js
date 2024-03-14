@@ -53,3 +53,6 @@ export const CompanyBranch = [
   { value: 'Second Department', text: 'Second Department' },
   { value: 'Third Department', text: 'Third Department' },
 ];
+export const GLOBAL_PRIVILEGES_DATA = [
+  'Select', 'Insert', 'Update', 'Delete', 'File',
+];
