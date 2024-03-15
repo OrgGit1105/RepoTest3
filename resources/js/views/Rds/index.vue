@@ -326,15 +326,33 @@ export default {
             const listRds = [
               {
                 id: '1',
-                nameRds: 'Name Rds',
+                nameRds: 'Name Rds 1',
                 enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username',
+                username: 'Username 1',
               },
               {
                 id: '2',
-                nameRds: 'Name Rds',
+                nameRds: 'Name Rds 2',
                 enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username',
+                username: 'Username 2',
+              },
+              {
+                id: '3',
+                nameRds: 'Name Rds 3',
+                enport: 'https://element.eleme.io/#/en-US/component/input#input',
+                username: 'Username 3',
+              },
+              {
+                id: '4',
+                nameRds: 'Name Rds 4',
+                enport: 'https://element.eleme.io/#/en-US/component/input#input',
+                username: 'Username 4',
+              },
+              {
+                id: '5',
+                nameRds: 'Name Rds 5',
+                enport: 'https://element.eleme.io/#/en-US/component/input#input',
+                username: 'Username 5',
               },
             ];
             // this.$store.dispatch('app/savelistRds', listRds);

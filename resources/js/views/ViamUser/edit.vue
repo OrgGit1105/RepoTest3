@@ -589,15 +589,12 @@ export default {
       }
     },
 
-    handleDeleteRdsRole(itemId, elementId){
-      console.log("itemId, elementId", itemId, elementId);
+    handleDeleteRdsRole(itemId, elementId) {
       const parentIndex = this.RDS_FAKE.findIndex(item => item.id === itemId);
       if (parentIndex !== -1) {
-        // Tìm index của phần tử con trong mảng selected_child
-        const childIndex = this.RDS_FAKE[parentIndex].selected[0].selected_child.findIndex(ele => ele.id === elementId);
+        const childIndex = this.RDS_FAKE[parentIndex].selected.findIndex(element => element.id === elementId);
         if (childIndex !== -1) {
-          // Xóa phần tử con khỏi mảng selected_child
-          this.RDS_FAKE[parentIndex].selected[0].selected_child.splice(childIndex, 1);
+          this.RDS_FAKE[parentIndex].selected.splice(childIndex, 1);
         }
       }
     },
