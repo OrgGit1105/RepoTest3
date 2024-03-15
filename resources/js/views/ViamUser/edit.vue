@@ -27,7 +27,7 @@
             <h4 class="mb-0 font-weight-normal">
               <div class="cover-employee-edit">
                 <div class="employee-edit">
-                  <p class="header-employee-edit-name fw-5">User name</p>
+                  <p class="header-employee-edit-name fw-5">Username</p>
                   <ValidationObserver
                     ref="obsEditEmployee"
                     tag="div"
@@ -84,6 +84,38 @@
                       </div>
                     </ValidationProvider>
                   </validation-observer>
+                  <!-- Add Rds -->
+                  <validation-observer
+                    ref="obsEditpolicy"
+                    tag="div"
+                  >
+                    <ValidationProvider
+                      name="policy"
+                      rules="required"
+                    >
+                      <div class="d-flex justify-content-between align-items-center">
+                        <p class="header-employee-edit-name fw-5">RDS</p>
+                        <el-button type="warning" class="custom-icon" @click="handleAddRds()">Add RDS</el-button>
+                      </div>
+                      <div v-for="item in RDS_FAKE" :key="item.id" class="form-rds">
+                        <div class="rds-container">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-blue-400">{{ item.name }}</div>
+                            <i class="el-icon-close text-blue-400" @click="handleDeleteRds(item.id)" />
+                          </div>
+                          <div v-for="element in item.selected" :key="element.id">
+                            <div class="pl-4 d-flex align-items-center">
+                              <i class="el-icon-close" @click="handleDeleteRdsRole(item.id, element.id)" />
+                              <div class="pl-1">{{ element.name }}</div>
+                            </div>
+                            <div v-for="ele in element.selected_child" :key="ele.id" class="pl-5 d-flex align-items-center">
+                              {{ ele.name }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </ValidationProvider>
+                  </validation-observer>
                   <div>
                     <p class="header-employee-edit-name fw-5">Description</p>
                     <div>
@@ -117,12 +149,151 @@
         <el-button type="danger" @click="submitDelete()">Confirm</el-button>
       </span>
     </el-dialog>
+
+    <!-- Modal -->
+    <el-dialog
+      class="title-add-working"
+      title="Add new Rds"
+      :visible.sync="openModalAdd"
+      width="80%"
+      @click="hideCreateModal()"
+    >
+      <div class="container">
+        <el-tabs type="card" closable>
+          <el-tab-pane label="Config">
+            <div class="container">
+              <form>
+                <div class="form-section">
+                  <div>
+                    <label for="max-queries">RDS (*)</label>
+                    <el-row :gutter="20">
+                      <el-col :span="12">
+                        <el-select
+                          v-model="value"
+                          multiple
+                          filterable
+                          allow-create
+                          default-first-option
+                          placeholder="Choose tags for your article"
+                        >
+                          <el-option
+                            v-for="item in [{label: '', value: ''}]"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                          />
+                        </el-select>
+                      </el-col>
+                    </el-row>
+                  </div>
+
+                  <el-row :gutter="20" class="mt-5">
+                    <el-col :span="12">
+                      <div>
+                        <h3>Global privileges</h3>
+                        <el-checkbox v-model="checkAllData" :indeterminate="isIndeterminate" @change="handlecheckAllDataChange">Data</el-checkbox>
+                        <el-checkbox-group v-model="checkedData" class="pl-4" @change="handleCheckedDataChange">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
+                    </el-col>
+                    <el-col :span="12">
+                      <h3>Resource limits</h3>
+                      <div>
+                        <label for="max-queries">MAX QUERIES PER HOUR: </label>
+                        <el-input id="nameEmployee" />
+                      </div>
+                      <div>
+                        <label for="max-queries">MAX UPDATES PER HOUR: </label>
+                        <el-input id="nameEmployee" />
+                      </div>
+                      <div>
+                        <label for="max-queries">MAX CONNECTIONS PER HOUR:  </label>
+                        <el-input id="nameEmployee" />
+                      </div>
+                      <div>
+                        <label for="max-queries">MAX USER CONNECTIONS:  </label>
+                        <el-input id="nameEmployee" />
+                      </div>
+                    </el-col>
+                  </el-row>
+                </div>
+                <div class="form-footer">
+                  <b-button
+                    class=" btn btn-accept"
+                  >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}
+                  </b-button>
+                  <b-button
+                    class="btn btn-close"
+                    type="primary"
+                  >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}
+                  </b-button>
+                </div>
+              </form>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Database">
+            <div class="container">
+              <div class="split-screen">
+                <el-row :gutter="20">
+                  <el-col :span="12">
+                    <!-- Nội dung ở phần thứ nhất -->
+                    <div class="content-left">
+                      <ul>
+                        <li
+                          v-for="item in items"
+                          :key="item.id"
+                          :class="{ active: item.selected }"
+                          @click="toggleSelection(item)"
+                        >
+                          {{ item.name }}
+                        </li>
+                      </ul>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <!-- Nội dung ở phần thứ hai -->
+                    <div class="content-right">
+                      <div>
+                        <div class="bg-gray pl-2">
+                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Data</el-checkbox>
+                        </div>
+                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
+                      <div>
+                        <div class="bg-gray pl-2">
+                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Structure</el-checkbox>
+                        </div>
+                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
+                      <div>
+                        <div class="bg-gray pl-2">
+                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Adminstration</el-checkbox>
+                        </div>
+                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 
 import * as UserApi from '../../api/viamUser';
+import * as CONFIGS from '../../configs';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 import { deleteOneUser } from '../../api/viamUser';
@@ -142,15 +313,71 @@ export default {
       },
       id: this.$route.params.id,
       showModalDelete: false,
-
+      openModalAdd: false,
       selectedTagPolicy: [],
       selectedTagPolicy_id: [],
       showDropdownPolicy: false,
       availableTags: [],
-    };
-  },
-  computed: {
+      checkAllData: false,
+      checkedData: [],
+      isIndeterminate: true,
 
+      checkAllDataSecond: false,
+      checkedDataSecond: [],
+      isIndeterminateSecond: true,
+      GLOBAL_PRIVILEGES_DATA: CONFIGS.GLOBAL_PRIVILEGES_DATA,
+      items: [
+        { id: 1, name: 'atmtc-centlex-dev', selected: false },
+        { id: 2, name: 'atmtc-dev', selected: false },
+        { id: 3, name: 'atmtc-arata-develop', selected: false },
+        { id: 4, name: 'cck', selected: false },
+        { id: 4, name: 'cck-dev', selected: false },
+        { id: 4, name: 'cck-production', selected: false },
+        { id: 4, name: 'llm-inc1', selected: false },
+        { id: 4, name: 'llm-inc2', selected: false },
+        { id: 4, name: 'llm-inc3', selected: false },
+        { id: 4, name: 'llm-inc4', selected: false },
+        { id: 4, name: 'llm-inc5', selected: false },
+        { id: 4, name: 'llm-inc6', selected: false },
+        { id: 4, name: 'llm-inc7', selected: false },
+        { id: 4, name: 'llm-inc8', selected: false },
+      ],
+      RDS_FAKE: [
+        {
+          id: 1,
+          name: 'atmtc_center_Dev 1',
+          selected: [
+            {
+              name: 'atmtc-dev 1', id: 1,
+              selected_child: [
+                { name: 'Data ( 2 selected roles)', id: 1 },
+                { name: 'Data ( 2 selected roles)', id: 2 },
+                { name: 'Data ( 3 selected roles)', id: 3 }],
+            },
+            {
+              name: 'atmtc-dev 1.1', id: 11,
+              selected_child: [
+                { name: 'Data ( 2.1 selected roles)', id: 1 },
+                { name: 'Data ( 2.1 selected roles)', id: 2 },
+                { name: 'Data ( 3.1 selected roles)', id: 3 }],
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: 'atmtc_center_Dev 2',
+          selected: [
+            {
+              name: 'atmtc-dev 2', id: 2,
+              selected_child: [
+                { name: 'Data ( 12 selected roles)', id: 11 },
+                { name: 'Data ( 12 selected roles)', id: 12 },
+                { name: 'Data ( 13 selected roles)', id: 13 }],
+            },
+          ],
+        },
+      ],
+    };
   },
   watch: {
     selectedTagPolicy(newTags) {
@@ -326,6 +553,50 @@ export default {
             content: error.message,
           });
         });
+    },
+    handleAddRds(){
+      this.openModalAdd = true;
+    },
+
+    handlecheckAllDataChange(val) {
+      this.checkedData = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.isIndeterminate = false;
+    },
+
+    handlecheckAllDataChangeSecond(val) {
+      this.checkedDataSecond = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.isIndeterminateSecond = false;
+    },
+
+    handleCheckedDataChange(value) {
+      const checkedCount = value.length;
+      this.checkAllData = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+    },
+
+    handleCheckedDataChangeSecond(value) {
+      const checkedCount = value.length;
+      this.checkAllDataSecond = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
+      this.isIndeterminateSecond = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+    },
+    toggleSelection(item) {
+      item.selected = !item.selected;
+    },
+    handleDeleteRds(id){
+      const index = this.RDS_FAKE.findIndex(item => item.id === id);
+      if (index !== -1) {
+        this.RDS_FAKE.splice(index, 1);
+      }
+    },
+
+    handleDeleteRdsRole(itemId, elementId) {
+      const parentIndex = this.RDS_FAKE.findIndex(item => item.id === itemId);
+      if (parentIndex !== -1) {
+        const childIndex = this.RDS_FAKE[parentIndex].selected.findIndex(element => element.id === elementId);
+        if (childIndex !== -1) {
+          this.RDS_FAKE[parentIndex].selected.splice(childIndex, 1);
+        }
+      }
     },
   },
 };
@@ -518,10 +789,90 @@ export default {
     }
     ::v-deep .header-employee-edit-name{
       width: calc(100% / 2);
-      height: 40px;
       /* margin: 0; */
       margin-top: 30px;
       font-size: 20px;
     }
-    </style>
+    .custom-icon {
+      height: 48px;
+      font-size: 18px;
+    }
+
+    .rds-container {
+      background-color: #E8F2FC;
+      padding: 1rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .text-blue-400 {
+      color: #409EFF
+    }
+
+  .container {
+    margin: auto;
+  }
+  .form-section {
+    margin-bottom: 20px;
+  }
+  .checkbox-group {
+    margin-bottom: 10px;
+  }
+  .input-group {
+    margin-bottom: 10px;
+  }
+  .form-section label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  .form-section input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  .form-section input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+  .form-footer {
+    text-align: right;
+  }
+  button {
+    padding: 10px 20px;
+    margin-left: 5px;
+  }
+
+  ul {
+    list-style-type: none; /* Ẩn dấu chấm danh sách */
+    padding: 0; /* Xóa khoảng cách dỡ dang giữa các phần tử */
+  }
+
+  li {
+    font-size: 18px; /* Kích thước chữ của các phần tử li */
+    margin-bottom: 1px; /* Khoảng cách giữa các phần tử li */
+    padding: 8px;
+  }
+
+  .active {
+    background-color: #0070C9; /* Màu xanh cho đối tượng được chọn */
+    color: #fff
+  }
+
+  .vertical-checkbox-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.vertical-checkbox {
+  display: block;
+}
+
+.bg-gray {
+  background-color: #eee;
+}
+
+.content-left {
+  overflow-y: scroll;
+  height: 600px;
+}
+</style>
 

@@ -380,6 +380,22 @@ export const constantRoutes = [
       },
     ],
   },
+  {
+    path: '/rds',
+    redirect: '/rds/index',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/Rds/index'),
+        name: 'RdsManagement',
+        meta: {
+          title: 'routes.rds',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
+  },
 ];
 
 export const asyncRoutes = [];
