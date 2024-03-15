@@ -1,0 +1,69 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: cuongnt
+ * Year: 2023-07-17
+ */
+
+namespace App\Http\Requests;
+
+use App\Models\User;
+use App\Rules\CheckIDRule;
+use App\Rules\checkUserIdRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Route;
+
+class RDSManagerRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        switch (Route::getCurrentRoute()->getActionMethod()) {
+            case 'store':
+                return $this->getCustomRule();
+            case 'update':
+                return $this->getCustomRule();
+            default:
+                return [];
+        }
+    }
+
+    public function getCustomRule()
+    {
+        if (Route::getCurrentRoute()->getActionMethod() == 'store') {
+            return [
+                'name' => 'required|unique:rds_manager,name|max:255',
+                'url_end_point' => 'required|string',
+                'username' => 'required|string',
+                'password' => 'required|string',
+                'port' => 'required|string'
+            ];
+        }
+        if (Route::getCurrentRoute()->getActionMethod() == 'update') {
+            return [
+
+            ];
+        }
+    }
+
+    public function messages()
+    {
+        return [
+            'required' => ':attribute not null'
+        ];
+    }
+}

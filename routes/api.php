@@ -67,6 +67,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
             Route::post('', [ImageFaceController::class, 'create']);
             Route::delete('{id}', [ImageFaceController::class, 'destroy']);
         });
+
+        Route::apiResource('rds_manager', 'RDSManagerController');
     });
 });
 
