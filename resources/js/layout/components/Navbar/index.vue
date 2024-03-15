@@ -57,6 +57,7 @@ export default {
         { name: 'Working time', href: '/working-time/index' },
         { name: 'Analytics', href: '/analytics/index' },
         { name: 'Employee', href: '/user/index' },
+        { name: 'Rds', href: '/rds/index' },
       ],
       navbarUser: [
         { name: 'Schedules', href: '/schedules/index' },
