@@ -93,19 +93,19 @@
                       name="policy"
                       rules="required"
                     >
-                      <div class="d-flex justify-content-between align-items-center">
-                        <p class="header-employee-edit-name fw-5">RDS</p>
-                        <el-button type="warning" class="custom-icon" @click="handleAddRds()">Add RDS</el-button>
+                      <div class="d-flex align-items-center">
+                        <p class="mt-4 w-0 fw-5">RDS</p>
+                        <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="handleAddRds()" />
                       </div>
                       <div v-for="item in RDS_FAKE" :key="item.id" class="form-rds">
                         <div class="rds-container">
                           <div class="d-flex justify-content-between align-items-center">
                             <div class="text-blue-400">{{ item.name }}</div>
-                            <i class="el-icon-close text-blue-400" @click="handleDeleteRds(item.id)" />
+                            <i class="el-icon-close text-blue-400 cursor-pointer" @click="handleDeleteRds(item.id)" />
                           </div>
                           <div v-for="element in item.selected" :key="element.id">
                             <div class="pl-4 d-flex align-items-center">
-                              <i class="el-icon-close" @click="handleDeleteRdsRole(item.id, element.id)" />
+                              <i class="el-icon-close cursor-pointer" @click="handleDeleteRdsRole(item.id, element.id)" />
                               <div class="pl-1">{{ element.name }}</div>
                             </div>
                             <div v-for="ele in element.selected_child" :key="ele.id" class="pl-5 d-flex align-items-center">
@@ -153,9 +153,9 @@
     <!-- Modal -->
     <el-dialog
       class="title-add-working"
-      title="Add new Rds"
+      title="Add new RDS"
       :visible.sync="openModalAdd"
-      width="80%"
+      width="60%"
       @click="hideCreateModal()"
     >
       <div class="container">
@@ -188,16 +188,28 @@
                   </div>
 
                   <el-row :gutter="20" class="mt-5">
-                    <el-col :span="12">
+                    <el-col :span="24">
+                      <h3>Global privileges</h3>
                       <div>
-                        <h3>Global privileges</h3>
-                        <el-checkbox v-model="checkAllData" :indeterminate="isIndeterminate" @change="handlecheckAllDataChange">Data</el-checkbox>
-                        <el-checkbox-group v-model="checkedData" class="pl-4" @change="handleCheckedDataChange">
+                        <el-checkbox v-model="checkAllData" :indeterminate="isIndeterminateData" @change="handlecheckAllChangeData">Data</el-checkbox>
+                        <el-checkbox-group v-model="checkedData" class="pl-4" @change="handleCheckedChangeData">
                           <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" :label="data">{{ data }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
+                      <div>
+                        <el-checkbox v-model="checkAllStructure" :indeterminate="isIndeterminateStructure" @change="handlecheckAllChangeStructure">Structure</el-checkbox>
+                        <el-checkbox-group v-model="checkedStructure" class="pl-4" @change="handleCheckedChangeStructure">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_STRUCTURE" :key="data" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
+                      <div>
+                        <el-checkbox v-model="checkAllAdministrator" :indeterminate="isIndeterminateAdministrator" @change="handlecheckAllChangeAdministrator">Administrator</el-checkbox>
+                        <el-checkbox-group v-model="checkedAdministrator" class="pl-4" @change="handleCheckedChangeAdministrator">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_ADMINISTRATOR" :key="data" :label="data">{{ data }}</el-checkbox>
+                        </el-checkbox-group>
+                      </div>
                     </el-col>
-                    <el-col :span="12">
+                    <el-col :span="24" class="mt-5">
                       <h3>Resource limits</h3>
                       <div>
                         <label for="max-queries">MAX QUERIES PER HOUR: </label>
@@ -218,16 +230,9 @@
                     </el-col>
                   </el-row>
                 </div>
-                <div class="form-footer">
-                  <b-button
-                    class=" btn btn-accept"
-                  >{{ $t('LANGUAGES.TEXT_BUTTON_YES') }}
-                  </b-button>
-                  <b-button
-                    class="btn btn-close"
-                    type="primary"
-                  >{{ $t('LANGUAGES.TEXT_BUTTON_CLOSE') }}
-                  </b-button>
+                <div class="form-footer d-flex justify-content-center">
+                  <el-button type="danger" plain>{{ $t('LANGUAGES.TEXT_BUTTON_CANCEL') }}</el-button>
+                  <el-button type="primary">{{ $t('LANGUAGES.TEXT_BUTTON_SAVE') }}</el-button>
                 </div>
               </form>
             </div>
@@ -256,26 +261,26 @@
                     <div class="content-right">
                       <div>
                         <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Data</el-checkbox>
+                          <el-checkbox v-model="checkAllDataTab" :indeterminate="isIndeterminateDataTab" @change="handlecheckAllChangeDataTab">Data</el-checkbox>
                         </div>
-                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
+                        <el-checkbox-group v-model="checkedDataTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeDataTab">
                           <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                       <div>
                         <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Structure</el-checkbox>
+                          <el-checkbox v-model="checkAllStructureTab" :indeterminate="isIndeterminateStructureTab" @change="handlecheckAllChangeStructureTab">Structure</el-checkbox>
                         </div>
-                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
+                        <el-checkbox-group v-model="checkedStructureTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeStructureTab">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_STRUCTURE" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                       <div>
                         <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllDataSecond" :indeterminate="isIndeterminateSecond" @change="handlecheckAllDataChangeSecond">Adminstration</el-checkbox>
+                          <el-checkbox v-model="checkAllAdministratorTab" :indeterminate="isIndeterminateAdministratorTab" @change="handlecheckAllChangeAdministratorTab">Adminstration</el-checkbox>
                         </div>
-                        <el-checkbox-group v-model="checkedDataSecond" class="pl-4 vertical-checkbox-group" @change="handleCheckedDataChangeSecond">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
+                        <el-checkbox-group v-model="checkedAdministratorTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeAdministratorTab">
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_ADMINISTRATOR" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                     </div>
@@ -318,14 +323,34 @@ export default {
       selectedTagPolicy_id: [],
       showDropdownPolicy: false,
       availableTags: [],
+
       checkAllData: false,
       checkedData: [],
-      isIndeterminate: true,
+      isIndeterminateData: true,
 
-      checkAllDataSecond: false,
-      checkedDataSecond: [],
-      isIndeterminateSecond: true,
+      checkAllStructure: false,
+      checkedStructure: [],
+      isIndeterminateStructure: true,
+
+      checkAllAdministrator: false,
+      checkedAdministrator: [],
+      isIndeterminateAdministrator: true,
+
+      checkAllDataTab: false,
+      checkedDataTab: [],
+      isIndeterminateDataTab: true,
+
+      checkAllStructureTab: false,
+      checkedStructureTab: [],
+      isIndeterminateStructureTab: true,
+
+      checkAllAdministratorTab: false,
+      checkedAdministratorTab: [],
+      isIndeterminateAdministratorTab: true,
+
       GLOBAL_PRIVILEGES_DATA: CONFIGS.GLOBAL_PRIVILEGES_DATA,
+      GLOBAL_PRIVILEGES_STRUCTURE: CONFIGS.GLOBAL_PRIVILEGES_STRUCTURE,
+      GLOBAL_PRIVILEGES_ADMINISTRATOR: CONFIGS.GLOBAL_PRIVILEGES_ADMINISTRATOR,
       items: [
         { id: 1, name: 'atmtc-centlex-dev', selected: false },
         { id: 2, name: 'atmtc-dev', selected: false },
@@ -558,26 +583,80 @@ export default {
       this.openModalAdd = true;
     },
 
-    handlecheckAllDataChange(val) {
+    handlecheckAllChangeData(val) {
       this.checkedData = val ? this.GLOBAL_PRIVILEGES_DATA : [];
-      this.isIndeterminate = false;
+      this.isIndeterminateData = false;
     },
 
-    handlecheckAllDataChangeSecond(val) {
+    handlecheckAllChangeStructure(val) {
+      this.checkedStructure = val ? this.GLOBAL_PRIVILEGES_STRUCTURE : [];
+      this.isIndeterminateStructure = false;
+    },
+
+    handlecheckAllChangeAdministrator(val) {
+      this.checkedAdministrator = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR : [];
+      this.isIndeterminateAdministrator = false;
+    },
+
+    handlecheckAllChangeDataSecond(val) {
       this.checkedDataSecond = val ? this.GLOBAL_PRIVILEGES_DATA : [];
       this.isIndeterminateSecond = false;
     },
 
-    handleCheckedDataChange(value) {
+    handleCheckedChangeData(value) {
       const checkedCount = value.length;
       this.checkAllData = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+      this.isIndeterminateData = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
     },
 
-    handleCheckedDataChangeSecond(value) {
+    handleCheckedChangeStructure(value) {
       const checkedCount = value.length;
-      this.checkAllDataSecond = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
-      this.isIndeterminateSecond = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+      this.checkAllStructure = checkedCount === this.GLOBAL_PRIVILEGES_STRUCTURE.length;
+      this.isIndeterminateStructure = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_STRUCTURE.length;
+    },
+
+    handleCheckedChangeAdministrator(value) {
+      const checkedCount = value.length;
+      this.checkAllAdministrator = checkedCount === this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
+      this.isIndeterminateAdministrator = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
+    },
+
+    handlecheckAllChangeDataTab(val) {
+      this.checkedDataTab = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.isIndeterminateDataTab = false;
+    },
+
+    handlecheckAllChangeStructureTab(val) {
+      this.checkedStructureTab = val ? this.GLOBAL_PRIVILEGES_STRUCTURE : [];
+      this.isIndeterminateStructureTab = false;
+    },
+
+    handlecheckAllChangeAdministratorTab(val) {
+      this.checkedAdministratorTab = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR : [];
+      this.isIndeterminateAdministratorTab = false;
+    },
+
+    handlecheckAllChangeDataSecondTab(val) {
+      this.checkedDataSecondTab = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.isIndeterminateSecondTab = false;
+    },
+
+    handleCheckedChangeDataTab(value) {
+      const checkedCount = value.length;
+      this.checkAllDataTab = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
+      this.isIndeterminateDataTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+    },
+
+    handleCheckedChangeStructureTab(value) {
+      const checkedCount = value.length;
+      this.checkAllStructureTab = checkedCount === this.GLOBAL_PRIVILEGES_STRUCTURE.length;
+      this.isIndeterminateStructureTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_STRUCTURE.length;
+    },
+
+    handleCheckedChangeAdministratorTab(value) {
+      const checkedCount = value.length;
+      this.checkAllAdministratorTab = checkedCount === this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
+      this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
     },
     toggleSelection(item) {
       item.selected = !item.selected;
@@ -588,7 +667,6 @@ export default {
         this.RDS_FAKE.splice(index, 1);
       }
     },
-
     handleDeleteRdsRole(itemId, elementId) {
       const parentIndex = this.RDS_FAKE.findIndex(item => item.id === itemId);
       if (parentIndex !== -1) {
@@ -873,6 +951,18 @@ export default {
 .content-left {
   overflow-y: scroll;
   height: 600px;
+}
+
+.custom-icon-add {
+  color: #0070C9;
+  font-size: 30px;
+  font-weight: bolder;
+  margin-top: 8px;
+  margin-left: 8px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
 
