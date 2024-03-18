@@ -70,7 +70,8 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
 
             foreach ($analytic as $k => $v) {
                 $late = $v['late'];
-                if (date("H:i:s", strtotime($v['out_time'])) == "12:00:00" || date("H:i:s", strtotime($v['in_time'])) == "13:30:00") {
+
+                if (date("H:i:s", strtotime($v['out_time'])) <= "13:30:00" || date("H:i:s", strtotime($v['in_time'])) >= "12:00:00") {
                     if ($v['type_date'] == config('analytic.type.work') || $v['type_date'] == NULL) {
                         if($late)
                             $numberDayLate[] = 1;
