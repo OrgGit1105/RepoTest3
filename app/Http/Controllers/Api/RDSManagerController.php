@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RDSManagerRequest;
+use App\Http\Resources\BaseResource;
 use App\Repositories\Contracts\RDSManagerRepositoryInterface;
 use Illuminate\Http\Request;
 
@@ -63,8 +64,8 @@ class RDSManagerController extends Controller
      */
     public function index(RDSManagerRequest $request)
     {
-        return ('index');
-//        return $this->responseJson(200, BaseResource::collection($data));
+        $data = $this->repository->get();
+        return $this->responseJson(200, BaseResource::collection($data));
     }
 
     /**
@@ -105,10 +106,9 @@ class RDSManagerController extends Controller
      */
     public function show($id)
     {
-        return 'show';
         try {
-            $department = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($department));
+            $data = $this->repository->find($id);
+            return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -167,12 +167,7 @@ class RDSManagerController extends Controller
      */
     public function store(RDSManagerRequest $request)
     {
-        return 'create';
-        try {
-            return $this->repository->create($request->all());
-        } catch (\Exception $e) {
-            throw $e;
-        }
+        return $this->repository->create($request->all());
     }
 
     /**
@@ -191,7 +186,7 @@ class RDSManagerController extends Controller
      *   ),
      *   @OA\RequestBody(
      *       @OA\MediaType(
-     *        mediaType="multipart/form-data",
+     *          mediaType="application/json",
      *          @OA\Schema(
      *            required={"name", "url_end_point", "username", "password", "port"},
      *            @OA\Property(
@@ -245,10 +240,7 @@ class RDSManagerController extends Controller
      */
     public function update(RDSManagerRequest $request, $id)
     {
-        return 'update';
-        $attributes = $request->except([]);
-        $data = $this->repository->update($attributes, $id);
-        return $this->responseJson(200, new BaseResource($data));
+        return $this->repository->update($request->except([]), $id);
     }
 
     /**
@@ -281,8 +273,6 @@ class RDSManagerController extends Controller
      */
     public function destroy($id)
     {
-        return 'delete';
-        $this->repository->delete($id);
-        return $this->responseJson(200, null, trans('messages.mes.delete_success'));
+        return $this->repository->delete($id);
     }
 }

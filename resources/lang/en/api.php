@@ -54,5 +54,9 @@ return [
         'instance_id_not_found' => 'Error accessing EC2 instance',
         'aws_existed' => 'This AWS already exists'
     ],
-    'working_time.out_time' => 'The out time field is required when type field other value working'
+    'working_time.out_time' => 'The out time field is required when type field other value working',
+    'rds_manager' => [
+        'connect_failed' => 'Connection to RDS failed',
+        'action_error' => 'Cannot :action because this connection already has data',
+    ]
 ];
