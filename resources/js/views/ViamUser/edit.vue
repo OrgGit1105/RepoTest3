@@ -160,7 +160,7 @@
     >
       <div class="container">
         <el-tabs type="card" closable>
-          <el-tab-pane label="Config">
+          <el-tab-pane label="Global">
             <div class="container">
               <form>
                 <div class="form-section">
@@ -169,15 +169,33 @@
                     <el-row :gutter="20">
                       <el-col :span="12">
                         <el-select
-                          v-model="value"
-                          multiple
-                          filterable
-                          allow-create
-                          default-first-option
-                          placeholder="Choose tags for your article"
+                          v-model="rds_id"
+                          placeholder="Select"
+                          size="large"
                         >
                           <el-option
-                            v-for="item in [{label: '', value: ''}]"
+                            v-for="item in [
+                              {
+                                value: '1',
+                                label: 'atmtc_center_Dev 1',
+                              },
+                              {
+                                value: '2',
+                                label: 'atmtc_center_Dev 2',
+                              },
+                              {
+                                value: '3',
+                                label: 'atmtc_center_Dev 3',
+                              },
+                              {
+                                value: '4',
+                                label: 'atmtc_center_Dev 4',
+                              },
+                              {
+                                value: '5',
+                                label: 'atmtc_center_Dev 5',
+                              },
+                            ]"
                             :key="item.value"
                             :label="item.label"
                             :value="item.value"
@@ -193,19 +211,19 @@
                       <div>
                         <el-checkbox v-model="checkAllData" :indeterminate="isIndeterminateData" @change="handlecheckAllChangeData">Data</el-checkbox>
                         <el-checkbox-group v-model="checkedData" class="pl-4" @change="handleCheckedChangeData">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" :label="data">{{ data }}</el-checkbox>
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                       <div>
                         <el-checkbox v-model="checkAllStructure" :indeterminate="isIndeterminateStructure" @change="handlecheckAllChangeStructure">Structure</el-checkbox>
                         <el-checkbox-group v-model="checkedStructure" class="pl-4" @change="handleCheckedChangeStructure">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_STRUCTURE" :key="data" :label="data">{{ data }}</el-checkbox>
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_STRUCTURE" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                       <div>
                         <el-checkbox v-model="checkAllAdministrator" :indeterminate="isIndeterminateAdministrator" @change="handlecheckAllChangeAdministrator">Administrator</el-checkbox>
                         <el-checkbox-group v-model="checkedAdministrator" class="pl-4" @change="handleCheckedChangeAdministrator">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_ADMINISTRATOR" :key="data" :label="data">{{ data }}</el-checkbox>
+                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_ADMINISTRATOR" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                         </el-checkbox-group>
                       </div>
                     </el-col>
@@ -213,19 +231,95 @@
                       <h3>Resource limits</h3>
                       <div>
                         <label for="max-queries">MAX QUERIES PER HOUR: </label>
-                        <el-input id="nameEmployee" />
+                        <el-input
+                          id="max_queries_per_hour"
+                          v-model.trim="max_queries_per_hour"
+                          :maxlength="maxInputLength"
+                          @input="sanitizeInput"
+                        />
                       </div>
                       <div>
                         <label for="max-queries">MAX UPDATES PER HOUR: </label>
-                        <el-input id="nameEmployee" />
+                        <el-input
+                          id="max_updates_per_hour"
+                          v-model.trim="max_updates_per_hour"
+                          :maxlength="maxInputLength"
+                          @input="sanitizeInput"
+                        />
                       </div>
                       <div>
                         <label for="max-queries">MAX CONNECTIONS PER HOUR:  </label>
-                        <el-input id="nameEmployee" />
+                        <el-input
+                          id="max_connections_per_hour"
+                          v-model.trim="max_connections_per_hour"
+                          :maxlength="maxInputLength"
+                          @input="sanitizeInput"
+                        />
                       </div>
                       <div>
                         <label for="max-queries">MAX USER CONNECTIONS:  </label>
-                        <el-input id="nameEmployee" />
+                        <el-input
+                          id="max_user_connections"
+                          v-model.trim="max_user_connections"
+                          :maxlength="maxInputLength"
+                          @input="sanitizeInput"
+                        />
+                      </div>
+                    </el-col>
+                  </el-row>
+                </div>
+                <div class="form-footer d-flex justify-content-center">
+                  <el-button type="danger" plain>{{ $t('LANGUAGES.TEXT_BUTTON_CANCEL') }}</el-button>
+                  <el-button type="primary" @click="handleSaveGlobalPrivileges">{{ $t('LANGUAGES.TEXT_BUTTON_SAVE') }}</el-button>
+                </div>
+              </form>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="Database">
+            <div class="container">
+              <form>
+                <div class="split-screen">
+                  <el-row :gutter="20">
+                    <el-col :span="12">
+                      <div class="content-left">
+                        <ul>
+                          <li
+                            v-for="item in items"
+                            :key="item.id"
+                            :class="{ active: item.selected }"
+                            @click="toggleSelection(item)"
+                          >
+                            {{ item.name }}
+                          </li>
+                        </ul>
+                      </div>
+                    </el-col>
+                    <el-col :span="12">
+                      <div class="content-right">
+                        <div>
+                          <div class="bg-gray pl-2">
+                            <el-checkbox v-model="checkAllDataTab" :indeterminate="isIndeterminateDataTab" @change="handlecheckAllChangeDataTab">Data</el-checkbox>
+                          </div>
+                          <el-checkbox-group v-model="checkedDataTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeDataTab">
+                            <el-checkbox v-for="data in DATABASE_DATA" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                          </el-checkbox-group>
+                        </div>
+                        <div>
+                          <div class="bg-gray pl-2">
+                            <el-checkbox v-model="checkAllStructureTab" :indeterminate="isIndeterminateStructureTab" @change="handlecheckAllChangeStructureTab">Structure</el-checkbox>
+                          </div>
+                          <el-checkbox-group v-model="checkedStructureTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeStructureTab">
+                            <el-checkbox v-for="data in DATABASE_STRUCTURE" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                          </el-checkbox-group>
+                        </div>
+                        <div>
+                          <div class="bg-gray pl-2">
+                            <el-checkbox v-model="checkAllAdministratorTab" :indeterminate="isIndeterminateAdministratorTab" @change="handlecheckAllChangeAdministratorTab">Adminstration</el-checkbox>
+                          </div>
+                          <el-checkbox-group v-model="checkedAdministratorTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeAdministratorTab">
+                            <el-checkbox v-for="data in DATABASE_ADMINISTRATOR" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                          </el-checkbox-group>
+                        </div>
                       </div>
                     </el-col>
                   </el-row>
@@ -235,58 +329,6 @@
                   <el-button type="primary">{{ $t('LANGUAGES.TEXT_BUTTON_SAVE') }}</el-button>
                 </div>
               </form>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="Database">
-            <div class="container">
-              <div class="split-screen">
-                <el-row :gutter="20">
-                  <el-col :span="12">
-                    <!-- Nội dung ở phần thứ nhất -->
-                    <div class="content-left">
-                      <ul>
-                        <li
-                          v-for="item in items"
-                          :key="item.id"
-                          :class="{ active: item.selected }"
-                          @click="toggleSelection(item)"
-                        >
-                          {{ item.name }}
-                        </li>
-                      </ul>
-                    </div>
-                  </el-col>
-                  <el-col :span="12">
-                    <!-- Nội dung ở phần thứ hai -->
-                    <div class="content-right">
-                      <div>
-                        <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllDataTab" :indeterminate="isIndeterminateDataTab" @change="handlecheckAllChangeDataTab">Data</el-checkbox>
-                        </div>
-                        <el-checkbox-group v-model="checkedDataTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeDataTab">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_DATA" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
-                        </el-checkbox-group>
-                      </div>
-                      <div>
-                        <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllStructureTab" :indeterminate="isIndeterminateStructureTab" @change="handlecheckAllChangeStructureTab">Structure</el-checkbox>
-                        </div>
-                        <el-checkbox-group v-model="checkedStructureTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeStructureTab">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_STRUCTURE" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
-                        </el-checkbox-group>
-                      </div>
-                      <div>
-                        <div class="bg-gray pl-2">
-                          <el-checkbox v-model="checkAllAdministratorTab" :indeterminate="isIndeterminateAdministratorTab" @change="handlecheckAllChangeAdministratorTab">Adminstration</el-checkbox>
-                        </div>
-                        <el-checkbox-group v-model="checkedAdministratorTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeAdministratorTab">
-                          <el-checkbox v-for="data in GLOBAL_PRIVILEGES_ADMINISTRATOR" :key="data" class="vertical-checkbox" :label="data">{{ data }}</el-checkbox>
-                        </el-checkbox-group>
-                      </div>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -348,9 +390,13 @@ export default {
       checkedAdministratorTab: [],
       isIndeterminateAdministratorTab: true,
 
-      GLOBAL_PRIVILEGES_DATA: CONFIGS.GLOBAL_PRIVILEGES_DATA,
-      GLOBAL_PRIVILEGES_STRUCTURE: CONFIGS.GLOBAL_PRIVILEGES_STRUCTURE,
-      GLOBAL_PRIVILEGES_ADMINISTRATOR: CONFIGS.GLOBAL_PRIVILEGES_ADMINISTRATOR,
+      GLOBAL_PRIVILEGES_DATA: CONFIGS.GLOBAL_PRIVILEGES.data,
+      GLOBAL_PRIVILEGES_STRUCTURE: CONFIGS.GLOBAL_PRIVILEGES.structure,
+      GLOBAL_PRIVILEGES_ADMINISTRATOR: CONFIGS.GLOBAL_PRIVILEGES.administrator,
+
+      DATABASE_DATA: CONFIGS.DATABASES.data,
+      DATABASE_STRUCTURE: CONFIGS.DATABASES.structure,
+      DATABASE_ADMINISTRATOR: CONFIGS.DATABASES.administrator,
       items: [
         { id: 1, name: 'atmtc-centlex-dev', selected: false },
         { id: 2, name: 'atmtc-dev', selected: false },
@@ -402,6 +448,12 @@ export default {
           ],
         },
       ],
+      maxInputLength: 4,
+      max_queries_per_hour: 0,
+      max_updates_per_hour: 0,
+      max_connections_per_hour: 0,
+      max_user_connections: 0,
+      rds_id: '',
     };
   },
   watch: {
@@ -580,21 +632,22 @@ export default {
         });
     },
     handleAddRds(){
+      this.handleResetPopup();
       this.openModalAdd = true;
     },
 
     handlecheckAllChangeData(val) {
-      this.checkedData = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.checkedData = val ? this.GLOBAL_PRIVILEGES_DATA.map(item => item.id) : [];
       this.isIndeterminateData = false;
     },
 
     handlecheckAllChangeStructure(val) {
-      this.checkedStructure = val ? this.GLOBAL_PRIVILEGES_STRUCTURE : [];
+      this.checkedStructure = val ? this.GLOBAL_PRIVILEGES_STRUCTURE.map(item => item.id) : [];
       this.isIndeterminateStructure = false;
     },
 
     handlecheckAllChangeAdministrator(val) {
-      this.checkedAdministrator = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR : [];
+      this.checkedAdministrator = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR.map(item => item.id) : [];
       this.isIndeterminateAdministrator = false;
     },
 
@@ -676,129 +729,169 @@ export default {
         }
       }
     },
+    sanitizeInput() {
+      this.max_queries_per_hour = this.max_queries_per_hour.replace(/[^-\d]/g, '');
+    },
+    handleSaveGlobalPrivileges(){
+      const params = {
+        rds: [
+          {
+            rds_id: this.rds_id,
+            global: {
+              rds_permission_id: [...this.checkedData, ...this.checkedStructure, ...this.checkedAdministrator],
+              max_queries_per_hour: this.max_queries_per_hour,
+              max_updates_per_hour: this.max_updates_per_hour,
+              max_connections_per_hour: this.max_connections_per_hour,
+              max_user_connections: this.max_user_connections,
+            },
+            'database': null,
+          },
+        ],
+      };
+      console.log('params==>', params);
+      // Reset popup
+      // this.handleResetPopup();
+    },
+    handleResetPopup(){
+      this.checkAllData = false;
+      this.checkedData = [];
+      this.isIndeterminateData = true;
+      this.checkAllStructure = false;
+      this.checkedStructure = [];
+      this.isIndeterminateStructure = true;
+      this.checkAllAdministrator = false;
+      this.checkedAdministrator = [];
+      this.isIndeterminateAdministrator = true;
+      this.checkAllDataTab = false;
+      this.checkedDataTab = [];
+      this.isIndeterminateDataTab = true;
+      this.checkAllStructureTab = false;
+      this.checkedStructureTab = [];
+      this.isIndeterminateStructureTab = true;
+      this.checkAllAdministratorTab = false;
+      this.checkedAdministratorTab = [];
+      this.isIndeterminateAdministratorTab = true;
+      this.max_queries_per_hour = 0;
+      this.max_updates_per_hour = 0;
+      this.max_connections_per_hour = 0;
+      this.max_user_connections = 0;
+    },
   },
 };
 </script>
 
-    <style scoped>
-
-    .main-page {
-      width: 98%;
-      margin: 0 auto;
-    }
-    .title-info {
-      border-left: 9px solid #fb9a09;
-      color: #3189bb;
-      font-size: 25px;
-    }
-    .label-name{
-      font-size: 17px;
-      padding-top: 9px;
-    }
-    .form-tag {
-        position: relative;
-    }
-    ::v-deep .b-form-tags-button {
-        display: none;
-    }
-    ::v-deep .dropdown-menu {
-        position: absolute;
-        left: 0px;
-        width: 100%;
-        top: 91.7%;
-        z-index: 999999999;
-        max-height: 180px;
-        overflow-y: auto;
-    }
-    ::v-deep .no-resize {
-        resize: none;
-    }
-    ::v-deep .btn-warning {
-      color: #fff !important;
-      background: #fb9a09;
-    }
-    .btn {
-      border: 0 !important;
-      margin: 0px 10px;
-    }
-    .btn-submit {
-      justify-content: center;
-    }
-    .btn:hover {
-      color: #fff !important;
-      background: #ef8f00 !important;
-    }
-    .btn:active {
-      background: #fb8c00 !important;
-    }
-    .btn-secondary {
-      background: #fb9a09 !important;
-    }
-    ::v-deep select:first-child:disabled {
-      color: #6f737c;
-    }
-    ::v-deep option {
-      color: #111111;
-    }
-    ::v-deep option[value=""][disabled] {
-      display: none !important;
-      color: #6f737c;
-    }
-    select:required:invalid { color: #6f737c; }
-    .text-error {
-      line-height: normal;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      -webkit-hyphens: auto;
-      -ms-hyphens: auto;
-      hyphens: auto;
-      color: red;
-      font-size: 12px;
-    }
-    .image-dropzone {
-      border: 2px solid #ccc;
-      padding: 20px;
-      text-align: center;
-      background: rgb(245 246 247);
-      width: 800px;
-    }
-
-    .image-dropzone p {
-      margin: 0;
-    }
-
-    .image-preview {
-      display: table;
-      flex-wrap: wrap;
-      height: 200px;
-      margin: 15px;
-    }
-
-    .preview-item {
-      display: inline-block;
-      margin: 10px;
-    }
-
-    .preview-item img {
-      width: 180px;
-      height: 200px;
-    }
-
-    .preview-item button {
-      margin-top: 5px;
-    }
-    .check_with_or_without_mask{
-      border-bottom: 4px solid;
-    }
-    .line-form{
-      border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-      margin-bottom: 10px;
-    }
-    .submit_button:hover{
-      background: #0f68b1 !important;
-    }
-
+<style scoped>
+  .main-page {
+    width: 98%;
+    margin: 0 auto;
+  }
+  .title-info {
+    border-left: 9px solid #fb9a09;
+    color: #3189bb;
+    font-size: 25px;
+  }
+  .label-name{
+    font-size: 17px;
+    padding-top: 9px;
+  }
+  .form-tag {
+      position: relative;
+  }
+  ::v-deep .b-form-tags-button {
+      display: none;
+  }
+  ::v-deep .dropdown-menu {
+      position: absolute;
+      left: 0px;
+      width: 100%;
+      top: 91.7%;
+      z-index: 999999999;
+      max-height: 180px;
+      overflow-y: auto;
+  }
+  ::v-deep .no-resize {
+      resize: none;
+  }
+  ::v-deep .btn-warning {
+    color: #fff !important;
+    background: #fb9a09;
+  }
+  .btn {
+    border: 0 !important;
+    margin: 0px 10px;
+  }
+  .btn-submit {
+    justify-content: center;
+  }
+  .btn:hover {
+    color: #fff !important;
+    background: #ef8f00 !important;
+  }
+  .btn:active {
+    background: #fb8c00 !important;
+  }
+  .btn-secondary {
+    background: #fb9a09 !important;
+  }
+  ::v-deep select:first-child:disabled {
+    color: #6f737c;
+  }
+  ::v-deep option {
+    color: #111111;
+  }
+  ::v-deep option[value=""][disabled] {
+    display: none !important;
+    color: #6f737c;
+  }
+  select:required:invalid { color: #6f737c; }
+  .text-error {
+    line-height: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+    color: red;
+    font-size: 12px;
+  }
+  .image-dropzone {
+    border: 2px solid #ccc;
+    padding: 20px;
+    text-align: center;
+    background: rgb(245 246 247);
+    width: 800px;
+  }
+  .image-dropzone p {
+    margin: 0;
+  }
+  .image-preview {
+    display: table;
+    flex-wrap: wrap;
+    height: 200px;
+    margin: 15px;
+  }
+  .preview-item {
+    display: inline-block;
+    margin: 10px;
+  }
+  .preview-item img {
+    width: 180px;
+    height: 200px;
+  }
+  .preview-item button {
+    margin-top: 5px;
+  }
+  .check_with_or_without_mask{
+    border-bottom: 4px solid;
+  }
+  .line-form{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+  }
+  .submit_button:hover{
+    background: #0f68b1 !important;
+  }
     /*copy cua Yen*/
     .title {
       font-style: normal;
