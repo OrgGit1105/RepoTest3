@@ -56,3 +56,11 @@ export const CompanyBranch = [
 export const GLOBAL_PRIVILEGES_DATA = [
   'Select', 'Insert', 'Update', 'Delete', 'File',
 ];
+
+export const GLOBAL_PRIVILEGES_STRUCTURE = [
+  'Create', 'Alter', 'Index', 'Drop', 'Create temporary tables',
+];
+
+export const GLOBAL_PRIVILEGES_ADMINISTRATOR = [
+  'Grant', 'Super', 'Process', 'Reload',
+];

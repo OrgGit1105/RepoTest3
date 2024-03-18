@@ -394,6 +394,16 @@ export const constantRoutes = [
           icon: 'icofont-ui-user',
         },
       },
+      {
+        path: 'edit/:id',
+        component: () => import('../views/Rds/edit'),
+        name: 'EditRds',
+        hidden: true,
+        meta: {
+          title: 'routes.Rds',
+          icon: 'icofont-ui-user',
+        },
+      },
     ],
   },
 ];

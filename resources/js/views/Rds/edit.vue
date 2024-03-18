@@ -1,0 +1,840 @@
+<template>
+  <div>
+    <div class="container-fluid w-90">
+      <div class="container-fluid-body mt-5 mb-5">
+        <div class="use-management-title">
+          <div class="card-body p-5">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="basic">
+                <h1 class="title">{{ $t('LANGUAGES.TEXT_RDS_MANAGEMENT') }}</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr class="line-bottom">
+        <div class="use-management-title-table mt-5">
+          <p class="back-list cursor-pointer" @click="listEmployees()"> <i class="el-icon-arrow-left icon-back-list" /> All RDS </p>
+          <div class="card-body p-card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="basic">
+                <h1 class="title-record m-0">RDS</h1>
+              </div>
+              <div class="basic">
+                <template v-if="!waitEdit">
+                  <el-button class="btn-add-custom" type="primary" @click="onSubmit($event)">Save</el-button>
+                </template>
+                <template v-if="waitEdit">
+                  <el-button class="btn-add-custom" type="primary">...</el-button>
+                </template>
+              </div>
+            </div>
+            <hr class="line">
+            <ValidationObserver
+              ref="obsEditEmployee"
+              tag="div"
+            >
+              <h4 class="mb-0 font-weight-normal">
+                <div class="cover-employee-edit">
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">Name RDS</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="name"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="ssh_public"
+                            v-model="formEdit.ssh_public_key"
+                            class="p-1"
+                          />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">URL enport</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="name"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="ssh_public"
+                            v-model="formEdit.ssh_public_key"
+                            class="p-1"
+                          />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">Username</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="name"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="ssh_public"
+                            v-model="formEdit.ssh_public_key"
+                            class="p-1"
+                          />
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                        </b-input-group>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">Password</p>
+                      <b-input-group>
+                        <b-form-input
+                          id="ssh_public"
+                          v-model="formEdit.ssh_public_key"
+                          class="p-1"
+                        />
+                      </b-input-group>
+                    </div>
+                  </div>
+                </div>
+              </h4>
+              <p class="delete-record cursor-pointer mt-5" @click="showModalDelete= true"> Delete RDS </p>
+            </ValidationObserver>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal delete -->
+    <el-dialog
+      title="DELETE"
+      :visible.sync="showModalDelete"
+      width="30%"
+      center
+    >
+      <span class="text-align-center">Are you sure to delete this RDS?</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showModalDelete= false">Cancel</el-button>
+        <el-button type="danger" @click="submitDelete()">Confirm</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import * as CONFIGS from '../../configs/index';
+import * as UserApi from '../../api/user';
+import * as ImageApi from '../../api/image_face';
+import { MakeToast } from '../../utils/toast_message';
+import { ValidationObserver, ValidationProvider } from 'vee-validate';
+import { getAllRole } from '../../api/viamUser';
+import { deleteOneUser } from '../../api/user';
+import { getImageByUserId } from '../../api/image_face';
+
+export default {
+  name: 'EditRds',
+  components: {
+    ValidationObserver,
+    ValidationProvider,
+  },
+  data() {
+    return {
+      headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
+      authorityOption: CONFIGS.AuthorityList,
+      branchList: [],
+      formEdit: {
+        name: '',
+        email: '',
+        gender: '',
+        birthday: '',
+        address: '',
+        telephone: '',
+        entry_date: '',
+        slack_id: '',
+        skype_id: '',
+        github_id: '',
+        github_gmail: '',
+        ssh_public_key: '',
+        paid_off: '',
+        password: '',
+        password_confirmation: '',
+        viam_user_id: '',
+        retirement_date: '',
+      },
+      listGender: [
+        { id: 0, name: 'male' },
+        { id: 1, name: 'female' },
+      ],
+      id: this.$route.params.id,
+      userInfo: {},
+      author: true,
+      selectedWithMaskFiles: [],
+      selectedWithoutMaskFiles: [],
+      withoutMask: true,
+      withMask: false,
+      linkFilesWithoutMask: [],
+      linkFilesWithMask: [],
+      linkFileDelete: [],
+      validateFile: false,
+      messageErrorFile: [],
+      showModalDelete: false,
+      waitEdit: false,
+    };
+  },
+  computed: {
+    roleId() {
+      return this.$store.getters.role_id;
+    },
+    companyBranch() {
+      return this.$store.getters.listBranch;
+    },
+    listRoles() {
+      return this.$store.getters.listRoles;
+    },
+  },
+  watch: {
+    companyBranch() {
+    },
+    'userInfo.viam_user': function() {
+      this.formEdit.viam_user_id = this.userInfo.viam_user;
+    },
+  },
+  created() {
+    this.getListRole();
+    this.getUserInfo();
+    this.getImageByUserId();
+  },
+
+  methods: {
+    openLoading() {
+      this.$store.dispatch('loading/setLoading', true);
+    },
+    closeLoading() {
+      this.$store.dispatch('loading/setLoading', false);
+    },
+    async getListRole(){
+      this.openLoading();
+      await getAllRole().then((response) => {
+        if (response.code === 200){
+          this.$store.dispatch('app/saveListRoles', response.data);
+          this.closeLoading();
+        }
+      }).catch((error) => {
+        this.closeLoading();
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: '1. ' + error.message,
+        });
+      });
+    },
+    async getUserInfo() {
+      this.openLoading();
+      try {
+        const response = await UserApi.getOneUser(this.id);
+        this.userInfo = {
+          viam_user: response.data.viam_user.id,
+        };
+        this.formEdit = {
+          name: response.data.name,
+          email: response.data.email,
+          gender: response.data.gender,
+          birthday: response.data.birthday,
+          address: response.data.address,
+          telephone: response.data.telephone,
+          entry_date: response.data.entry_date,
+          slack_id: response.data.slack_id,
+          skype_id: response.data.skype_id,
+          github_id: response.data.github_id,
+          github_gmail: response.data.github_gmail,
+          ssh_public_key: response.data.ssh_public_key,
+          paid_off: response.data.paid_off_start,
+          password: '',
+          password_confirmation: '',
+          viam_user: response.data.viam_user.name,
+          role_id: response.data.role_id,
+          retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
+        };
+        this.closeLoading();
+      } catch (error) {
+        this.closeLoading();
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: '2. ' + error.message,
+        });
+      }
+    },
+    async getImageByUserId(){
+      this.openLoading();
+      await getImageByUserId(this.id)
+        .then((response) => {
+          response.data.forEach((element) => {
+            if (element.type === 'WithoutMask'){
+              this.linkFilesWithoutMask.push({
+                id: element.id,
+                file: element.file,
+                type: element.type,
+                face_rekognition_id: element.face_rekognition_id,
+              });
+            }
+            if (element.type === 'WithMask'){
+              this.linkFilesWithMask.push({
+                id: element.id,
+                file: element.file,
+                type: element.type,
+                face_rekognition_id: element.face_rekognition_id,
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          this.closeLoading();
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: '3. ' + error.message,
+          });
+        });
+    },
+    formatTimeStamp(date){
+      const datePart = date.split(' ')[0]; // Extract the date part from the received value
+      const parts = datePart.split('-');
+      const year = parts[0];
+      const month = parts[1];
+      const day = parts[2];
+      return `${year}-${month}-${day}`;
+    },
+    async onSubmit(e) {
+      e.preventDefault();
+      this.checkNumImage();
+      const isValid = await this.$refs.obsEditEmployee.validate();
+      if (isValid === true && !this.validateFile) {
+        // const EDIT_DATA = {
+        //   role_id: this.form.role_id,
+        //   department_id: this.form.department_id,
+        //   username: this.form.username,
+        //   email: this.form.email,
+        // };
+        // if (this.form.password) {
+        //   EDIT_DATA.password = this.form.password;
+        //   // console.log('Co chay vao day');
+        // }
+        // // console.log('Form edit gui di', EDIT_DATA);
+        // this.openLoading();
+        this.waitEdit = true;
+        await UserApi.putOneUser(this.id, this.formEdit)
+          .then(async(response) => {
+            if (response.code === 200) {
+              // this.closeLoading();
+              MakeToast({
+                variant: 'success',
+                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                content: 'Edit employee success',
+              });
+              if (this.linkFileDelete.length !== 0){
+                for (const element of this.linkFileDelete) {
+                  await ImageApi.deleteImageByUserId(element.id)
+                    .then((response) => {
+                      if (response.code === 200){
+                        MakeToast({
+                          variant: 'success',
+                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                          content: `Delete image employee with link ${element.file} success`,
+                        });
+                      } else {
+                        MakeToast({
+                          variant: 'warning',
+                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                          content: response.message,
+                        });
+                      }
+                    })
+                    .catch((error) => {
+                      MakeToast({
+                        variant: 'warning',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                        content: '4. ' + error.message,
+                      });
+                    });
+                }
+              }
+              // Kiểm tra selectedWithoutMaskFiles
+              if (this.selectedWithoutMaskFiles.length !== 0){
+                const image = new FormData();
+                for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
+                  const file = this.selectedWithoutMaskFiles[i];
+                  image.append('file[]', file);
+                }
+                image.append('type', 'WithoutMask');
+                image.append('user_id', this.id);
+
+                await ImageApi.createImage(image)
+                  .then((response) => {
+                    if (response.code === 200){
+                      MakeToast({
+                        variant: 'success',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                        content: 'Add image employee success',
+                      });
+                    } else {
+                      MakeToast({
+                        variant: 'warning',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                        content: response.message,
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    MakeToast({
+                      variant: 'warning',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                      content: '5. ' + error.message,
+                    });
+                  });
+              }
+
+              // Kiểm tra selectedWithMaskFiles
+              if (this.selectedWithMaskFiles.length !== 0){
+                const image = new FormData();
+                for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
+                  const file = this.selectedWithMaskFiles[i];
+                  image.append('file[]', file);
+                }
+                image.append('type', 'WithMask');
+                image.append('user_id', this.id);
+
+                await ImageApi.createImage(image)
+                  .then((response) => {
+                    if (response.code === 200){
+                      MakeToast({
+                        variant: 'success',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+                        content: 'Add image employee success',
+                      });
+                    } else {
+                      MakeToast({
+                        variant: 'warning',
+                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                        content: response.message,
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    MakeToast({
+                      variant: 'warning',
+                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                      content: '6. ' + error.message,
+                    });
+                  });
+              }
+              this.waitEdit = false;
+              await this.$router.push('/rds/index');
+            } else {
+              // this.closeLoading();
+              MakeToast({
+                variant: 'warning',
+                title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+                content: response.message,
+              });
+              this.waitEdit = false;
+            }
+          })
+          .catch((error) => {
+            MakeToast({
+              variant: 'warning',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+              content: '7. ' + error.message,
+            });
+          });
+        this.waitEdit = false;
+      } else {
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: 'Still error',
+        });
+        this.waitEdit = false;
+      }
+    },
+    removeLinkFile(file, index){
+      if (file.type === 'WithoutMask'){
+        this.linkFileDelete.push(file);
+        this.linkFilesWithoutMask.splice(index, 1);
+      }
+      if (file.type === 'WithMask'){
+        this.linkFileDelete.push(file);
+        this.linkFilesWithMask.splice(index, 1);
+      }
+      this.checkNumImage();
+    },
+    checkNumImage(){
+      this.messageErrorFile = [];
+      if (this.linkFilesWithoutMask.length === 0 && this.selectedWithoutMaskFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Image without mask must one image');
+      }
+
+      if (this.linkFilesWithMask.length === 0 && this.linkFilesWithoutMask.length === 0 && this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0){
+        this.validateFile = true;
+        this.messageErrorFile.push('Pleas choose image');
+      }
+      if (this.messageErrorFile.length === 0){
+        this.validateFile = false;
+      }
+    },
+    async checkImage() {
+      let dem = 0;
+      this.waitEdit = true;
+      for (const item of this.selectedWithoutMaskFiles) {
+        const file = new FormData();
+        file.append('file', item);
+        await ImageApi.checkImage(file).then((response) => {
+          if (response.code === 200){
+            if (response.data.checkImage === false){
+              this.messageErrorFile.push('Image must only one person');
+              dem++;
+            }
+          } else {
+            this.messageErrorFile.push(response.message);
+            this.validateFile = true;
+          }
+        }).catch((error) => {
+          this.messageErrorFile.push(error.getMessage());
+          this.validateFile = true;
+        });
+      }
+      for (const item of this.selectedWithMaskFiles) {
+        const file = new FormData();
+        file.append('file', item);
+        await ImageApi.checkImage(file).then((response) => {
+          if (response.code === 200){
+            if (response.data.checkImage === false){
+              this.messageErrorFile.push('Image must only one person');
+              dem++;
+            }
+          } else {
+            this.messageErrorFile.push(response.message);
+            this.validateFile = true;
+          }
+        }).catch((error) => {
+          this.messageErrorFile.push(error.getMessage());
+          this.validateFile = true;
+        });
+      }
+      if (dem > 0){
+        this.validateFile = true;
+      } else {
+        this.validateFile = false;
+      }
+      this.waitEdit = false;
+    },
+    checkWithoutMask(){
+      this.withoutMask = true;
+      this.withMask = false;
+    },
+    checkWithMask(){
+      this.withoutMask = false;
+      this.withMask = true;
+    },
+    handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // const fileURL = URL.createObjectURL(file);
+        if (this.withoutMask){
+          this.selectedWithoutMaskFiles.push(file);
+        }
+        if (this.withMask){
+          this.selectedWithMaskFiles.push(file);
+        }
+      }
+      this.validateFile = false;
+      this.checkNumImage();
+      this.checkImage();
+    },
+    openFilePicker() {
+      this.$refs.fileInput.click();
+    },
+    handleFileSelect(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (this.isImageFile(file)) {
+          if (this.withoutMask){
+            this.selectedWithoutMaskFiles.push(file);
+          }
+          if (this.withMask){
+            this.selectedWithMaskFiles.push(file);
+          }
+        }
+      }
+      this.validateFile = false;
+      this.checkNumImage();
+      this.checkImage();
+    },
+    isImageFile(file) {
+      const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+      return allowedExtensions.test(file.name);
+    },
+    convertFileToUrl(file){
+      return URL.createObjectURL(file);
+    },
+    removeFile(index) {
+      if (this.withoutMask){
+        this.selectedWithoutMaskFiles.splice(index, 1);
+      }
+      if (this.withMask){
+        this.selectedWithMaskFiles.splice(index, 1);
+      }
+      this.checkNumImage();
+      this.checkImage();
+    },
+    chooseFiles() {
+      this.$refs.fileInput.click();
+    },
+    removeFileAll(){
+      if (this.withoutMask){
+        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
+        if (this.linkFilesWithoutMask.length > 0){
+          this.linkFilesWithoutMask.forEach((element) => {
+            this.linkFileDelete.push(element);
+          });
+          this.linkFilesWithoutMask.splice(0, this.linkFilesWithoutMask.length);
+        }
+      }
+      if (this.withMask){
+        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
+        if (this.linkFilesWithMask.length > 0){
+          this.linkFilesWithMask.forEach((element) => {
+            this.linkFileDelete.push(element);
+          });
+          this.linkFilesWithMask.splice(0, this.linkFilesWithMask.length);
+        }
+      }
+      this.checkNumImage();
+    },
+    // showModalDelete(){
+    //   this.$bvModal.show('bv-modal-delete');
+    // },
+    // hideModalDelete() {
+    //   this.$bvModal.hide('bv-modal-delete');
+    // },
+    async submitDelete() {
+      if (this.id) {
+        await deleteOneUser(this.id).then(() => {
+          MakeToast({
+            variant: 'success',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+            content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
+          });
+          this.$router.push('/rds/index');
+        });
+      }
+    },
+    listEmployees(){
+      this.$router.push({ path: `/rds/index` });
+    },
+  },
+};
+</script>
+
+<style scoped>
+
+.main-page {
+  width: 98%;
+  margin: 0 auto;
+}
+.title-info {
+  border-left: 9px solid #fb9a09;
+  color: #3189bb;
+  font-size: 25px;
+}
+.label-name{
+  font-size: 17px;
+  padding-top: 9px;
+}
+::v-deep .btn-warning {
+  color: #fff !important;
+  background: #fb9a09;
+}
+.btn {
+  border: 0 !important;
+  margin: 0px 10px;
+}
+.btn-submit {
+  justify-content: center;
+}
+.btn:hover {
+  color: #fff !important;
+  background: #ef8f00 !important;
+}
+.btn:active {
+  background: #fb8c00 !important;
+}
+.btn-secondary {
+  background: #fb9a09 !important;
+}
+::v-deep select:first-child:disabled {
+  color: #6f737c;
+}
+::v-deep option {
+  color: #111111;
+}
+::v-deep option[value=""][disabled] {
+  display: none !important;
+  color: #6f737c;
+}
+select:required:invalid { color: #6f737c; }
+.text-error {
+  line-height: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  color: red;
+  font-size: 12px;
+}
+.image-dropzone {
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  background: rgb(245 246 247);
+  width: 800px;
+}
+
+.image-dropzone p {
+  margin: 0;
+}
+
+.image-preview {
+  display: table;
+  flex-wrap: wrap;
+  height: 200px;
+  margin: 15px;
+}
+
+.preview-item {
+  display: inline-block;
+  margin: 10px;
+}
+
+.preview-item img {
+  width: 180px;
+  height: 200px;
+}
+
+.preview-item button {
+  margin-top: 5px;
+}
+.check_with_or_without_mask{
+  border-bottom: 4px solid;
+}
+.line-form{
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+}
+.submit_button:hover{
+  background: #0f68b1 !important;
+}
+
+/*copy cua Yen*/
+.title {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 40px;
+  color: #000000;
+  margin: 0;
+}
+.line-bottom {
+  width: 95%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 0 auto;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.use-management-title-table {
+  padding: 0 45px;
+}
+.line {
+  width: 100%;
+  height: 1px;
+  color: rgba(63, 63, 63, 0.4);
+  margin: 15px auto;
+}
+.back-list {
+  color: #0070C9;
+  font-weight: 400;
+  font-size: 23px;
+  margin: 0px;
+}
+.icon-back-list {
+  font-weight: 600;
+}
+::v-deep .title-face {
+  font-weight: 600;
+  font-size: 35px;
+  margin: 0px;
+  margin-top: 5rem;
+}
+::v-deep .delete-record {
+  color: #C90000;
+  font-weight: 400;
+  font-size: 23px;
+  margin: 0px;
+}
+::v-deep .btn-add-custom {
+  background: #0070C9;
+  border-radius: 5px;
+  width: 110px;
+  font-size: 20px;
+}
+::v-deep .employee-edit {
+  display: flex;
+  width: 100%;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  text-align: left;
+  gap: 10px;
+}
+::v-deep .header-employee-edit {
+  width: calc(100% / 2);
+  height: 40px;
+  margin: 0;
+  font-size: 20px;
+}
+.cover-employee-edit {
+  display: flex;
+  gap: 60px;
+  flex-direction: column;
+}
+::v-deep .el-select {
+  width: 100%;
+}
+::v-deep .el-date-editor {
+  width: 100%;
+}
+</style>
+
