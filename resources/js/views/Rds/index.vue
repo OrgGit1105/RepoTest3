@@ -67,14 +67,6 @@
                   {{ scope.row.username }}
                 </template>
               </el-table-column>
-              <el-table-column
-                prop="action"
-                label="Action"
-                align="center"
-              >
-                <el-button type="warning" plain>Edit</el-button>
-                <el-button type="danger" plain>Delete</el-button>
-              </el-table-column>
             </el-table>
           </div>
         </div>
@@ -374,11 +366,8 @@ export default {
         });
     },
     goToEditScreen(val) {
-      this.$router.push({ path: `/user/edit/${val.id}` }, (onAbort) => {
+      this.$router.push({ path: `/rds/edit/${val.id}` }, (onAbort) => {
       });
-    },
-    toCreatePage() {
-      this.$router.push('/user/create');
     },
     createForm() {
       this.openModalAdd = true;
