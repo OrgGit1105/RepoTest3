@@ -141,4 +141,9 @@ class User extends Authenticatable implements JWTSubject
         }
         return $policy_v_face;
     }
+
+    public function rdsManagers()
+    {
+        return $this->belongsToMany(RDSManager::class, 'rds_info', 'user_id', 'rds_manager_id');
+    }
 }
