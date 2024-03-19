@@ -32,9 +32,4 @@ class VIAMUser extends Model
     {
         return $this->hasMany(User::class, 'viam_user_id', 'id');
     }
-
-    public function rdsManagers()
-    {
-        return $this->belongsToMany(RDSManager::class, 'rds_info', 'viam_user_id', 'rds_manager_id');
-    }
 }

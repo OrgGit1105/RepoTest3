@@ -23,9 +23,4 @@ class RDSInfo extends Model
     {
         return $this->hasMany(Database::class, 'rds_info_id', 'id');
     }
-
-    public function rdsPermissions()
-    {
-        return $this->belongsToMany(RDSPermission::class, 'rds_info_permission', 'rds_info_id', 'rds_permission_id');
-    }
 }
