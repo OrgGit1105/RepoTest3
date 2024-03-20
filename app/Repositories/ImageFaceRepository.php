@@ -322,7 +322,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                     $arrivingIn_time = new ArrivingReport();
                     $arrivingIn_time->in_time = $now;
                     $late = 0;
-                    if($now->hour <= 12 && $now->between($now->copy()->setHour(9)->setMinute(1), $now->copy()->setHour(18)->setMinute(0))) {
+                    if($now->hour < 12 && $now->between($now->copy()->setHour(9)->setMinute(1), $now->copy()->setHour(18)->setMinute(0))) {
                         $late = 1;
                     }
                     $arrivingIn_time->late = $late;
