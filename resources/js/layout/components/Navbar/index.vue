@@ -19,6 +19,7 @@
               </template>
               <b-dropdown-item @click="$router.push({ path: `/viam/index` })">VIAM POLICY</b-dropdown-item>
               <b-dropdown-item @click="$router.push({ path: `/viam-user/index` })">VIAM USER</b-dropdown-item>
+              <b-dropdown-item @click="$router.push({ path: `/viam-rds/index` })">VIAM RDS</b-dropdown-item>
             </b-nav-item-dropdown>
           </b-navbar-nav>
         </div>

@@ -381,6 +381,36 @@ export const constantRoutes = [
     ],
   },
   {
+    path: '/viam-rds',
+    redirect: '/viam/index',
+    component: Layout,
+    meta: {
+      title: 'routes.user',
+      icon: 'icofont-ui-user',
+    },
+    children: [
+      {
+        path: 'index',
+        component: () => import('../views/ViamRDS/index'),
+        name: 'ViamRDSManagement',
+        meta: {
+          // title: 'routes.user',
+          icon: 'icofont-ui-user',
+        },
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('../views/ViamRDS/edit'),
+        name: 'EditViamRDSManagement',
+        hidden: true,
+        meta: {
+          title: 'routes.employee',
+          icon: 'icofont-ui-user',
+        },
+      },
+    ],
+  },
+  {
     path: '/rds',
     redirect: '/rds/index',
     component: Layout,
