@@ -96,31 +96,6 @@ class VIAMUserController extends Controller
      *                format="string",
      *                example="[1,3]"
      *            ),
-     *            @OA\Property(
-     *                property="rds",
-     *                format="object",
-     *                example={
-     *                  {
-     *                      "rds_id": 1,
-     *                      "global": null,
-     *                      "database": {
-     *                          { "name": "cck", "rds_permission_id": {1, 5, 6} },
-     *                          { "name": "awa", "rds_permission_id": {1, 2, 3} }
-     *                       }
-     *                    },
-     *                    {
-     *                       "rds_id": 2,
-     *                       "global": {
-     *                          "rds_permission_id": {1, 2, 5, 6, 7},
-     *                          "max_queries_per_hour": 0,
-     *                          "max_updates_per_hour": 0,
-     *                          "max_connections_per_hour": 0,
-     *                          "max_user_connections": 0
-     *                       },
-     *                       "database": null
-     *                    },
-     *                 },
-     *             ),
      *           @OA\Property(
      *                property="description",
      *                example="description",
@@ -226,31 +201,6 @@ class VIAMUserController extends Controller
      *                format="string",
      *                example="[1,3]"
      *            ),
-     *             @OA\Property(
-     *                property="rds",
-     *                type="object",
-     *                example={
-     *                  {
-     *                      "rds_id": 1,
-     *                      "global": null,
-     *                      "database": {
-     *                          { "name": "cck", "rds_permission_id": {1, 5, 6} },
-     *                          { "name": "awa", "rds_permission_id": {1, 2, 3} }
-     *                       }
-     *                    },
-     *                    {
-     *                       "rds_id": 2,
-     *                       "global": {
-     *                          "rds_permission_id": {1, 2, 5, 6, 7},
-     *                          "max_queries_per_hour": 0,
-     *                          "max_updates_per_hour": 0,
-     *                          "max_connections_per_hour": 0,
-     *                          "max_user_connections": 0
-     *                       },
-     *                       "database": null
-     *                    },
-     *                 },
-     *             ),
      *            @OA\Property(
      *                property="description",
      *                example="description",

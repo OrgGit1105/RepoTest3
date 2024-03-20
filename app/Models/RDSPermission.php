@@ -10,11 +10,12 @@ class RDSPermission extends Model
     use HasFactory;
 
     const NAME = 'name';
+    const TYPE = 'type';
 
     protected $table = 'rds_permission';
 
     protected $fillable = [
-        self::NAME,
+        self::NAME, self::TYPE
     ];
 
     public function databases()
