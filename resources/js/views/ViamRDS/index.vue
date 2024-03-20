@@ -14,9 +14,9 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill d-flex justify-content-end">
-            <el-dropdown class="mx-4" @command="handleCommand">
+            <el-dropdown class="mx-4" @command="handleCommandRDS">
               <span class="el-dropdown-link">
-                Select RDS<i class="el-icon-arrow-down el-icon--right" />
+                {{ !selectedRds ? 'Select RDS' : selectedRds.name }} <i class="el-icon-arrow-down el-icon--right" />
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item v-for="item in listRds" :key="item.id" :command="item">{{ item.name }}</el-dropdown-item>
@@ -24,7 +24,7 @@
             </el-dropdown>
             <el-dropdown class="mx-2" @command="handleCommandDatabases">
               <span class="el-dropdown-link">
-                Select DataBase<i class="el-icon-arrow-down el-icon--right" />
+                {{ !selectedDatabase ? 'Select database' : selectedDatabase.name }}<i class="el-icon-arrow-down el-icon--right" />
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item v-for="item in listDatabases" :key="item.id" :command="item">{{ item.name }}</el-dropdown-item>
@@ -180,6 +180,7 @@ export default {
       ],
 
       selectedRds: null,
+      selectedDatabase: null,
     };
   },
   computed: {
@@ -277,8 +278,9 @@ export default {
       this.$router.push({ path: `/viam-rds/edit/${val.id}` });
     },
 
-    handleCommand(command){
-      console.log('handleCommand===>', command);
+    handleCommandRDS(command){
+      this.selectedRds = command;
+      console.log('handleCommandRDS===>', command);
     },
 
     handleCommandStatus(command){
@@ -286,6 +288,7 @@ export default {
     },
 
     handleCommandDatabases(command){
+      this.selectedDatabase = command;
       console.log('handleCommandDatabases===>', command);
     },
   },
