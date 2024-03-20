@@ -53,14 +53,162 @@ export const CompanyBranch = [
   { value: 'Second Department', text: 'Second Department' },
   { value: 'Third Department', text: 'Third Department' },
 ];
-export const GLOBAL_PRIVILEGES_DATA = [
-  'Select', 'Insert', 'Update', 'Delete', 'File',
-];
 
-export const GLOBAL_PRIVILEGES_STRUCTURE = [
-  'Create', 'Alter', 'Index', 'Drop', 'Create temporary tables',
-];
+export const GLOBAL_PRIVILEGES = {
+  data: [
+    {
+      id: 1, name: 'Select',
+    },
+    {
+      id: 2, name: 'Insert',
+    },
+    {
+      id: 3, name: 'Update',
+    },
+    {
+      id: 4, name: 'Delete',
+    },
+    {
+      id: 5, name: 'File',
+    },
+  ],
+  structure: [
+    {
+      id: 6, name: 'Create',
+    },
+    {
+      id: 7, name: 'Alter',
+    },
+    {
+      id: 8, name: 'Index',
+    },
+    {
+      id: 9, name: 'Drop',
+    },
+    {
+      id: 10, name: 'Create temporary tables',
+    },
+    {
+      id: 11, name: 'Show view',
+    },
+    {
+      id: 12, name: 'Create routine',
+    },
+    {
+      id: 13, name: 'Alter routine',
+    },
+    {
+      id: 14, name: 'Execute',
+    },
+    {
+      id: 15, name: 'Create view',
+    },
+    {
+      id: 16, name: 'Event',
+    },
+    {
+      id: 17, name: 'Trigger',
+    },
+  ],
+  administrator: [
+    {
+      id: 18, name: 'Grant',
+    },
+    {
+      id: 19, name: 'Super',
+    },
+    {
+      id: 20, name: 'Process',
+    },
+    {
+      id: 21, name: 'Reload',
+    },
+    {
+      id: 22, name: 'Shutdown',
+    },
+    {
+      id: 23, name: 'Show databases',
+    },
+    {
+      id: 24, name: 'Lock tables',
+    },
+    {
+      id: 25, name: 'References',
+    },
+    {
+      id: 26, name: 'Replication client',
+    },
+    {
+      id: 27, name: 'Replication slave',
+    },
+    {
+      id: 28, name: 'Create user',
+    },
+  ],
+};
 
-export const GLOBAL_PRIVILEGES_ADMINISTRATOR = [
-  'Grant', 'Super', 'Process', 'Reload',
-];
+export const DATABASES = {
+  data: [
+    {
+      id: 1, name: 'Select',
+    },
+    {
+      id: 2, name: 'Insert',
+    },
+    {
+      id: 3, name: 'Update',
+    },
+    {
+      id: 4, name: 'Delete',
+    },
+  ],
+  structure: [
+    {
+      id: 6, name: 'Create',
+    },
+    {
+      id: 7, name: 'Alter',
+    },
+    {
+      id: 8, name: 'Index',
+    },
+    {
+      id: 9, name: 'Drop',
+    },
+    {
+      id: 10, name: 'Create temporary tables',
+    },
+    {
+      id: 11, name: 'Show view',
+    },
+    {
+      id: 12, name: 'Create routine',
+    },
+    {
+      id: 13, name: 'Alter routine',
+    },
+    {
+      id: 14, name: 'Execute',
+    },
+    {
+      id: 15, name: 'Create view',
+    },
+    {
+      id: 16, name: 'Event',
+    },
+    {
+      id: 17, name: 'Trigger',
+    },
+  ],
+  administrator: [
+    {
+      id: 18, name: 'Grant',
+    },
+    {
+      id: 24, name: 'Lock tables',
+    },
+    {
+      id: 25, name: 'References',
+    },
+  ],
+};
