@@ -651,11 +651,6 @@ export default {
       this.isIndeterminateAdministrator = false;
     },
 
-    handlecheckAllChangeDataSecond(val) {
-      this.checkedDataSecond = val ? this.GLOBAL_PRIVILEGES_DATA : [];
-      this.isIndeterminateSecond = false;
-    },
-
     handleCheckedChangeData(value) {
       const checkedCount = value.length;
       this.checkAllData = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
@@ -675,23 +670,18 @@ export default {
     },
 
     handlecheckAllChangeDataTab(val) {
-      this.checkedDataTab = val ? this.GLOBAL_PRIVILEGES_DATA : [];
+      this.checkedDataTab = val ? this.GLOBAL_PRIVILEGES_DATA.map(item => item.id) : [];
       this.isIndeterminateDataTab = false;
     },
 
     handlecheckAllChangeStructureTab(val) {
-      this.checkedStructureTab = val ? this.GLOBAL_PRIVILEGES_STRUCTURE : [];
+      this.checkedStructureTab = val ? this.GLOBAL_PRIVILEGES_STRUCTURE.map(item => item.id) : [];
       this.isIndeterminateStructureTab = false;
     },
 
     handlecheckAllChangeAdministratorTab(val) {
-      this.checkedAdministratorTab = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR : [];
+      this.checkedAdministratorTab = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR.map(item => item.id) : [];
       this.isIndeterminateAdministratorTab = false;
-    },
-
-    handlecheckAllChangeDataSecondTab(val) {
-      this.checkedDataSecondTab = val ? this.GLOBAL_PRIVILEGES_DATA : [];
-      this.isIndeterminateSecondTab = false;
     },
 
     handleCheckedChangeDataTab(value) {
