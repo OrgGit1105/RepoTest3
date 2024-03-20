@@ -301,7 +301,7 @@
                             <el-checkbox v-model="checkAllDataTab" :indeterminate="isIndeterminateDataTab" @change="handlecheckAllChangeDataTab">Data</el-checkbox>
                           </div>
                           <el-checkbox-group v-model="checkedDataTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeDataTab">
-                            <el-checkbox v-for="data in DATABASE_DATA" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                            <el-checkbox v-for="data in DATABASE_DATA" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                           </el-checkbox-group>
                         </div>
                         <div>
@@ -309,7 +309,7 @@
                             <el-checkbox v-model="checkAllStructureTab" :indeterminate="isIndeterminateStructureTab" @change="handlecheckAllChangeStructureTab">Structure</el-checkbox>
                           </div>
                           <el-checkbox-group v-model="checkedStructureTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeStructureTab">
-                            <el-checkbox v-for="data in DATABASE_STRUCTURE" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                            <el-checkbox v-for="data in DATABASE_STRUCTURE" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                           </el-checkbox-group>
                         </div>
                         <div>
@@ -317,7 +317,7 @@
                             <el-checkbox v-model="checkAllAdministratorTab" :indeterminate="isIndeterminateAdministratorTab" @change="handlecheckAllChangeAdministratorTab">Adminstration</el-checkbox>
                           </div>
                           <el-checkbox-group v-model="checkedAdministratorTab" class="pl-4 vertical-checkbox-group" @change="handleCheckedChangeAdministratorTab">
-                            <el-checkbox v-for="data in DATABASE_ADMINISTRATOR" :key="data.id" :label="data.name">{{ data.name }}</el-checkbox>
+                            <el-checkbox v-for="data in DATABASE_ADMINISTRATOR" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
                           </el-checkbox-group>
                         </div>
                       </div>
@@ -670,36 +670,36 @@ export default {
     },
 
     handlecheckAllChangeDataTab(val) {
-      this.checkedDataTab = val ? this.GLOBAL_PRIVILEGES_DATA.map(item => item.id) : [];
+      this.checkedDataTab = val ? this.DATABASE_DATA.map(item => item.id) : [];
       this.isIndeterminateDataTab = false;
     },
 
     handlecheckAllChangeStructureTab(val) {
-      this.checkedStructureTab = val ? this.GLOBAL_PRIVILEGES_STRUCTURE.map(item => item.id) : [];
+      this.checkedStructureTab = val ? this.DATABASE_STRUCTURE.map(item => item.id) : [];
       this.isIndeterminateStructureTab = false;
     },
 
     handlecheckAllChangeAdministratorTab(val) {
-      this.checkedAdministratorTab = val ? this.GLOBAL_PRIVILEGES_ADMINISTRATOR.map(item => item.id) : [];
+      this.checkedAdministratorTab = val ? this.DATABASE_ADMINISTRATOR.map(item => item.id) : [];
       this.isIndeterminateAdministratorTab = false;
     },
 
     handleCheckedChangeDataTab(value) {
       const checkedCount = value.length;
-      this.checkAllDataTab = checkedCount === this.GLOBAL_PRIVILEGES_DATA.length;
-      this.isIndeterminateDataTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_DATA.length;
+      this.checkAllDataTab = checkedCount === this.DATABASE_DATA.length;
+      this.isIndeterminateDataTab = checkedCount > 0 && checkedCount < this.DATABASE_DATA.length;
     },
 
     handleCheckedChangeStructureTab(value) {
       const checkedCount = value.length;
-      this.checkAllStructureTab = checkedCount === this.GLOBAL_PRIVILEGES_STRUCTURE.length;
-      this.isIndeterminateStructureTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_STRUCTURE.length;
+      this.checkAllStructureTab = checkedCount === this.DATABASE_STRUCTURE.length;
+      this.isIndeterminateStructureTab = checkedCount > 0 && checkedCount < this.DATABASE_STRUCTURE.length;
     },
 
     handleCheckedChangeAdministratorTab(value) {
       const checkedCount = value.length;
-      this.checkAllAdministratorTab = checkedCount === this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
-      this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.GLOBAL_PRIVILEGES_ADMINISTRATOR.length;
+      this.checkAllAdministratorTab = checkedCount === this.DATABASE_ADMINISTRATOR.length;
+      this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.DATABASE_ADMINISTRATOR.length;
     },
     toggleSelection(item) {
       item.selected = !item.selected;
