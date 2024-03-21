@@ -37,8 +37,13 @@ class RDSManager extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    public function viam_users()
+    public function users()
     {
-        return $this->belongsToMany(VIAMUser::class, 'rds_info','rds_manager_id', 'viam_user_id');
+        return $this->belongsToMany(User::class, 'rds_info','rds_manager_id', 'user_id');
+    }
+
+    public function databases()
+    {
+        return $this->hasManyThrough(Database::class, RDSInfo::class,'rds_manager_id', 'rds_info_id', 'id', 'id');
     }
 }

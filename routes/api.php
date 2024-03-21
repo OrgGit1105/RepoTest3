@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AnalyticController;
 use App\Http\Controllers\Api\SlackEventModeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\VIAMRDSController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +70,13 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         });
 
         Route::apiResource('rds_manager', 'RDSManagerController');
+        Route::get('viam_rds', [VIAMRDSController::class, 'index']);
+        Route::get('viam_rds/{rds_manager_id}', [VIAMRDSController::class, 'listDatabase']);
+        Route::post('viam_rds', [VIAMRDSController::class, 'store']);
+        Route::put('viam_rds/{user_id}', [VIAMRDSController::class, 'update']);
+        Route::delete('viam_rds/{user_id}', [VIAMRDSController::class, 'destroy']);
+
+//        Route::apiResource('viam_rds', 'VIAMRDSController');
     });
 });
 

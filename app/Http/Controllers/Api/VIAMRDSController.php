@@ -3,29 +3,31 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RDSManagerRequest;
+use App\Http\Requests\VIAMRDSRequest;
+use App\Http\Requests\VIAMUserRequest;
 use App\Http\Resources\BaseResource;
-use App\Repositories\Contracts\RDSManagerRepositoryInterface;
+use App\Http\Resources\ViamRDSResource;
+use App\Repositories\Contracts\VIAMRDSRepositoryInterface;
 use Illuminate\Http\Request;
 
-class RDSManagerController extends Controller
+class VIAMRDSController extends Controller
 {
     /**
      * var Repository
      */
     protected $repository;
 
-    public function __construct(RDSManagerRepositoryInterface $repository)
+    public function __construct(VIAMRDSRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
     /**
      * @OA\Get(
-     *   path="/api/rds_manager",
-     *   tags={"RDSManager"},
-     *   summary="List rds manager",
-     *   operationId="rds_manager_index",
+     *   path="/api/viam_rds",
+     *   tags={"VIamRDS"},
+     *   summary="List viam_rds",
+     *   operationId="viam_rds_index",
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -35,7 +37,23 @@ class RDSManagerController extends Controller
      *     )
      *   ),
      *   @OA\Parameter(
-     *     name="page",
+     *     name="rds_manager_id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="database_name",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="per_page",
      *     in="query",
      *     @OA\Schema(
      *      type="integer",
@@ -62,24 +80,24 @@ class RDSManagerController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(RDSManagerRequest $request)
+    public function index(VIAMRDSRequest $request)
     {
-        $data = $this->repository->get();
-        return $this->responseJson(200, BaseResource::collection($data));
+        $data = $this->repository->list($request->all());
+        return $this->responseJson(CODE_SUCCESS, new ViamRDSResource($data));
     }
 
     /**
      * @OA\Get(
-     *   path="/api/rds_manager/{id}",
-     *   tags={"RDSManager"},
-     *   summary="Detail RDSManager",
-     *   operationId="rds_manager_show",
+     *   path="/api/viam_rds/{rds_manager_id}",
+     *   tags={"VIamRDS"},
+     *   summary="List Database of RDS",
+     *   operationId="list_database_rds",
      *   @OA\Parameter(
-     *     name="id",
+     *     name="rds_manager_id",
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *      type="string",
+     *      type="integer",
      *     ),
      *   ),
      *   @OA\Response(
@@ -104,50 +122,47 @@ class RDSManagerController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function listDatabase(VIAMRDSRequest $request)
     {
         try {
-            $data = $this->repository->find($id);
-            return $this->responseJson(200, new BaseResource($data));
+            $data = $this->repository->getListDatabase($request->all());
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
+
     /**
      * @OA\Post(
-     *   path="/api/rds_manager",
-     *   tags={"RDSManager"},
-     *   summary="Add new rds_manager",
-     *   operationId="rds_manager_create",
+     *   path="/api/viam_rds",
+     *   tags={"VIamRDS"},
+     *   summary="Add new viam_rds",
+     *   operationId="viam_rds_create",
      *   @OA\RequestBody(
      *     @OA\MediaType(
      *        mediaType="multipart/form-data",
      *        @OA\Schema(
-     *          required={"name", "url_end_point", "username", "password", "port"},
+     *          required={"rds_manager_id", "database_name", "user_id", "permission"},
      *            @OA\Property(
-     *                property="name",
-     *                format="string",
-     *                example="Server240"
+     *                property="rds_manager_id",
+     *                type="integer",
+     *                example="1"
      *             ),
      *            @OA\Property(
-     *                property="url_end_point",
-     *                format="string",
-     *                example=""
+     *                property="database_name",
+     *                type="string",
+     *                example="cck"
      *            ),
      *           @OA\Property(
-     *                property="username",
-     *                example="root",
-     *                format="string",
+     *                property="user_id",
+     *                example="1",
+     *                type="integer",
      *           ),
      *           @OA\Property(
-     *                property="password",
-     *                format="string",
-     *            ),
-     *           @OA\Property(
-     *                property="port",
-     *                example="3306",
-     *                format="string",
+     *               property="permission",
+     *               type="array",
+     *               items={"type":"integer", "example":1}
      *           ),
      *         ),
      *       ),
@@ -165,19 +180,23 @@ class RDSManagerController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function store(RDSManagerRequest $request)
+    public function store(VIAMUserRequest $request)
     {
-        return $this->repository->create($request->all());
+        try {
+            return $this->repository->create($request->all());
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
      * @OA\Put(
-     *   path="/api/rds_manager/{id}",
-     *   tags={"RDSManager"},
-     *   summary="Update RDSManager",
-     *   operationId="rds_manager_update",
+     *   path="/api/viam_rds/{user_id}",
+     *   tags={"VIamRDS"},
+     *   summary="Update viam_rds",
+     *   operationId="viam_rds_update",
      *   @OA\Parameter(
-     *     name="id",
+     *     name="user_id",
      *     in="path",
      *     required=true,
      *     @OA\Schema(
@@ -185,36 +204,27 @@ class RDSManagerController extends Controller
      *     ),
      *   ),
      *   @OA\RequestBody(
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          @OA\Schema(
-     *            required={"name", "url_end_point", "username", "password", "port"},
+     *     @OA\MediaType(
+     *        mediaType="multipart/form-data",
+     *        @OA\Schema(
+     *          required={"rds_manager_id", "database_id", "permission"},
      *            @OA\Property(
-     *                property="name",
-     *                format="string",
-     *                example="Server240"
+     *                property="rds_manager_id",
+     *                type="integer",
+     *                example="1"
      *             ),
      *            @OA\Property(
-     *                property="url_end_point",
-     *                format="string",
-     *                example=""
+     *                property="database_id",
+     *                type="integer",
+     *                example=1
      *            ),
      *           @OA\Property(
-     *                property="username",
-     *                example="root",
-     *                format="string",
-     *           ),
-     *           @OA\Property(
-     *                property="password",
-     *                format="string",
-     *            ),
-     *           @OA\Property(
-     *                property="port",
-     *                example="3306",
-     *                format="string",
+     *               property="permission",
+     *               type="array",
+     *               items={"type":"integer", "example":1}
      *           ),
      *         ),
-     *      )
+     *       ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -238,20 +248,40 @@ class RDSManagerController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(RDSManagerRequest $request, $id)
+    public function update(VIAMUserRequest $request, $id)
     {
-        return $this->repository->update($request->except([]), $id);
+        try {
+            return $this->repository->update($request->all(), $id);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
      * @OA\Delete(
-     *   path="/api/rds_manager/{id}",
-     *   tags={"RDSManager"},
-     *   summary="Delete ..............",
-     *   operationId="rds_manager_delete",
+     *   path="/api/viam_rds/{user_id}",
+     *   tags={"VIamRDS"},
+     *   summary="Delete viam_rds",
+     *   operationId="viam_rds_delete",
      *   @OA\Parameter(
-     *      name="id",
+     *      name="user_id",
      *      in="path",
+     *      required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *      name="rds_manager_id",
+     *      in="query",
+     *      required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *      name="database_id",
+     *      in="query",
      *      required=true,
      *     @OA\Schema(
      *      type="integer",
@@ -273,6 +303,10 @@ class RDSManagerController extends Controller
      */
     public function destroy($id)
     {
-        return $this->repository->delete($id);
+        try {
+            return $this->repository->delete($id);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 }

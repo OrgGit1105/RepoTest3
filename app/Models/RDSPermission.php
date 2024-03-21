@@ -10,20 +10,16 @@ class RDSPermission extends Model
     use HasFactory;
 
     const NAME = 'name';
+    const TYPE = 'type';
 
     protected $table = 'rds_permission';
 
     protected $fillable = [
-        self::NAME,
+        self::NAME, self::TYPE
     ];
 
     public function databases()
     {
         return $this->belongsToMany(Database::class, 'database_permission', 'rds_permission_id', 'database_id');
-    }
-
-    public function rdsInfos()
-    {
-        return $this->belongsToMany(RDSInfo::class, 'rds_info_permission', 'rds_permission_id', 'rds_info_id');
     }
 }
