@@ -54,16 +54,18 @@
                 label="Status"
                 align="center"
               >
-                <el-dropdown @command="handleCommandStatus">
-                  <el-tag type="danger">
-                    <span class="el-dropdown-link text-secondary">
-                      Denied<i class="el-icon-arrow-down el-icon--right" />
-                    </span>
-                    <el-dropdown-menu slot="dropdown">
+                <template slot-scope="scope">
+                  <el-dropdown @command="handleCommandStatus">
+                    <el-tag :type="scope.row.status === 'denied' ? 'success' : 'danger'">
+                      <span class="el-dropdown-link text-secondary">
+                        {{ scope.row.status === 'denied' ? 'Active' : 'Denied' }} <i class="el-icon-arrow-down el-icon--right" />
+                      </span>
+                    <!-- <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item v-for="item in listRds" :key="item.id" :command="item" @click.stop>{{ item.name }}</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </el-tag>
-                </el-dropdown>
+                    </el-dropdown-menu> -->
+                    </el-tag>
+                  </el-dropdown>
+                </template>
               </el-table-column>
             </el-table>
           </div>
@@ -227,11 +229,13 @@ export default {
                 id: 1,
                 name: 'A',
                 config_rds: 'Data(1)/ Structure(1)/Administration(1)',
+                status: 'active',
               },
               {
                 id: 2,
                 name: 'B',
-                config_rds: 'Data(0)/ Structure(1)/Administration(1)',
+                config_rds: 'Data(0)/ Structure(0)/Administration(0)',
+                status: 'denied',
               },
             ];
 
