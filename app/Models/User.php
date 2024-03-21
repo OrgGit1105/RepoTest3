@@ -147,8 +147,8 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(RDSManager::class, 'rds_info', 'user_id', 'rds_manager_id');
     }
 
-    public function rdsInfos()
+    public function databases()
     {
-        return $this->hasMany(RDSInfo::class, 'user_id', 'id');
+        return $this->hasManyThrough(Database::class, RDSInfo::class,'user_id', 'rds_info_id', 'id', 'id');
     }
 }

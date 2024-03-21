@@ -31,7 +31,6 @@ class VIAMRDSRequest extends FormRequest
     {
         switch (Route::getCurrentRoute()->getActionMethod()) {
             case 'index':
-            case 'show':
             case 'store':
             case 'update':
             case 'delete':
@@ -43,23 +42,31 @@ class VIAMRDSRequest extends FormRequest
 
     public function getCustomRule()
     {
-        $rule1 = [
-            'rds_manager_id' => 'required|exists:rds_manager,id',
-            'database_name' => 'required|string|max:100',
-        ];
-        $rule2 = array_merge($rule1, [
-            'permission' => 'required|array',
-            'permission.*' => 'required|exists:rds_permission,id'
-        ]);
-
         switch (Route::getCurrentRoute()->getActionMethod()) {
             case 'index':
-            case 'show':
-            case 'delete':
-                return $rule1;
+                return [
+                    'rds_manager_id' => 'required|exists:rds_manager,id',
+                    'database_name' => 'required|string|max:100',
+                ];
             case 'store':
+                return [
+                    'rds_manager_id' => 'required|exists:rds_manager,id',
+                    'database_name' => 'required|string|max:100',
+                    'permission' => 'required|array',
+                    'permission.*' => 'required|exists:rds_permission,id'
+                ];
             case 'update':
-                return $rule2;
+                return [
+                    'rds_manager_id' => 'required|exists:rds_manager,id',
+                    'database_id' => 'required|exists:database,id',
+                    'permission' => 'required|array',
+                    'permission.*' => 'required|exists:rds_permission,id'
+                ];
+            case 'delete':
+                return [
+                    'rds_manager_id' => 'required|exists:rds_manager,id',
+                    'database_id' => 'required|exists:database,id',
+                ];
         }
     }
 }
