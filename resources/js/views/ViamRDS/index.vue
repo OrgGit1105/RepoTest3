@@ -14,61 +14,90 @@
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
           <div class="fill d-flex justify-content-end">
-            <el-dropdown class="mx-4" @command="handleCommandRDS">
-              <span class="el-dropdown-link">
-                {{ !selectedRds ? 'Select RDS' : selectedRds.name }} <i class="el-icon-arrow-down el-icon--right" />
-              </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="item in listRds" :key="item.id" :command="item">{{ item.name }}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-            <el-dropdown class="mx-2" @command="handleCommandDatabases">
-              <span class="el-dropdown-link">
-                {{ !selectedDatabase ? 'Select database' : selectedDatabase.name }}<i class="el-icon-arrow-down el-icon--right" />
-              </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="item in listDatabases" :key="item.id" :command="item">{{ item.name }}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </div>
-          <hr class="line">
-          <div class="">
-            <el-table
-              :data="listViamRDS ? listViamRDS : []"
-              style="width: 100%"
-              :row-style="rowWorkingStyle"
-              @row-click="handleEditViamRDS"
-            >
-              <el-table-column
-                prop="name"
-                label="Employee"
-                align="center"
-              />
-              <el-table-column
-                prop="config_rds"
-                label="Config RDS"
-                align="center"
-              />
-              <el-table-column
-                prop="status"
-                label="Status"
-                align="center"
+            <div class="select-custom">
+              <el-select
+                v-model="rds_id"
+                placeholder="Select"
+                class="el-select-custom"
+                value=""
               >
-                <template slot-scope="scope">
-                  <el-dropdown @command="handleCommandStatus">
-                    <el-tag :type="scope.row.status === 'denied' ? 'success' : 'danger'">
-                      <span class="el-dropdown-link text-secondary">
-                        {{ scope.row.status === 'denied' ? 'Active' : 'Denied' }} <i class="el-icon-arrow-down el-icon--right" />
-                      </span>
-                    <!-- <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="item in listRds" :key="item.id" :command="item" @click.stop>{{ item.name }}</el-dropdown-item>
-                    </el-dropdown-menu> -->
-                    </el-tag>
-                  </el-dropdown>
-                </template>
-              </el-table-column>
-            </el-table>
+                <el-option
+                  class="el-option-custom"
+                  label="Select RDS"
+                  value=""
+                />
+                <el-option
+                  v-for="item in listRDS ?? [] "
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </div>
+
+            <div class="select-custom">
+              <el-select
+                v-model="database_id"
+                placeholder="Select"
+                class="el-select-custom"
+                value=""
+              >
+                <el-option
+                  class="el-option-custom"
+                  label="Select database"
+                  value=""
+                />
+                <el-option
+                  v-for="item in listDatabases ?? [] "
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </div>
           </div>
+          <b-table
+            id="my-table"
+            class="text-center w-100 bg-dx-grey-blur mb-0"
+            :items="listViamRDS "
+            :fields="fields"
+            responsive="sm"
+            show-empty
+          >
+            <template #cell(data)>
+              <a
+                id="file_name_data_point"
+                class="bg-white text-dark fs-14 digitaco-point"
+                @click="''"
+              >{{ data.item.employee }}</a>
+            </template>
+            <template #cell(config_rds)="data">
+              <u
+                id="file_name_data_driving"
+                class="bg-white text-dark fs-14 digitaco-driving cursor-pointer text-blue"
+                @click="goToEditScreen(data.item.id)"
+              >
+                {{ data.item.config_rds }}
+              </u>
+            </template>
+            <template #cell(status)="">
+              <el-dropdown @command="handleCommandStatus">
+                <el-tag :type="selectedStatus === 'denied' ? 'danger' : 'success'">
+                  <span class="el-dropdown-link text-secondary">
+                    {{ selectedStatus === 'denied' ? 'Denied' : 'Active' }}
+                    <i class="el-icon-arrow-down el-icon--right" />
+                  </span>
+                </el-tag>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item v-for="item in listStatus" :key="item.id" :command="item.id">
+                      {{ item.name }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+          </b-table>
         </div>
 
         <!-- <div class="use-management-pagianation">
@@ -137,7 +166,7 @@ export default {
       displayBoxSearch: 'd-none',
       displaySearch: 'd-block',
 
-      listRds: [
+      listRDS: [
         {
           id: '1',
           name: 'Name Rds 1',
@@ -181,8 +210,26 @@ export default {
         },
       ],
 
-      selectedRds: null,
-      selectedDatabase: null,
+      listStatus: [
+        {
+          id: 'denied',
+          name: 'Denied',
+        },
+        {
+          id: 'active',
+          name: 'Active',
+        },
+      ],
+
+      database_id: '',
+      rds_id: '',
+      selectedStatus: '',
+
+      fields: [
+        { key: 'employee', label: 'Employee', class: 'getting_date' },
+        { key: 'config_rds', label: 'Config RDS', class: 'file_name_data_point' },
+        { key: 'status', label: 'Status', class: 'file_name_data_driving' },
+      ],
     };
   },
   computed: {
@@ -227,13 +274,13 @@ export default {
             this.listViamRDS = [
               {
                 id: 1,
-                name: 'A',
+                employee: 'A',
                 config_rds: 'Data(1)/ Structure(1)/Administration(1)',
                 status: 'active',
               },
               {
                 id: 2,
-                name: 'B',
+                employee: 'B',
                 config_rds: 'Data(0)/ Structure(0)/Administration(0)',
                 status: 'denied',
               },
@@ -279,21 +326,17 @@ export default {
     handleEditViamRDS(val){
       // this.openModalAddRole = true;
       // this.openModalAddRole = true;
+      console.log('handleEditViamRDS');
       this.$router.push({ path: `/viam-rds/edit/${val.id}` });
-    },
-
-    handleCommandRDS(command){
-      this.selectedRds = command;
-      console.log('handleCommandRDS===>', command);
     },
 
     handleCommandStatus(command){
       console.log('handleCommandStatus===>', command);
+      this.selectedStatus = command;
     },
 
-    handleCommandDatabases(command){
-      this.selectedDatabase = command;
-      console.log('handleCommandDatabases===>', command);
+    goToEditScreen(val) {
+      this.$router.push({ path: `/viam-rds/edit/${val.id}` }, (onAbort) => {});
     },
   },
 };
@@ -644,5 +687,32 @@ export default {
     .bg-gray {
       background-color: #eee;
     }
+
+    .el-select-custom {
+  width: 175px;
+  margin: 0 20px;
+}
+
+.select-custom .el-select-custom {
+  color: #0070C9;
+}
+
+::v-deep .el-select-custom .el-input .el-select__caret {
+  color: #0070C9;
+  font-weight: bolder;
+  font-size: 20px;
+  margin-top: 3px;
+}
+
+::v-deep .el-select-custom .b-form-select .el-select__caret {
+  color: #0070C9;
+  font-weight: bolder;
+  font-size: 20px;
+  margin-top: 3px;
+}
+
+el-select {
+  color: #0070C9 !important;
+}
     </style>
 
