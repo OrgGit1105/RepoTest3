@@ -39,6 +39,11 @@ class RDSManager extends Model
 
     public function users()
     {
-        return $this->belongsToMany(VIAMUser::class, 'rds_info','rds_manager_id', 'user_id');
+        return $this->belongsToMany(User::class, 'rds_info','rds_manager_id', 'user_id');
+    }
+
+    public function databases()
+    {
+        return $this->hasManyThrough(Database::class, RDSInfo::class,'rds_manager_id', 'rds_info_id', 'id', 'id');
     }
 }

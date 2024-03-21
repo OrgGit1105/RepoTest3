@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\VIAMRDSRequest;
 use App\Http\Requests\VIAMUserRequest;
 use App\Http\Resources\BaseResource;
+use App\Http\Resources\ViamRDSResource;
 use App\Repositories\Contracts\VIAMRDSRepositoryInterface;
 use Illuminate\Http\Request;
 
@@ -82,33 +83,17 @@ class VIAMRDSController extends Controller
     public function index(VIAMRDSRequest $request)
     {
         $data = $this->repository->list($request->all());
-        return $this->responseJson(CODE_SUCCESS, BaseResource::collection($data));
+        return $this->responseJson(CODE_SUCCESS, new ViamRDSResource($data));
     }
 
     /**
      * @OA\Get(
-     *   path="/api/viam_rds/{user_id}",
+     *   path="/api/viam_rds/{rds_manager_id}",
      *   tags={"VIamRDS"},
-     *   summary="Detail viam_rds",
-     *   operationId="viam_rds_show",
+     *   summary="List Database of RDS",
+     *   operationId="list_database_rds",
      *   @OA\Parameter(
      *     name="rds_manager_id",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *      type="integer",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="database_name",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *      type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="user_id",
      *     in="path",
      *     required=true,
      *     @OA\Schema(
@@ -137,10 +122,10 @@ class VIAMRDSController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(VIAMRDSRequest $request)
+    public function listDatabase(VIAMRDSRequest $request)
     {
         try {
-            $data = $this->repository->detail($request->all());
+            $data = $this->repository->getListDatabase($request->all());
             return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
@@ -222,16 +207,16 @@ class VIAMRDSController extends Controller
      *     @OA\MediaType(
      *        mediaType="multipart/form-data",
      *        @OA\Schema(
-     *          required={"rds_manager_id", "database_name", "permission"},
+     *          required={"rds_manager_id", "database_id", "permission"},
      *            @OA\Property(
      *                property="rds_manager_id",
      *                type="integer",
      *                example="1"
      *             ),
      *            @OA\Property(
-     *                property="database_name",
-     *                type="string",
-     *                example="cck"
+     *                property="database_id",
+     *                type="integer",
+     *                example=1
      *            ),
      *           @OA\Property(
      *               property="permission",
@@ -287,7 +272,7 @@ class VIAMRDSController extends Controller
      *     ),
      *   ),
      *   @OA\Parameter(
-     *      name="rds_manager_id ",
+     *      name="rds_manager_id",
      *      in="query",
      *      required=true,
      *     @OA\Schema(
@@ -295,11 +280,11 @@ class VIAMRDSController extends Controller
      *     ),
      *   ),
      *   @OA\Parameter(
-     *      name="database_name ",
+     *      name="database_id",
      *      in="query",
      *      required=true,
      *     @OA\Schema(
-     *      type="string",
+     *      type="integer",
      *     ),
      *   ),
      *   @OA\Response(
