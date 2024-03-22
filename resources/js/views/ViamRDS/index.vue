@@ -149,24 +149,24 @@ export default {
       },
       openModalAdd: false,
       listViamRDS: [
-        {
-          id: 1,
-          employee: 'Nawa',
-          config_rds: 'Data(1)/Structure(1)/Administration(1)',
-          status: 'denied',
-        },
-        {
-          id: 2,
-          employee: 'Nawa 2',
-          config_rds: 'Data(0)/Structure(0)/Administration(0)',
-          status: 'denied',
-        },
-        {
-          id: 3,
-          employee: 'Nawa 3',
-          config_rds: 'Data(0)/Structure(0)/Administration(0)',
-          status: 'active',
-        },
+        // {
+        //   id: 1,
+        //   employee: 'Nawa',
+        //   config_rds: 'Data(1)/Structure(1)/Administration(1)',
+        //   status: 'denied',
+        // },
+        // {
+        //   id: 2,
+        //   employee: 'Nawa 2',
+        //   config_rds: 'Data(0)/Structure(0)/Administration(0)',
+        //   status: 'denied',
+        // },
+        // {
+        //   id: 3,
+        //   employee: 'Nawa 3',
+        //   config_rds: 'Data(0)/Structure(0)/Administration(0)',
+        //   status: 'active',
+        // },
       ],
       listRDS: [],
       listDatabases: [],
@@ -296,7 +296,7 @@ export default {
     },
 
     async getListDatabases() {
-      this.openLoading();
+      // this.openLoading();
       const URL = `${this.rds_id}`;
 
       //   this.pagination.isDisable = true;
@@ -315,7 +315,7 @@ export default {
             // this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
-          this.closeLoading();
+          // this.closeLoading();
         })
         .catch((error) => {
           this.closeLoading();
@@ -352,10 +352,6 @@ export default {
         // thực hiện call denied xóa quyền
         console.log('Denied');
       }
-      // const item = this.listViamRDS.find((el) => el.id === id);
-      // if (item) {
-      //   item.status = this.selectedStatus;
-      // }
     },
   },
 };
