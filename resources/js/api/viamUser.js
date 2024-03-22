@@ -7,6 +7,8 @@ const urlAPI = {
   urlGETOneUser: template`/viam_user/${'id'}`,
   urlPUTOneUser: template`/viam_user/${'id'}`,
   urlDELETEOneUser: template`/viam_user/${'id'}`,
+  urlGETDatabasesByRdsId: template`/viam_rds/${'id'}`,
+  urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}`,
 };
 
 export function getAllRole() {
@@ -39,4 +41,16 @@ export function deleteOneUser(id) {
 // Test
 export function getAllUserTest(data) {
   return RequestApi.getAll(data);
+}
+
+export function getListRDS(url) {
+  return request.getRequest(url);
+}
+
+export function getListDatabases(id, data) {
+  return request.getRequest(urlAPI.urlGETDatabasesByRdsId({ id: id }), data);
+}
+
+export function getListViamRds(rds_id, database_name) {
+  return request.getRequest(urlAPI.urlGETViamRds({ rds_id, database_name }));
 }
