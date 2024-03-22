@@ -50,6 +50,7 @@ class VIAMRDSRequest extends FormRequest
                 ];
             case 'store':
                 return [
+                    'user_id' => 'required|exists:users,id',
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_name' => 'required|string|max:100',
                     'permission' => 'required|array',
@@ -57,6 +58,7 @@ class VIAMRDSRequest extends FormRequest
                 ];
             case 'update':
                 return [
+                    'user_id' => 'required|exists:users,id',
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_id' => 'required|exists:database,id',
                     'permission' => 'required|array',
@@ -64,6 +66,7 @@ class VIAMRDSRequest extends FormRequest
                 ];
             case 'delete':
                 return [
+                    'user_id' => 'required|exists:users,id',
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_id' => 'required|exists:database,id',
                 ];

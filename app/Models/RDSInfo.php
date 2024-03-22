@@ -13,6 +13,7 @@ class RDSInfo extends Model
     const RDS_MANAGER_ID = 'rds_manager_id';
 
     protected $table = 'rds_info';
+    public $timestamps = true;
 
     protected $fillable = [
         self::USER_ID,

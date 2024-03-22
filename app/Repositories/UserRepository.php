@@ -18,6 +18,7 @@ use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
@@ -80,7 +81,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $attributes['paid_off'] = 0;
         $attributes['paid_off_start'] = $attributes['paid_off_start'] ?? 0;
         $attributes['created_at'] = Carbon::now();
-        $attributes['password'] = bcrypt($attributes['password']);
+        $attributes['password'] = Hash::make($attributes['password']);
         $model = $this->model->create($attributes);
 
         return ResponseService::responseJson(CODE_SUCCESS, new BaseResource($model));

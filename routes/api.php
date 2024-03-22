@@ -76,7 +76,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::put('viam_rds/{user_id}', [VIAMRDSController::class, 'update']);
         Route::delete('viam_rds/{user_id}', [VIAMRDSController::class, 'destroy']);
 
-//        Route::apiResource('viam_rds', 'VIAMRDSController');
     });
 });
 

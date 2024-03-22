@@ -141,7 +141,7 @@ class VIAMRDSController extends Controller
      *   operationId="viam_rds_create",
      *   @OA\RequestBody(
      *     @OA\MediaType(
-     *        mediaType="multipart/form-data",
+     *        mediaType="application/json",
      *        @OA\Schema(
      *          required={"rds_manager_id", "database_name", "user_id", "permission"},
      *            @OA\Property(
@@ -161,8 +161,8 @@ class VIAMRDSController extends Controller
      *           ),
      *           @OA\Property(
      *               property="permission",
-     *               type="array",
-     *               items={"type":"integer", "example":1}
+     *               format="object",
+     *               example={1,2}
      *           ),
      *         ),
      *       ),
@@ -180,7 +180,7 @@ class VIAMRDSController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function store(VIAMUserRequest $request)
+    public function store(VIAMRDSRequest $request)
     {
         try {
             return $this->repository->create($request->all());
@@ -205,7 +205,7 @@ class VIAMRDSController extends Controller
      *   ),
      *   @OA\RequestBody(
      *     @OA\MediaType(
-     *        mediaType="multipart/form-data",
+     *        mediaType="application/json",
      *        @OA\Schema(
      *          required={"rds_manager_id", "database_id", "permission"},
      *            @OA\Property(
@@ -248,7 +248,7 @@ class VIAMRDSController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(VIAMUserRequest $request, $id)
+    public function update(VIAMRDSRequest $request, $id)
     {
         try {
             return $this->repository->update($request->all(), $id);
