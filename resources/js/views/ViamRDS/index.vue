@@ -620,16 +620,17 @@ table#__BVID__46 {
   font-size: 16px;
   font-weight: 500;
   text-align: center;
+  color: #0070c9
 }
 
 ::v-deep .el-select-custom.text-colour-blue .el-input__inner  {
   background-color: #fce4d6;
-  color: #000
+  color: #000 !important
 }
 
 ::v-deep .el-select-custom.text-colour-red .el-input__inner  {
-  background-color: #D6FCD8;
-  color: #000
+  background-color: #D6FCD8 ;
+  color: #000 !important
 }
 
 ::v-deep .el-select-custom .el-input .el-select__caret {
