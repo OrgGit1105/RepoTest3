@@ -173,7 +173,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $late = 0;
         if($type_date == config('analytic.type.work')) {
             $checkin_time = Carbon::parse($in_time);
-            if($checkin_time->hour <= 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
+            if($checkin_time->hour < 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
                 $late = 1;
             }
         }
