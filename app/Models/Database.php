@@ -13,6 +13,7 @@ class Database extends Model
     const RDS_INFO_ID = 'rds_info_id';
 
     protected $table = 'database';
+    public $timestamps = true;
 
     protected $fillable = [
         self::NAME,

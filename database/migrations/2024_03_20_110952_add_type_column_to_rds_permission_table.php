@@ -14,7 +14,7 @@ class AddTypeColumnToRdsPermissionTable extends Migration
     public function up()
     {
         Schema::table('rds_permission', function (Blueprint $table) {
-            $table->tinyInteger('type')->comment('1:data, 2: Structure, 3: Administration, 4: All');
+            $table->tinyInteger('type')->comment('1:data, 2: Structure, 3: Administration, 4: All')->after('name');
         });
     }
 
