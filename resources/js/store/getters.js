@@ -32,6 +32,9 @@ const getters = {
   monthYear: state => state.app.monthYear,
   startDate: state => state.app.startDate,
   endDate: state => state.app.endDate,
+  userId: state => state.app.userId,
+  rdsSelectedId: state => state.app.rdsSelectedId,
+  databaseSelectedId: state => state.app.databaseSelectedId,
 };
 
 export default getters;
