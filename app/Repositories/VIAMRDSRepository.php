@@ -79,7 +79,6 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
             foreach ($value->rdsManagers as $manager) {
                 $arrayData[$key]['rds_manager_id'] = $manager->id;
-                $arrayData[$key]['status'] = true;
             }
 
             $arrayData[$key]['database_name'] = [];
@@ -94,6 +93,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             foreach ($value->databases as $database) {
                 $arrayData[$key]['database_id'] = $database->id;
                 $arrayData[$key]['database_name'] = $database->name;
+                $arrayData[$key]['status'] = true;
                 foreach ($database->rdsPermissions as $permission) {
                     $arrayData[$key]['permission_id'][] = $permission->id;
                     $type = $permission->type;
