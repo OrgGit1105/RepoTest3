@@ -40,11 +40,11 @@
                 v-model="database_name"
                 :disabled="!rds_id"
                 placeholder="Select"
-                class="el-select-custom"
+                :class="!rds_id ? 'el-select-custom text-gray' : 'el-select-custom'"
                 value=""
               >
                 <el-option
-                  class="el-option-custom text-default"
+                  class="el-option-customt"
                   label="Select database"
                   value=""
                 />
@@ -148,37 +148,12 @@ export default {
         description: '',
       },
       openModalAdd: false,
-      listViamRDS: [
-        // {
-        //   id: 1,
-        //   employee: 'Nawa',
-        //   config_rds: 'Data(1)/Structure(1)/Administration(1)',
-        //   status: 'denied',
-        // },
-        // {
-        //   id: 2,
-        //   employee: 'Nawa 2',
-        //   config_rds: 'Data(0)/Structure(0)/Administration(0)',
-        //   status: 'denied',
-        // },
-        // {
-        //   id: 3,
-        //   employee: 'Nawa 3',
-        //   config_rds: 'Data(0)/Structure(0)/Administration(0)',
-        //   status: 'active',
-        // },
-      ],
+      listViamRDS: [],
       listRDS: [],
       listDatabases: [],
       listStatus: [
-        {
-          id: 'denied',
-          name: 'Denied',
-        },
-        {
-          id: 'active',
-          name: 'Active',
-        },
+        { id: 'denied', name: 'Denied' },
+        { id: 'active', name: 'Active' },
       ],
 
       database_name: '',
@@ -187,11 +162,7 @@ export default {
 
       fields: [
         { key: 'employee', label: 'Employee', class: 'getting_date' },
-        {
-          key: 'config_rds',
-          label: 'Config RDS',
-          class: 'file_name_data_point',
-        },
+        { key: 'config_rds', label: 'Config RDS', class: 'file_name_data_point' },
         { key: 'status', label: 'Status', class: 'file_name_data_driving' },
       ],
     };
@@ -205,9 +176,20 @@ export default {
     currChange() {
       this.getListAllUser();
     },
-    rds_id(newVal) {
+    async rds_id(newVal) {
+      const userId = this.$store.getters.userId;
+      const rdsSelectedId = this.$store.getters.rdsSelectedId;
+      const databaseSelectedId = this.$store.getters.databaseSelectedId;
       if (newVal) {
-        this.getListDatabases();
+        if (userId && rdsSelectedId && databaseSelectedId){
+          this.getListDatabases();
+          this.listViamRDS = [];
+          await this.$store.dispatch('app/resetUserId');
+        } else {
+          this.getListDatabases();
+          this.database_name = '';
+          this.listViamRDS = [];
+        }
       }
     },
     database_name(newVal) {
@@ -217,7 +199,17 @@ export default {
     },
   },
   created() {
-    this.getListRDS();
+    const userId = this.$store.getters.userId;
+    const rdsSelectedId = this.$store.getters.rdsSelectedId;
+    const databaseSelectedId = this.$store.getters.databaseSelectedId;
+    if (userId && rdsSelectedId && databaseSelectedId){
+      this.getListRDS();
+      this.rds_id = rdsSelectedId;
+      this.database_name = databaseSelectedId;
+      this.getListViamRds(rdsSelectedId, databaseSelectedId);
+    } else {
+      this.getListRDS();
+    }
   },
   methods: {
     openLoading() {
@@ -226,19 +218,21 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListViamRds() {
+    async getListViamRds(param1, param2) {
       this.openLoading();
       //   this.pagination.isDisable = true;
       //   const PARAMS = {
       //     page: this.pagination.current_page,
       //     per_page: this.pagination.per_page,
       //   };
-      await getListViamRds(this.rds_id, this.database_name)
+      const newParam1 = param1 ?? this.rds_id;
+      const newParam2 = param2 ?? this.database_name;
+      await getListViamRds(newParam1, newParam2)
         .then((response) => {
           if (response.code === 200) {
             this.listViamRDS = response.data.result.map((item) => {
               return {
-                id: item.id,
+                id: item.user_id,
                 employee: item.username,
                 config_rds: `Data(${item.count_data})/Structure(${item.count_structure})/Administration(${item.count_administration})`,
                 status: item.status ? 'active' : 'denied',
@@ -340,13 +334,17 @@ export default {
       this.$router.push({ path: `/viam-rds/edit/${val.id}` });
     },
 
-    goToEditScreen(val) {
+    async goToEditScreen(val) {
+      await this.$store.dispatch('app/saveUserId', val.id);
       this.$router.push({ path: `/viam-rds/edit/${val.id}` }, (onAbort) => {});
     },
 
-    handleChangeStatus(item) {
+    async handleChangeStatus(item) {
       if (item.status === 'active') {
         // Thực hiện mở để chọn
+        await this.$store.dispatch('app/saveUserId', item.id);
+        await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
+        await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
         this.$router.push({ path: `/viam-rds/edit/${item.id}` });
       } else {
         // thực hiện call denied xóa quyền
@@ -621,6 +619,10 @@ table#__BVID__46 {
   font-weight: 500;
   text-align: center;
   color: #0070c9
+}
+
+::v-deep .el-select-custom.text-gray .el-input__inner  {
+  color: #A8ABB2 !important
 }
 
 ::v-deep .el-select-custom.text-colour-blue .el-input__inner  {
