@@ -9,6 +9,7 @@ const urlAPI = {
   urlDELETEOneUser: template`/viam_user/${'id'}`,
   urlGETDatabasesByRdsId: template`/viam_rds/${'id'}`,
   urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}`,
+  urlPOSTConfigRole: template`/viam_rds`,
 };
 
 export function getAllRole() {
@@ -53,4 +54,8 @@ export function getListDatabases(id, data) {
 
 export function getListViamRds(rds_id, database_name) {
   return request.getRequest(urlAPI.urlGETViamRds({ rds_id, database_name }));
+}
+
+export function createRdsRole(params) {
+  return request.postRequest(urlAPI.urlPOSTConfigRole(), params);
 }
