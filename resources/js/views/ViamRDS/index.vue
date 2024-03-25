@@ -44,7 +44,7 @@
                 value=""
               >
                 <el-option
-                  class="el-option-customt"
+                  class="el-option-custom"
                   label="Select database"
                   value=""
                 />
