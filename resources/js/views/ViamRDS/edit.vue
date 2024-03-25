@@ -289,7 +289,12 @@ export default {
       console.log('params===>', params);
       await createRdsRole(params).then((response) => {
         if (response.code === 200){
-          console.log(':stuck_out_tongue_closed_eyes:');
+          MakeToast({
+            variant: 'success',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+            content: 'Config role successfully',
+          });
+          this.$router.push('/viam-rds/index');
         }
       });
     },
