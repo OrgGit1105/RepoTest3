@@ -19,7 +19,7 @@
               <h3>Databases</h3>
               <div class="d-flex justify-content-end">
                 <el-button type="danger" plain>Cancel</el-button>
-                <el-button type="primary">Save</el-button>
+                <el-button type="primary" @click="handleSave">Save</el-button>
               </div>
             </div>
             <hr class="line">
@@ -76,7 +76,7 @@ import * as UserApi from '../../api/viamUser';
 import * as CONFIGS from '../../configs';
 import { MakeToast } from '../../utils/toast_message';
 // import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { deleteOneUser } from '../../api/viamUser';
+import { createRdsRole, deleteOneUser } from '../../api/viamUser';
 
 export default {
   name: 'EditViamRDSManagement',
@@ -278,65 +278,29 @@ export default {
       this.checkedAdministratorTab = [];
       this.isIndeterminateAdministratorTab = true;
     },
+    async handleSave(){
+      this.openLoading();
+      const params = {
+        user_id: +this.$route.params.id,
+        rds_manager_id: this.$store.getters.rdsSelectedId,
+        database_name: this.$store.getters.databaseSelectedId,
+        permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
+      };
+      console.log('params===>', params);
+      await createRdsRole(params).then((response) => {
+        if (response.code === 200){
+          console.log(':stuck_out_tongue_closed_eyes:');
+        }
+      });
+    },
   },
 };
 </script>
 
 <style scoped>
-  .main-page {
-    width: 98%;
-    margin: 0 auto;
-  }
-  .title-info {
-    border-left: 9px solid #fb9a09;
-    color: #3189bb;
-    font-size: 25px;
-  }
-  .label-name{
-    font-size: 17px;
-    padding-top: 9px;
-  }
-  .form-tag {
-      position: relative;
-  }
-  ::v-deep .b-form-tags-button {
-      display: none;
-  }
-  ::v-deep .dropdown-menu {
-      position: absolute;
-      left: 0px;
-      width: 100%;
-      top: 91.7%;
-      z-index: 999999999;
-      max-height: 180px;
-      overflow-y: auto;
-  }
-  ::v-deep .no-resize {
-      resize: none;
-  }
-  ::v-deep .btn-warning {
-    color: #fff !important;
-    background: #fb9a09;
-  }
   .btn {
     border: 0 !important;
     margin: 0px 10px;
-  }
-  .btn-submit {
-    justify-content: center;
-  }
-  .btn:hover {
-    color: #fff !important;
-    background: #ef8f00 !important;
-  }
-  .btn:active {
-    background: #fb8c00 !important;
-  }
-  .btn-secondary {
-    background: #fb9a09 !important;
-  }
-  ::v-deep select:first-child:disabled {
-    color: #6f737c;
   }
   ::v-deep option {
     color: #111111;
@@ -344,52 +308,6 @@ export default {
   ::v-deep option[value=""][disabled] {
     display: none !important;
     color: #6f737c;
-  }
-  select:required:invalid { color: #6f737c; }
-  .text-error {
-    line-height: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    -webkit-hyphens: auto;
-    -ms-hyphens: auto;
-    hyphens: auto;
-    color: red;
-    font-size: 12px;
-  }
-  .image-dropzone {
-    border: 2px solid #ccc;
-    padding: 20px;
-    text-align: center;
-    background: rgb(245 246 247);
-    width: 800px;
-  }
-  .image-dropzone p {
-    margin: 0;
-  }
-  .image-preview {
-    display: table;
-    flex-wrap: wrap;
-    height: 200px;
-    margin: 15px;
-  }
-  .preview-item {
-    display: inline-block;
-    margin: 10px;
-  }
-  .preview-item img {
-    width: 180px;
-    height: 200px;
-  }
-  .preview-item button {
-    margin-top: 5px;
-  }
-  .check_with_or_without_mask{
-    border-bottom: 4px solid;
-  }
-  .line-form{
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-    margin-bottom: 10px;
   }
   .submit_button:hover{
     background: #0f68b1 !important;
@@ -407,9 +325,6 @@ export default {
       height: 1px;
       color: rgba(63, 63, 63, 0.4);
       margin: 0 auto;
-    }
-    .cursor-pointer {
-      cursor: pointer;
     }
     .use-management-title-table {
       padding: 0 45px;
@@ -533,27 +448,6 @@ export default {
   .vertical-checkbox-group {
   display: flex;
   flex-direction: column;
-}
-
-.vertical-checkbox {
-  display: block;
-}
-
-.bg-gray {
-  background-color: #eee;
-}
-
-.content-left {
-  overflow-y: scroll;
-  height: 600px;
-}
-
-.custom-icon-add {
-  color: #0070C9;
-  font-size: 30px;
-  font-weight: bolder;
-  margin-top: 8px;
-  margin-left: 8px;
 }
 
 .cursor-pointer {
