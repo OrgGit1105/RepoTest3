@@ -297,14 +297,14 @@ class VIAMRDSController extends Controller
      *   ),
      *   security={{"auth": {}}},
      * )
-     * @param int $id
+     * @param int $user_id
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(VIAMRDSRequest $request, $user_id)
     {
         try {
-            return $this->repository->delete($id);
+            return $this->repository->deleteRDS($request->all(), $user_id);
         } catch (\Exception $e) {
             throw $e;
         }

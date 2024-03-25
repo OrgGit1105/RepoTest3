@@ -33,7 +33,7 @@ class VIAMRDSRequest extends FormRequest
             case 'index':
             case 'store':
             case 'update':
-            case 'delete':
+            case 'destroy':
                 return $this->getCustomRule();
             default:
                 return [];
@@ -58,15 +58,13 @@ class VIAMRDSRequest extends FormRequest
                 ];
             case 'update':
                 return [
-                    'user_id' => 'required|exists:users,id',
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_id' => 'required|exists:database,id',
-                    'permission' => 'required|array',
-                    'permission.*' => 'required|exists:rds_permission,id'
+                    'permission' => 'nullable|array',
+                    'permission.*' => 'nullable|exists:rds_permission,id'
                 ];
-            case 'delete':
+            case 'destroy':
                 return [
-                    'user_id' => 'required|exists:users,id',
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_id' => 'required|exists:database,id',
                 ];
