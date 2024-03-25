@@ -10,5 +10,5 @@ namespace App\Repositories\Contracts;
 
 interface VIAMRDSRepositoryInterface extends BaseRepositoryInterface
 {
-    //
+    public function deleteRDS(array $attributes, $id);
 }
