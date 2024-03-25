@@ -211,6 +211,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
             $dataInsert = [];
             $permissionText = '';
+            $grantOption = '';
             foreach ($permission as $p_id) {
                 $dataInsert [] = [
                     DatabasePermission::DATABASE_ID => $database_id,
@@ -228,7 +229,8 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id);
             } else {
                 DB::statement("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
-                if(!array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+
+                if(array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
                     DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
                 }
                 if($permissionText == PERMISSION_GRANT) {
