@@ -10,6 +10,8 @@ const urlAPI = {
   urlGETDatabasesByRdsId: template`/viam_rds/${'id'}`,
   urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}`,
   urlPOSTConfigRole: template`/viam_rds`,
+  urlGETListRDS: template`/rds_manager`,
+  urlPostRds: template`/rds_manager`,
 };
 
 export function getAllRole() {
@@ -58,4 +60,12 @@ export function getListViamRds(rds_id, database_name) {
 
 export function createRdsRole(params) {
   return request.postRequest(urlAPI.urlPOSTConfigRole(), params);
+}
+
+export function getAllRDS(params) {
+  return request.getRequest(urlAPI.urlGETListRDS(), params);
+}
+
+export function postOneRDS(params) {
+  return request.postRequest(urlAPI.urlPostRds(), params);
 }
