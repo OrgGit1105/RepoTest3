@@ -67,5 +67,6 @@ export function getAllRDS(params) {
 }
 
 export function postOneRDS(params) {
+  console.log('params params==>', params);
   return request.postRequest(urlAPI.urlPostRds(), params);
 }
