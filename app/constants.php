@@ -51,6 +51,7 @@ const TYPE_RDS_PERMISSION = [
     TYPE_RDS_PERMISSION_DATA => 'data',
     TYPE_RDS_PERMISSION_STRUCTURE => 'structure',
     TYPE_RDS_PERMISSION_ADMINISTRATION => 'administration',
+    TYPE_RDS_PERMISSION_ALL => 'all_privileges'
 ];
 
 const PERMISSION_GRANT = 'GRANT';
