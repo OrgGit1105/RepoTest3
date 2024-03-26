@@ -107,10 +107,10 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                     } else {
                         $count[$type]++;
                     }
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = $count[TYPE_RDS_PERMISSION_DATA];
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = $count[TYPE_RDS_PERMISSION_STRUCTURE];
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = $count[TYPE_RDS_PERMISSION_ADMINISTRATION];
                 }
+                $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = $count[TYPE_RDS_PERMISSION_DATA];
+                $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = $count[TYPE_RDS_PERMISSION_STRUCTURE];
+                $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = $count[TYPE_RDS_PERMISSION_ADMINISTRATION];
             }
         }
         return (new Common)->myPaginate($arrayData);
