@@ -157,12 +157,16 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         $dataInsert = [];
         $permissionText = '';
         $grantOption = '';
+        $isGrantPermission = true;
         foreach ($permission as $p_id) {
             $dataInsert [] = [
                 DatabasePermission::DATABASE_ID => $database->id,
                 DatabasePermission::RDS_PERMISSION_ID => $p_id
             ];
-            $permissionText .= $permissionList[$p_id] . ', ';
+            if($permissionList[$p_id] != PERMISSION_GRANT) {
+                $permissionText .= $permissionList[$p_id] . ', ';
+                $isGrantPermission = false;
+            }
             if(in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
                 $grantOption = "WITH GRANT OPTION";
             }
@@ -179,8 +183,8 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 DB::statement("CREATE USER '{$name}'@'localhost' IDENTIFIED BY '12345678';");
             }
 
-            if($permissionText == PERMISSION_GRANT) {
-                $permissionText = 'USAGE ';
+            if($isGrantPermission) {
+                $permissionText = 'USAGE';
             }
             DB::statement("GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};");
 
@@ -198,6 +202,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         try {
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
+
+            $checkData = $this->model->where('id', $user_id)
+                ->whereHas('databases', function ($e) use ($database_id) {
+                    $e->where('database.id', $database_id);
+                })->exists();
+            if(!$checkData) {
+                return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY,
+                    trans('messages.mes.data_not_found'),
+                    trans('messages.mes.data_not_found')
+                );
+            }
+
             $permission = $attributes['permission'];
             $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
             $permissionGrant = array_search(PERMISSION_GRANT, $permissionList);
@@ -212,12 +228,16 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $dataInsert = [];
             $permissionText = '';
             $grantOption = '';
+            $isGrantPermission = true;
             foreach ($permission as $p_id) {
                 $dataInsert [] = [
                     DatabasePermission::DATABASE_ID => $database_id,
                     DatabasePermission::RDS_PERMISSION_ID => $p_id
                 ];
-                $permissionText .= $permissionList[$p_id] . ', ';
+                if($permissionList[$p_id] != PERMISSION_GRANT) {
+                    $isGrantPermission = false;
+                    $permissionText .= $permissionList[$p_id] . ', ';
+                }
                 if(in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
                     $grantOption = "WITH GRANT OPTION";
                 }
@@ -233,8 +253,8 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 if(array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
                     DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
                 }
-                if($permissionText == PERMISSION_GRANT) {
-                    $permissionText = 'USAGE ';
+                if($isGrantPermission) {
+                    $permissionText = 'USAGE';
                 }
                 DB::statement("GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};");
             }
@@ -253,8 +273,9 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
     {
         Database::query()->find($database_id)->delete();
         $dbOtherOfAccountExist = $this->model->where('id', $user_id)
-            ->whereHas('databases', fn ($e) => $e->where('database.id', '!=', $database_id))
-            ->exists();
+            ->whereHas('databases', function ($e) use($database_id) {
+                $e->where('database.id', '!=', $database_id);
+            })->exists();
         if(!$dbOtherOfAccountExist) {
             RDSInfo::query()->where(RDSInfo::USER_ID, $user_id)
                 ->where(RDSInfo::RDS_MANAGER_ID, $rds_manager_id)
@@ -272,20 +293,40 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
 
+            $checkData = $this->model->where('id', $user_id)
+                ->whereHas('databases', function ($e) use ($database_id) {
+                    $e->where('database.id', $database_id);
+                })->exists();
+            if(!$checkData) {
+                return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY,
+                    trans('messages.mes.data_not_found'),
+                    trans('messages.mes.data_not_found')
+                );
+            }
+
             $username = $this->model->find($user_id)->name;
             $database = Database::query()->find($database_id);
             $database_name = $database->name;
-            $database->rdsPermissions()->detach();
+
+            $databasePermission = DatabasePermission::query()->where(DatabasePermission::DATABASE_ID, $database_id);
+            $listPermissionOld =  $databasePermission->pluck(DatabasePermission::RDS_PERMISSION_ID)->toArray();
+            $databasePermission->delete();
 
             $isDeleteRDS = $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id);
             if(!$isDeleteRDS) {
+                $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
+                $permissionGrant = array_search(PERMISSION_GRANT, $permissionList);
+                $permissionAllPrivileges = array_search(PERMISSION_ALL_PRIVILEGES, $permissionList);
+
                 DB::statement("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
-                DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                if(array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                    DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                }
             }
 
             return ResponseService::responseJson(CODE_SUCCESS,
-                trans('messages.mes.update_success'),
-                trans('messages.mes.update_success')
+                trans('messages.mes.delete_success'),
+                trans('messages.mes.delete_success')
             );
         } catch (\Exception $exception) {
             return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $exception->getMessage());
