@@ -329,18 +329,10 @@ export default {
       return { cursor: 'pointer' };
     },
 
-    handleEditViamRDS(val) {
-      // this.openModalAddRole = true;
-      // this.openModalAddRole = true;
-      this.$router.push({ path: `/viam-rds/edit/${val.id}` });
-    },
-
     async goToEditScreen(val) {
-      console.log('val ===>', val);
-      console.log('val.id ===>', val.id);
-      await this.$store.dispatch('app/saveUserId', val.id);
-      await this.$store.dispatch('app/saveUser', val.id);
-      this.$router.push({ path: `/viam-rds/edit/${val.id}` }, (onAbort) => {});
+      await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
+      await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
+      this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
     },
 
     async handleChangeStatus(item) {

@@ -76,7 +76,7 @@ import * as UserApi from '../../api/viamUser';
 import * as CONFIGS from '../../configs';
 import { MakeToast } from '../../utils/toast_message';
 // import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { createRdsRole, deleteOneUser } from '../../api/viamUser';
+import { createRdsRole, deleteOneUser, getDetailPermission } from '../../api/viamUser';
 
 export default {
   name: 'EditViamRDSManagement',
@@ -120,9 +120,35 @@ export default {
 
   methods: {
     async initData() {
+      await this.getDetailPermission();
+    },
+
+    async getDetailPermission(){
       this.openLoading();
-      // await this.getUserInfo();
-      this.closeLoading();
+      const user_id = +this.$route.params.id;
+      const rds_manager_id = this.$store.getters.rdsSelectedId;
+      const database_name = this.$store.getters.databaseSelectedId;
+      console.log('user_id===>', user_id);
+      console.log('rds_manager_id===>', rds_manager_id);
+      console.log('database_name===>', database_name);
+      await getDetailPermission(user_id, rds_manager_id, database_name)
+        .then((response) => {
+          console.log('response ở đây là detail ===>', response);
+          const result = response.data.result[0];
+          this.checkedDataTab = result.data;
+          this.checkedStructureTab = result.structure;
+          this.checkedAdministratorTab = result.administrator;
+
+          this.closeLoading();
+        })
+        .catch((error) => {
+          this.closeLoading();
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
     },
     openLoading() {
       this.$store.dispatch('loading/setLoading', true);
