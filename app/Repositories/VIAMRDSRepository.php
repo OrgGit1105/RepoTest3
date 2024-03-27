@@ -133,29 +133,29 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
         $arrayData = [];
         foreach ($data as $key => $value) {
-            $arrayData[$key]['user_id'] = $value->id;
-            $arrayData[$key]['username'] = $value->name;
-            $arrayData[$key]['rds_manager_id'] = [];
-            $arrayData[$key]['status'] = false;
+            $arrayData['user_id'] = $value->id;
+            $arrayData['username'] = $value->name;
+            $arrayData['rds_manager_id'] = [];
+            $arrayData['status'] = false;
 
             foreach ($value->rdsManagers as $manager) {
-                $arrayData[$key]['rds_manager_id'] = $manager->id;
+                $arrayData['rds_manager_id'] = $manager->id;
             }
 
-            $arrayData[$key]['database_name'] = [];
-            $arrayData[$key]['database_id'] = [];
+            $arrayData['database_name'] = [];
+            $arrayData['database_id'] = [];
 
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ALL]] = [];
+            $arrayData[TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = [];
+            $arrayData[TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = [];
+            $arrayData[TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = [];
+            $arrayData[TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ALL]] = [];
 
             foreach ($value->databases as $database) {
-                $arrayData[$key]['database_id'] = $database->id;
-                $arrayData[$key]['database_name'] = $database->name;
-                $arrayData[$key]['status'] = true;
+                $arrayData['database_id'] = $database->id;
+                $arrayData['database_name'] = $database->name;
+                $arrayData['status'] = true;
                 foreach ($database->rdsPermissions as $permission) {
-                    array_push($arrayData[$key][TYPE_RDS_PERMISSION[$permission->type]], $permission->id);
+                    array_push($arrayData[TYPE_RDS_PERMISSION[$permission->type]], $permission->id);
                 }
             }
         }
