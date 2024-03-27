@@ -86,7 +86,7 @@
                 <el-select
                   v-model="data.item.status"
                   placeholder=""
-                  :class="data.item.status === 'denied' ? 'el-select-custom text-colour-blue' : 'el-select-custom text-colour-red'"
+                  :class="data.item.status ? 'el-select-custom text-colour-red' : 'el-select-custom text-colour-blue'"
                   @change="handleChangeStatus(data.item)"
                 >
                   <el-option
@@ -119,13 +119,14 @@
           :visible.sync="openModalAdd"
           width="50%"
           center
+          @close="handleCloseModal"
         >
           <div class="card-body p-card-body">
             <div>
               <h3>Setting RDS Role</h3>
               <div class="d-flex justify-content-end">
-                <el-button type="danger" plain>Cancel</el-button>
-                <el-button type="primary" @click="handleSaveRole">Save</el-button>
+                <el-button @click="dialogVisible = false">Cancel</el-button>
+                <el-button type="primary" @click="handleUpdateRole">Save</el-button>
               </div>
             </div>
             <hr class="line">
@@ -199,8 +200,8 @@ export default {
       listRDS: [],
       listDatabases: [],
       listStatus: [
-        { id: 'denied', name: 'Denied' },
-        { id: 'active', name: 'Active' },
+        { id: false, name: 'Denied' },
+        { id: true, name: 'Active' },
       ],
 
       database_name: '',
@@ -208,9 +209,9 @@ export default {
       selectedStatus: '',
 
       fields: [
-        { key: 'username', label: 'Employee', class: 'getting_date' },
-        { key: 'config_rds', label: 'Config RDS', class: 'file_name_data_point' },
-        { key: 'status', label: 'Status', class: 'file_name_data_driving' },
+        { key: 'username', label: 'Employee', class: '' },
+        { key: 'config_rds', label: 'Config RDS', class: '' },
+        { key: 'status', label: 'Status', class: '' },
       ],
 
       checkAllDataTab: false,
@@ -231,6 +232,8 @@ export default {
 
       statusCheck: false,
       database_id: '',
+      selectedItem: null,
+      flag: false,
     };
   },
   computed: {
@@ -302,8 +305,7 @@ export default {
                 id: item.user_id,
                 username: item.username,
                 config_rds: `Data(${item.count_data})/Structure(${item.count_structure})/Administration(${item.count_administration})`,
-                status: item.status ? 'active' : 'denied',
-
+                status: item.status,
               };
             });
 
@@ -369,10 +371,8 @@ export default {
         .then((response) => {
           if (response.code === 200) {
             this.listDatabases = response.data;
-
             // this.$store.dispatch('app/saveListUSer', listUser);
-            // this.pagination.total_records =
-            //     response.data.pagination.total_records;
+            // this.pagination.total_records = response.data.pagination.total_records;
             // this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
@@ -397,18 +397,27 @@ export default {
 
     async goToEditScreen(val) {
       this.openModalAdd = true;
-      await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-      await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
+      this.selectedItem = val;
+      this.checkedDataTab = val.data;
+      this.checkedStructureTab = val.structure;
+      this.checkedAdministratorTab = val.administration;
+
+      // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
+      // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
       // this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
     },
 
     async handleChangeStatus(item) {
-      if (item.status === 'active') {
+      console.log('item handleChangeStatus ===>', item);
+      if (item.status) {
         // Thực hiện mở để chọn
-        await this.$store.dispatch('app/saveUserId', item.id);
-        await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-        await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
-        this.$router.push({ path: `/viam-rds/edit/${item.id}` });
+        // await this.$store.dispatch('app/saveUserId', item.id);
+        // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
+        // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
+        // this.$router.push({ path: `/viam-rds/edit/${item.id}` });
+        this.selectedItem = item;
+        this.openModalAdd = true;
+        this.flag = true;
       } else {
         // thực hiện call denied xóa quyền
         console.log('Denied');
@@ -447,18 +456,19 @@ export default {
       this.checkAllAdministratorTab = checkedCount === this.DATABASE_ADMINISTRATOR.length;
       this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.DATABASE_ADMINISTRATOR.length;
     },
-    async handleSaveRole(){
+    async handleUpdateRole(){
       this.openLoading();
       const params = {
-        user_id: +this.$route.params.id,
-        rds_manager_id: this.$store.getters.rdsSelectedId,
-        database_name: this.$store.getters.databaseSelectedId,
+        user_id: +this.selectedItem.user_id,
+        rds_manager_id: this.rds_id,
+        database_name: this.database_name,
         permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
       };
-      if (this.statusCheck){
+      console.log('this.selectedItem.status ==>', this.selectedItem.status);
+      if (this.selectedItem.status && !this.flag){
         await updateRdsRole(params.user_id, {
           rds_manager_id: params.rds_manager_id,
-          database_id: this.database_id,
+          database_id: this.selectedItem.database_id,
           permission: params.permission,
         }).then((response) => {
           if (response.code === 200){
@@ -467,9 +477,10 @@ export default {
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
               content: 'Config role successfully',
             });
-            this.$router.push('/viam-rds/index');
+            this.openModalAdd = false;
           }
         });
+        this.selectedItem = null;
       } else {
         await createRdsRole(params).then((response) => {
           if (response.code === 200){
@@ -478,10 +489,23 @@ export default {
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
               content: 'Config role successfully',
             });
-            this.$router.push('/viam-rds/index');
+            this.openModalAdd = false;
           }
         });
+        this.selectedItem = null;
       }
+      this.getListViamRds(this.rds_id, this.database_name);
+      this.closeLoading();
+      this.handleResetFormData();
+    },
+    handleCloseModal(){
+      this.getListViamRds(this.rds_id, this.database_name);
+    },
+    handleResetFormData(){
+      this.checkedDataTab = [];
+      this.checkedStructureTab = [];
+      this.checkedAdministratorTab = [];
+      this.flag = false;
     },
   },
 };
