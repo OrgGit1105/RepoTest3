@@ -31,6 +31,7 @@ class VIAMRDSRequest extends FormRequest
     {
         switch (Route::getCurrentRoute()->getActionMethod()) {
             case 'index':
+            case 'show':
             case 'store':
             case 'update':
             case 'destroy':
@@ -47,6 +48,12 @@ class VIAMRDSRequest extends FormRequest
                 return [
                     'rds_manager_id' => 'required|exists:rds_manager,id',
                     'database_name' => 'required|string|max:100',
+                ];
+            case 'show':
+                return [
+                    'user_id' => 'required|exists:users,id',
+                    'rds_manager_id' => 'required|exists:rds_manager,id',
+                    'database_name' => 'required|string|max:100'
                 ];
             case 'store':
                 return [
