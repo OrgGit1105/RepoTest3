@@ -71,6 +71,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 
         Route::apiResource('rds_manager', 'RDSManagerController');
         Route::get('viam_rds', [VIAMRDSController::class, 'index']);
+        Route::get('viam_rds/detail-permission', [VIAMRDSController::class, 'show']);
         Route::get('viam_rds/{rds_manager_id}', [VIAMRDSController::class, 'listDatabase']);
         Route::post('viam_rds', [VIAMRDSController::class, 'store']);
         Route::put('viam_rds/{user_id}', [VIAMRDSController::class, 'update']);

@@ -85,10 +85,6 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = 0;
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = 0;
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = 0;
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = [];
-            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ALL]] = [];
 
             $count[TYPE_RDS_PERMISSION_DATA] = 0;
             $count[TYPE_RDS_PERMISSION_STRUCTURE] = 0;
@@ -98,7 +94,6 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $arrayData[$key]['database_name'] = $database->name;
                 $arrayData[$key]['status'] = true;
                 foreach ($database->rdsPermissions as $permission) {
-                    array_push($arrayData[$key][TYPE_RDS_PERMISSION[$permission->type]], $permission->id);
                     $type = $permission->type;
                     if ($type == TYPE_RDS_PERMISSION_ALL) {
                         $count[TYPE_RDS_PERMISSION_DATA] = $countType[TYPE_RDS_PERMISSION_DATA];
@@ -107,9 +102,57 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                     } else {
                         $count[$type]++;
                     }
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = $count[TYPE_RDS_PERMISSION_DATA];
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = $count[TYPE_RDS_PERMISSION_STRUCTURE];
-                    $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = $count[TYPE_RDS_PERMISSION_ADMINISTRATION];
+                }
+            }
+        }
+        return (new Common)->myPaginate($arrayData);
+    }
+
+    public function permissionDetail(array $attributes)
+    {
+        $rds_manager_id = $attributes['rds_manager_id'];
+        $database_name = $attributes['database_name'];
+        $user_id = $attributes['user_id'];
+
+        $data = $this->model
+            ->where('id', $user_id)
+            ->select('id', 'name')
+            ->with([
+                'rdsManagers' => function ($query) use ($rds_manager_id) {
+                    $query->select('rds_manager.id', 'rds_manager.name')
+                        ->where('rds_manager.id', $rds_manager_id);
+                },
+                'databases' => function ($query) use ($database_name) {
+                    $query->where('database.name', $database_name)
+                        ->with('rdsPermissions:id,name,type');
+                }
+            ])->get();
+
+        $arrayData = [];
+        foreach ($data as $key => $value) {
+            $arrayData[$key]['user_id'] = $value->id;
+            $arrayData[$key]['username'] = $value->name;
+            $arrayData[$key]['rds_manager_id'] = [];
+            $arrayData[$key]['status'] = false;
+
+            foreach ($value->rdsManagers as $manager) {
+                $arrayData[$key]['rds_manager_id'] = $manager->id;
+            }
+
+            $arrayData[$key]['database_name'] = [];
+            $arrayData[$key]['database_id'] = [];
+
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ALL]] = [];
+
+            foreach ($value->databases as $database) {
+                $arrayData[$key]['database_id'] = $database->id;
+                $arrayData[$key]['database_name'] = $database->name;
+                $arrayData[$key]['status'] = true;
+                foreach ($database->rdsPermissions as $permission) {
+                    array_push($arrayData[$key][TYPE_RDS_PERMISSION[$permission->type]], $permission->id);
                 }
             }
         }

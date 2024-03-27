@@ -88,6 +88,78 @@ class VIAMRDSController extends Controller
 
     /**
      * @OA\Get(
+     *   path="/api/viam_rds/detail-permission",
+     *   tags={"VIamRDS"},
+     *   summary="Detail viam_rds permission",
+     *   operationId="viam_rds_detail_permission",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{{"id": 1,"name": "..........."}}}
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="user_id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="rds_manager_id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="database_name",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="per_page",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="per_page",
+     *     in="query",
+     *     @OA\Schema(
+     *      type="integer",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=401,
+     *     description="Login false",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":401,"message":"Username or password invalid"}
+     *     )
+     *   ),
+     *   security={{"auth": {}}},
+     * )
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(VIAMRDSRequest $request)
+    {
+        $data = $this->repository->permissionDetail($request->all());
+        return $this->responseJson(CODE_SUCCESS, new ViamRDSResource($data));
+    }
+
+    /**
+     * @OA\Get(
      *   path="/api/viam_rds/{rds_manager_id}",
      *   tags={"VIamRDS"},
      *   summary="List Database of RDS",
