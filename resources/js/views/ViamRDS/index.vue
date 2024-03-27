@@ -114,6 +114,50 @@
             />
           </div>
         </div> -->
+        <el-dialog
+          title=""
+          :visible.sync="openModalAdd"
+          width="50%"
+          center
+        >
+          <div class="card-body p-card-body">
+            <div>
+              <h3>Setting RDS Role</h3>
+              <div class="d-flex justify-content-end">
+                <el-button type="danger" plain>Cancel</el-button>
+                <el-button type="primary" @click="handleSaveRole">Save</el-button>
+              </div>
+            </div>
+            <hr class="line">
+            <el-row :gutter="20" class="mt-5">
+              <el-col :span="8">
+                <div>
+                  <el-checkbox v-model="checkAllDataTab" :indeterminate="isIndeterminateDataTab" @change="handlecheckAllChangeDataTab">Data</el-checkbox>
+                  <el-checkbox-group v-model="checkedDataTab" class="pl-4 d-flex flex-column" @change="handleCheckedChangeDataTab">
+                    <el-checkbox v-for="data in DATABASE_DATA" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
+                  </el-checkbox-group>
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="d-flex flex-column">
+                  <el-checkbox v-model="checkAllStructureTab" :indeterminate="isIndeterminateStructureTab" @change="handlecheckAllChangeStructureTab">Structure</el-checkbox>
+                  <el-checkbox-group v-model="checkedStructureTab" class="pl-4 d-flex flex-column" @change="handleCheckedChangeStructureTab">
+                    <el-checkbox v-for="data in DATABASE_STRUCTURE" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
+                  </el-checkbox-group>
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="d-flex flex-column">
+                  <el-checkbox v-model="checkAllAdministratorTab" :indeterminate="isIndeterminateAdministratorTab" @change="handlecheckAllChangeAdministratorTab">Administrator</el-checkbox>
+                  <el-checkbox-group v-model="checkedAdministratorTab" class="pl-4 d-flex flex-column" @change="handleCheckedChangeAdministratorTab">
+                    <el-checkbox v-for="data in DATABASE_ADMINISTRATOR" :key="data.id" :label="data.id">{{ data.name }}</el-checkbox>
+                  </el-checkbox-group>
+                </div>
+              </el-col>
+            </el-row>
+            <el-button type="danger" @click="showModalDelete= true">Delete RDS</el-button>
+          </div>
+        </el-dialog>
       </div>
     </div>
   </div>
@@ -124,8 +168,11 @@ import {
   getListViamRds,
   getListRDS,
   getListDatabases,
+  createRdsRole,
+  updateRdsRole,
 } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
+import * as CONFIGS from '../../configs';
 // import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
 export default {
@@ -165,6 +212,25 @@ export default {
         { key: 'config_rds', label: 'Config RDS', class: 'file_name_data_point' },
         { key: 'status', label: 'Status', class: 'file_name_data_driving' },
       ],
+
+      checkAllDataTab: false,
+      checkedDataTab: [],
+      isIndeterminateDataTab: true,
+
+      checkAllStructureTab: false,
+      checkedStructureTab: [],
+      isIndeterminateStructureTab: true,
+
+      checkAllAdministratorTab: false,
+      checkedAdministratorTab: [],
+      isIndeterminateAdministratorTab: true,
+
+      DATABASE_DATA: CONFIGS.DATABASES.data,
+      DATABASE_STRUCTURE: CONFIGS.DATABASES.structure,
+      DATABASE_ADMINISTRATOR: CONFIGS.DATABASES.administrator,
+
+      statusCheck: false,
+      database_id: '',
     };
   },
   computed: {
@@ -330,9 +396,10 @@ export default {
     },
 
     async goToEditScreen(val) {
+      this.openModalAdd = true;
       await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
       await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
-      this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
+      // this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
     },
 
     async handleChangeStatus(item) {
@@ -345,6 +412,75 @@ export default {
       } else {
         // thực hiện call denied xóa quyền
         console.log('Denied');
+      }
+    },
+
+    handlecheckAllChangeDataTab(val) {
+      this.checkedDataTab = val ? this.DATABASE_DATA.map(item => item.id) : [];
+      this.isIndeterminateDataTab = false;
+    },
+
+    handlecheckAllChangeStructureTab(val) {
+      this.checkedStructureTab = val ? this.DATABASE_STRUCTURE.map(item => item.id) : [];
+      this.isIndeterminateStructureTab = false;
+    },
+
+    handlecheckAllChangeAdministratorTab(val) {
+      this.checkedAdministratorTab = val ? this.DATABASE_ADMINISTRATOR.map(item => item.id) : [];
+      this.isIndeterminateAdministratorTab = false;
+    },
+
+    handleCheckedChangeDataTab(value) {
+      const checkedCount = value.length;
+      this.checkAllDataTab = checkedCount === this.DATABASE_DATA.length;
+      this.isIndeterminateDataTab = checkedCount > 0 && checkedCount < this.DATABASE_DATA.length;
+    },
+
+    handleCheckedChangeStructureTab(value) {
+      const checkedCount = value.length;
+      this.checkAllStructureTab = checkedCount === this.DATABASE_STRUCTURE.length;
+      this.isIndeterminateStructureTab = checkedCount > 0 && checkedCount < this.DATABASE_STRUCTURE.length;
+    },
+
+    handleCheckedChangeAdministratorTab(value) {
+      const checkedCount = value.length;
+      this.checkAllAdministratorTab = checkedCount === this.DATABASE_ADMINISTRATOR.length;
+      this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.DATABASE_ADMINISTRATOR.length;
+    },
+    async handleSaveRole(){
+      this.openLoading();
+      const params = {
+        user_id: +this.$route.params.id,
+        rds_manager_id: this.$store.getters.rdsSelectedId,
+        database_name: this.$store.getters.databaseSelectedId,
+        permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
+      };
+      if (this.statusCheck){
+        await updateRdsRole(params.user_id, {
+          rds_manager_id: params.rds_manager_id,
+          database_id: this.database_id,
+          permission: params.permission,
+        }).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.$router.push('/viam-rds/index');
+          }
+        });
+      } else {
+        await createRdsRole(params).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.$router.push('/viam-rds/index');
+          }
+        });
       }
     },
   },

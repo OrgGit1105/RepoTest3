@@ -19,7 +19,7 @@
               <h3>Databases</h3>
               <div class="d-flex justify-content-end">
                 <el-button type="danger" plain>Cancel</el-button>
-                <el-button type="primary" @click="handleSave">Save</el-button>
+                <el-button type="primary" @click="handleSaveRole">Save</el-button>
               </div>
             </div>
             <hr class="line">
@@ -76,7 +76,7 @@ import * as UserApi from '../../api/viamUser';
 import * as CONFIGS from '../../configs';
 import { MakeToast } from '../../utils/toast_message';
 // import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { createRdsRole, deleteOneUser, getDetailPermission } from '../../api/viamUser';
+import { createRdsRole, deleteOneUser, getDetailPermission, updateRdsRole } from '../../api/viamUser';
 
 export default {
   name: 'EditViamRDSManagement',
@@ -108,6 +108,9 @@ export default {
       DATABASE_DATA: CONFIGS.DATABASES.data,
       DATABASE_STRUCTURE: CONFIGS.DATABASES.structure,
       DATABASE_ADMINISTRATOR: CONFIGS.DATABASES.administrator,
+
+      statusCheck: false,
+      database_id: '',
     };
   },
   watch: {
@@ -115,7 +118,6 @@ export default {
   created() {
     this.initData();
     // this.getListPolicy();
-    // this.getUserInfo();
   },
 
   methods: {
@@ -128,16 +130,14 @@ export default {
       const user_id = +this.$route.params.id;
       const rds_manager_id = this.$store.getters.rdsSelectedId;
       const database_name = this.$store.getters.databaseSelectedId;
-      console.log('user_id===>', user_id);
-      console.log('rds_manager_id===>', rds_manager_id);
-      console.log('database_name===>', database_name);
       await getDetailPermission(user_id, rds_manager_id, database_name)
         .then((response) => {
-          console.log('response ở đây là detail ===>', response);
           const result = response.data.result[0];
           this.checkedDataTab = result.data;
           this.checkedStructureTab = result.structure;
-          this.checkedAdministratorTab = result.administrator;
+          this.checkedAdministratorTab = result.administration;
+          this.statusCheck = result.status;
+          this.database_id = result.database_id;
 
           this.closeLoading();
         })
@@ -156,27 +156,6 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getUserInfo() {
-      this.openLoading();
-      await UserApi.getOneUser(this.id)
-        .then((response) => {
-          this.formEdit = {
-            name: response.data.name,
-            description: response.data.description,
-          };
-          this.selectedTagPolicy_id = response.data.policies.map(item => item.id);
-          this.selectedTagPolicy = response.data.policies.map(item => item.name);
-          this.closeLoading();
-        })
-        .catch((error) => {
-          this.closeLoading();
-          MakeToast({
-            variant: 'warning',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: error.message,
-          });
-        });
-    },
     async onSubmit(e) {
       e.preventDefault();
       this.openLoading();
@@ -188,7 +167,6 @@ export default {
           policy_id: this.selectedTagPolicy_id,
           description: this.formEdit.description,
         };
-        console.log('data', DATA);
         await UserApi.putOneUser(this.id, DATA)
           .then(async(response) => {
             if (response.code === 200) {
@@ -290,9 +268,6 @@ export default {
       this.checkAllAdministratorTab = checkedCount === this.DATABASE_ADMINISTRATOR.length;
       this.isIndeterminateAdministratorTab = checkedCount > 0 && checkedCount < this.DATABASE_ADMINISTRATOR.length;
     },
-    toggleSelection(item) {
-      item.selected = !item.selected;
-    },
     handleResetPopup(){
       this.checkAllDataTab = false;
       this.checkedDataTab = [];
@@ -304,7 +279,7 @@ export default {
       this.checkedAdministratorTab = [];
       this.isIndeterminateAdministratorTab = true;
     },
-    async handleSave(){
+    async handleSaveRole(){
       this.openLoading();
       const params = {
         user_id: +this.$route.params.id,
@@ -312,17 +287,33 @@ export default {
         database_name: this.$store.getters.databaseSelectedId,
         permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
       };
-      console.log('params===>', params);
-      await createRdsRole(params).then((response) => {
-        if (response.code === 200){
-          MakeToast({
-            variant: 'success',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-            content: 'Config role successfully',
-          });
-          this.$router.push('/viam-rds/index');
-        }
-      });
+      if (this.statusCheck){
+        await updateRdsRole(params.user_id, {
+          rds_manager_id: params.rds_manager_id,
+          database_id: this.database_id,
+          permission: params.permission,
+        }).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.$router.push('/viam-rds/index');
+          }
+        });
+      } else {
+        await createRdsRole(params).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.$router.push('/viam-rds/index');
+          }
+        });
+      }
     },
   },
 };
