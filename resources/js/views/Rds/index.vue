@@ -310,8 +310,7 @@ export default {
         });
     },
     goToEditScreen(val) {
-      this.$router.push({ path: `/rds/edit/${val.id}` }, (onAbort) => {
-      });
+      this.$router.push({ path: `/rds/edit/${val.id}` }, (onAbort) => {});
     },
     createForm() {
       this.openModalAdd = true;

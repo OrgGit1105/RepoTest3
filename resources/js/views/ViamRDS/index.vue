@@ -70,13 +70,13 @@
                 id="file_name_data_point"
                 class="bg-white text-dark fs-14 digitaco-point"
                 @click="&quot;&quot;;"
-              >{{ data.item.employee }}</a>
+              >{{ data.item.username }}</a>
             </template>
             <template #cell(config_rds)="data">
               <u
                 id="file_name_data_driving"
                 class="bg-white text-dark fs-14 digitaco-driving cursor-pointer text-blue"
-                @click="goToEditScreen(data.item.id)"
+                @click="goToEditScreen(data.item)"
               >
                 {{ data.item.config_rds }}
               </u>
@@ -161,7 +161,7 @@ export default {
       selectedStatus: '',
 
       fields: [
-        { key: 'employee', label: 'Employee', class: 'getting_date' },
+        { key: 'username', label: 'Employee', class: 'getting_date' },
         { key: 'config_rds', label: 'Config RDS', class: 'file_name_data_point' },
         { key: 'status', label: 'Status', class: 'file_name_data_driving' },
       ],
@@ -232,10 +232,12 @@ export default {
           if (response.code === 200) {
             this.listViamRDS = response.data.result.map((item) => {
               return {
+                ...item,
                 id: item.user_id,
-                employee: item.username,
+                username: item.username,
                 config_rds: `Data(${item.count_data})/Structure(${item.count_structure})/Administration(${item.count_administration})`,
                 status: item.status ? 'active' : 'denied',
+
               };
             });
 
@@ -272,8 +274,7 @@ export default {
             this.listRDS = response.data;
 
             // this.$store.dispatch('app/saveListUSer', listUser);
-            // this.pagination.total_records =
-            //     response.data.pagination.total_records;
+            // this.pagination.total_records = response.data.pagination.total_records;
             // this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
@@ -335,7 +336,10 @@ export default {
     },
 
     async goToEditScreen(val) {
+      console.log('val ===>', val);
+      console.log('val.id ===>', val.id);
       await this.$store.dispatch('app/saveUserId', val.id);
+      await this.$store.dispatch('app/saveUser', val.id);
       this.$router.push({ path: `/viam-rds/edit/${val.id}` }, (onAbort) => {});
     },
 
