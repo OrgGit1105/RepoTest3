@@ -85,6 +85,10 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = 0;
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = 0;
             $arrayData[$key]['count_' . TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = 0;
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_DATA]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_STRUCTURE]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ADMINISTRATION]] = [];
+            $arrayData[$key][TYPE_RDS_PERMISSION[TYPE_RDS_PERMISSION_ALL]] = [];
 
             $count[TYPE_RDS_PERMISSION_DATA] = 0;
             $count[TYPE_RDS_PERMISSION_STRUCTURE] = 0;
@@ -94,6 +98,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $arrayData[$key]['database_name'] = $database->name;
                 $arrayData[$key]['status'] = true;
                 foreach ($database->rdsPermissions as $permission) {
+                    array_push($arrayData[$key][TYPE_RDS_PERMISSION[$permission->type]], $permission->id);
                     $type = $permission->type;
                     if ($type == TYPE_RDS_PERMISSION_ALL) {
                         $count[TYPE_RDS_PERMISSION_DATA] = $countType[TYPE_RDS_PERMISSION_DATA];
