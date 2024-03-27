@@ -10,6 +10,10 @@ const urlAPI = {
   urlGETDatabasesByRdsId: template`/viam_rds/${'id'}`,
   urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}`,
   urlPOSTConfigRole: template`/viam_rds`,
+  urlGETListRDS: template`/rds_manager`,
+  urlPostRds: template`/rds_manager`,
+  getDetailPermission: template`/viam_rds/detail-permission?user_id=${'user_id'}&rds_manager_id=${'rds_manager_id'}&database_name=${'database_name'}`,
+  updateRdsRole: template`/viam_rds/${'user_id'}`,
 };
 
 export function getAllRole() {
@@ -58,4 +62,20 @@ export function getListViamRds(rds_id, database_name) {
 
 export function createRdsRole(params) {
   return request.postRequest(urlAPI.urlPOSTConfigRole(), params);
+}
+
+export function getAllRDS(params) {
+  return request.getRequest(urlAPI.urlGETListRDS(), params);
+}
+
+export function postOneRDS(params) {
+  return request.postRequest(urlAPI.urlPostRds(), params);
+}
+
+export function getDetailPermission(user_id, rds_manager_id, database_name) {
+  return request.getRequest(urlAPI.getDetailPermission({ user_id, rds_manager_id, database_name }));
+}
+
+export function updateRdsRole(user_id, formData) {
+  return request.putRequest(urlAPI.updateRdsRole({ user_id }), formData);
 }
