@@ -409,6 +409,7 @@ export default {
 
     async handleChangeStatus(item) {
       console.log('item handleChangeStatus ===>', item);
+      this.handleResetFormData();
       if (item.status) {
         // Thực hiện mở để chọn
         // await this.$store.dispatch('app/saveUserId', item.id);
