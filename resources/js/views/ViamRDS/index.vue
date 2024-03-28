@@ -254,7 +254,6 @@ export default {
         if (userId && rdsSelectedId && databaseSelectedId){
           this.getListDatabases();
           this.listViamRDS = [];
-          await this.$store.dispatch('app/resetUserId');
         } else {
           this.getListDatabases();
           this.database_name = '';
@@ -310,10 +309,9 @@ export default {
               };
             });
 
-            console.log('this.listViamRDS ==>', this.listViamRDS);
+            // console.log('this.listViamRDS ==>', this.listViamRDS);
             // this.$store.dispatch('app/saveListUSer', listUser);
-            // this.pagination.total_records =
-            //     response.data.pagination.total_records;
+            // this.pagination.total_records = response.data.pagination.total_records;
             // this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
@@ -403,20 +401,13 @@ export default {
       this.checkedStructureTab = val.structure;
       this.checkedAdministratorTab = val.administration;
 
-      // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-      // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
       // this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
     },
 
     async handleChangeStatus(item) {
-      console.log('item handleChangeStatus ===>', item);
       this.handleResetFormData();
-
       if (item.status) {
         // Thực hiện mở để chọn
-        // await this.$store.dispatch('app/saveUserId', item.id);
-        // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-        // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
         // this.$router.push({ path: `/viam-rds/edit/${item.id}` });
         this.selectedItem = item;
         this.openModalAdd = true;
@@ -479,7 +470,6 @@ export default {
         database_name: this.database_name,
         permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
       };
-      console.log('this.selectedItem.status ==>', this.selectedItem.status);
       if (this.selectedItem.status && !this.flag){
         await updateRdsRole(params.user_id, {
           rds_manager_id: params.rds_manager_id,
