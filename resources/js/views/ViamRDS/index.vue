@@ -171,6 +171,7 @@ import {
   getListDatabases,
   createRdsRole,
   updateRdsRole,
+  deleteRdsRole,
 } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs';
@@ -253,7 +254,6 @@ export default {
         if (userId && rdsSelectedId && databaseSelectedId){
           this.getListDatabases();
           this.listViamRDS = [];
-          await this.$store.dispatch('app/resetUserId');
         } else {
           this.getListDatabases();
           this.database_name = '';
@@ -309,10 +309,9 @@ export default {
               };
             });
 
-            console.log('this.listViamRDS ==>', this.listViamRDS);
+            // console.log('this.listViamRDS ==>', this.listViamRDS);
             // this.$store.dispatch('app/saveListUSer', listUser);
-            // this.pagination.total_records =
-            //     response.data.pagination.total_records;
+            // this.pagination.total_records = response.data.pagination.total_records;
             // this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
@@ -402,25 +401,32 @@ export default {
       this.checkedStructureTab = val.structure;
       this.checkedAdministratorTab = val.administration;
 
-      // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-      // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
       // this.$router.push({ path: `/viam-rds/edit/${val.id}` }, () => {});
     },
 
     async handleChangeStatus(item) {
-      console.log('item handleChangeStatus ===>', item);
+      this.handleResetFormData();
       if (item.status) {
         // Thực hiện mở để chọn
-        // await this.$store.dispatch('app/saveUserId', item.id);
-        // await this.$store.dispatch('app/saveRdsSelectedId', this.rds_id);
-        // await this.$store.dispatch('app/saveDatabaseSelectedId', this.database_name);
         // this.$router.push({ path: `/viam-rds/edit/${item.id}` });
         this.selectedItem = item;
         this.openModalAdd = true;
         this.flag = true;
       } else {
         // thực hiện call denied xóa quyền
-        console.log('Denied');
+        const { user_id, rds_manager_id, database_id } = item;
+        await deleteRdsRole(user_id, rds_manager_id, database_id).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.openModalAdd = false;
+          }
+          this.getListViamRds(this.rds_id, this.database_name);
+        });
+        this.selectedItem = null;
       }
     },
 
@@ -464,7 +470,6 @@ export default {
         database_name: this.database_name,
         permission: [...this.checkedDataTab, ...this.checkedStructureTab, ...this.checkedAdministratorTab],
       };
-      console.log('this.selectedItem.status ==>', this.selectedItem.status);
       if (this.selectedItem.status && !this.flag){
         await updateRdsRole(params.user_id, {
           rds_manager_id: params.rds_manager_id,

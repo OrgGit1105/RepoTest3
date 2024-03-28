@@ -164,51 +164,51 @@ export const DATABASES = {
   ],
   structure: [
     {
-      id: 6, name: 'Create',
+      id: 5, name: 'Create',
     },
     {
-      id: 7, name: 'Alter',
+      id: 6, name: 'Alter',
     },
     {
-      id: 8, name: 'Index',
+      id: 7, name: 'Index',
     },
     {
-      id: 9, name: 'Drop',
+      id: 8, name: 'Drop',
     },
     {
-      id: 10, name: 'Create temporary tables',
+      id: 9, name: 'Create temporary tables',
     },
     {
-      id: 11, name: 'Show view',
+      id: 10, name: 'Show view',
     },
     {
-      id: 12, name: 'Create routine',
+      id: 11, name: 'Create routine',
     },
     {
-      id: 13, name: 'Alter routine',
+      id: 12, name: 'Alter routine',
     },
     {
-      id: 14, name: 'Execute',
+      id: 13, name: 'Execute',
     },
     {
-      id: 15, name: 'Create view',
+      id: 14, name: 'Create view',
     },
     {
-      id: 16, name: 'Event',
+      id: 15, name: 'Event',
     },
     {
-      id: 17, name: 'Trigger',
+      id: 16, name: 'Trigger',
     },
   ],
   administrator: [
     {
-      id: 18, name: 'Grant',
+      id: 17, name: 'Grant',
     },
     {
-      id: 24, name: 'Lock tables',
+      id: 18, name: 'Lock tables',
     },
     {
-      id: 25, name: 'References',
+      id: 19, name: 'References',
     },
   ],
 };

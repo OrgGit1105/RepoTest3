@@ -90,18 +90,6 @@ const mutations = {
     state.endDate = endDate;
     Cookies.set('endDate', endDate);
   },
-  SET_USER_ID: (state, id) => {
-    state.userId = id;
-  },
-  SAVE_RDS_SELECTED_ID: (state, id) => {
-    state.rdsSelectedId = id;
-  },
-  SAVE_DATABASE_SELECTED_ID: (state, id) => {
-    state.databaseSelectedId = id;
-  },
-  RESET_USER_ID: (state) => {
-    state.userId = '';
-  },
 };
 
 const actions = {
@@ -162,18 +150,6 @@ const actions = {
   },
   saveEndtDate({ commit }, endDate) {
     commit('SET_END_DATE', endDate);
-  },
-  saveUserId({ commit }, id) {
-    commit('SET_USER_ID', id);
-  },
-  saveRdsSelectedId({ commit }, id) {
-    commit('SAVE_RDS_SELECTED_ID', id);
-  },
-  saveDatabaseSelectedId({ commit }, id) {
-    commit('SAVE_DATABASE_SELECTED_ID', id);
-  },
-  resetUserId({ commit }) {
-    commit('RESET_USER_ID');
   },
 };
 
