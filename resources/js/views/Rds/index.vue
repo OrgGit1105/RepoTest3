@@ -21,7 +21,7 @@
                 v-model="name_search"
                 placeholder="search by email"
                 prefix-icon="el-icon-search"
-                @keyup.native="getListAllRds()"
+                @keyup.native="getListRDS()"
               />
               <i class="el-icon-close cursor-pointer" @click="closeInputSearch()" />
             </div>
@@ -39,23 +39,23 @@
                 align="center"
               />
               <el-table-column
-                prop="nameRds"
+                prop="name"
                 label="Name RDS"
                 align="center"
               >
                 <template slot-scope="scope">
                   <span>
-                    {{ scope.row.nameRds }}
+                    {{ scope.row.name }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column
-                prop="enport"
-                label="URL enport"
+                prop="endport"
+                label="URL endport"
                 align="center"
               >
                 <template slot-scope="scope">
-                  {{ scope.row.enport }}
+                  {{ scope.row.url_end_point }}
                 </template>
               </el-table-column>
               <el-table-column
@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <div class="use-management-pagianation">
+        <!-- <div class="use-management-pagianation">
           <div class="card-body pagianation">
             <el-pagination
               background
@@ -80,10 +80,10 @@
               :page-size="pagination.per_page"
               :total="pagination.total_records"
               :current-page.sync="pagination.current_page"
-              @current-change="getListAllRds"
+              @current-change="getListRDS"
             />
           </div>
-        </div>
+        </div> -->
 
         <!-- Modal -->
         <el-dialog
@@ -94,14 +94,13 @@
           @click="hideCreateModal()"
         >
           <ValidationObserver
-            ref="obsAddEmployee"
+            ref="obsAddRds"
             tag="div"
           >
             <ValidationProvider
               v-slot="{ errors }"
               name="name"
               rules="required"
-              class="mt-4"
             >
               <label for="name">Name RDS</label>
               <el-input id="name" v-model="formCreate.name" />
@@ -114,10 +113,21 @@
               v-slot="{ errors }"
               name="name"
               rules="required"
-              class="mt-4"
             >
-              <label for="enport">URL enport</label>
-              <el-input id="enport" v-model="formCreate.name" />
+              <label for="url_end_point">URL endport</label>
+              <el-input id="url_end_point" v-model="formCreate.url_end_point" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="name"
+              rules="required"
+            >
+              <label for="port">Port</label>
+              <el-input id="port" v-model="formCreate.port" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -129,7 +139,7 @@
               rules="required"
             >
               <label for="username">Username</label>
-              <el-input id="username" v-model="formCreate.name" />
+              <el-input id="username" v-model="formCreate.username" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -141,7 +151,7 @@
               rules="required"
             >
               <label for="password">Password</label>
-              <el-input id="password" v-model="formCreate.name" />
+              <el-input id="password" v-model="formCreate.password" type="password" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -192,11 +202,10 @@
 </template>
 
 <script>
-import { deleteOneUser, getAllUser, postOneUser } from '../../api/user';
+import { deleteOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
+import { getAllRDS, postOneRDS } from '../../api/viamUser';
 import * as CONFIGS from '../../configs/index';
-import { getAllRole } from '../../api/viamUser';
-import * as ImageApi from '../../api/image_face';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
 export default {
@@ -219,27 +228,15 @@ export default {
       name_search: null,
       formCreate: {
         name: '',
-        email: '',
-        gender: '',
-        birthday: '',
-        address: '',
-        telephone: '',
-        entry_date: '',
-        slack_id: '',
-        skype_id: '',
-        github_id: '',
-        github_gmail: '',
-        paid_off: '',
+        url_end_point: '',
+        port: '',
+        username: '',
         password: '',
-        password_confirmation: '',
-        viam_user_id: '',
-        status: 1,
       },
       selectedWithMaskFiles: [],
       selectedWithoutMaskFiles: [],
       withoutMask: true,
       withMask: false,
-      validateFile: false,
       messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
@@ -265,12 +262,11 @@ export default {
   },
   watch: {
     currChange() {
-      this.getListAllRds();
+      this.getListRDS();
     },
   },
   created() {
-    this.getListRole();
-    this.getListAllRds();
+    this.getListRDS();
   },
   methods: {
     openLoading() {
@@ -279,80 +275,28 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListRole() {
-      this.openLoading();
-      const list = [];
-      try {
-        const response = await getAllRole();
-        if (response.code === 200) {
-          response.data?.map(item => {
-            list.push({
-              id: item.id,
-              name: item.name,
-            });
-          });
-          await this.$store.dispatch('app/saveListRoles', list);
-          this.closeLoading();
-        }
-      } catch (error) {
-        this.closeLoading();
-        MakeToast({
-          variant: 'warning',
-          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: error.message,
-        });
-      }
-    },
-    async getListAllRds() {
+
+    async getListRDS() {
       this.pagination.isDisable = true;
       const PARAMS = {
-        page: this.pagination.current_page,
-        per_page: this.pagination.per_page,
-        role_id: this.role_id_selected,
-        email: this.name_search,
+        page: '',
+        per_page: '',
       };
-      await getAllUser(PARAMS)
+      await getAllRDS(PARAMS)
         .then((response) => {
           if (response.code === 200) {
-            // const listRds = response.data.result;
-            const listRds = [
-              {
-                id: '1',
-                nameRds: 'Name Rds 1',
-                enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username 1',
-              },
-              {
-                id: '2',
-                nameRds: 'Name Rds 2',
-                enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username 2',
-              },
-              {
-                id: '3',
-                nameRds: 'Name Rds 3',
-                enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username 3',
-              },
-              {
-                id: '4',
-                nameRds: 'Name Rds 4',
-                enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username 4',
-              },
-              {
-                id: '5',
-                nameRds: 'Name Rds 5',
-                enport: 'https://element.eleme.io/#/en-US/component/input#input',
-                username: 'Username 5',
-              },
-            ];
+            this.listRds = response.data.map((item) => {
+              return {
+                id: item.id,
+                name: item.name,
+                url_end_point: item.url_end_point,
+                username: item.username,
+              };
+            });
             // this.$store.dispatch('app/savelistRds', listRds);
-            this.listRds = listRds;
-            this.pagination.total_records =
-              response.data.pagination.total_records;
-            this.pagination.current_page = response.data.pagination.current_page;
-            this.pagination.isDisable = false;
+            // this.pagination.total_records = response.data.pagination.total_records;
+            // this.pagination.current_page = response.data.pagination.current_page;
+            // this.pagination.isDisable = false;
           }
           this.closeLoading();
         })
@@ -366,8 +310,7 @@ export default {
         });
     },
     goToEditScreen(val) {
-      this.$router.push({ path: `/rds/edit/${val.id}` }, (onAbort) => {
-      });
+      this.$router.push({ path: `/rds/edit/${val.id}` }, (onAbort) => {});
     },
     createForm() {
       this.openModalAdd = true;
@@ -380,22 +323,10 @@ export default {
     hideCreateModal() {
       this.formCreate = {
         name: '',
-        email: '',
-        gender: '',
-        birthday: '',
-        address: '',
-        telephone: '',
-        entry_date: '',
-        slack_id: '',
-        skype_id: '',
-        github_id: '',
-        github_gmail: '',
-        ssh_public_key: '',
-        paid_off: '',
+        url_end_point: '',
+        port: '',
+        username: '',
         password: '',
-        password_confirmation: '',
-        viam_user_id: '',
-        status: 1,
       };
       if (this.withoutMask) {
         this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
@@ -420,82 +351,27 @@ export default {
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
             content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
           });
-          this.getListAllRds();
+          this.getListRDS();
         });
       }
     },
     async submitCreate() {
-      const isValid = await this.$refs.obsAddEmployee.validate();
-      if (!isValid && this.validateFile) {
+      const isValid = await this.$refs.obsAddRds.validate();
+      console.log('isValid isValid ===>', isValid);
+      if (!isValid) {
         return;
       } else {
         this.waitCreate = true;
-        await postOneUser(this.formCreate).then(async(response) => {
+        await postOneRDS(this.formCreate).then(async(response) => {
           const toastSuccessMessage = [];
           const toastFalseMessage = [];
           if (response.code === 200) {
-            // Kiểm tra selectedWithoutMaskFiles
-            if (this.selectedWithoutMaskFiles.length !== 0) {
-              const image = new FormData();
-              for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
-                const file = this.selectedWithoutMaskFiles[i];
-                image.append('file[]', file);
-              }
-              image.append('type', 'WithoutMask');
-              image.append('user_id', response.data.id);
-
-              await ImageApi.createImage(image)
-                .then((response) => {
-                  if (response.code === 200) {
-                    toastSuccessMessage.push('Add image without mask employee success');
-                  } else {
-                    toastFalseMessage.push(response.message);
-                  }
-                })
-                .catch((error) => {
-                  toastFalseMessage.push(error.message);
-                });
-            }
-
-            // Kiểm tra selectedWithMaskFiles
-            if (this.selectedWithMaskFiles.length !== 0) {
-              const image = new FormData();
-              for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
-                const file = this.selectedWithMaskFiles[i];
-                image.append('file[]', file);
-              }
-              image.append('type', 'WithMask');
-              image.append('user_id', response.data.id);
-
-              await ImageApi.createImage(image)
-                .then((response) => {
-                  if (response.code === 200) {
-                    toastSuccessMessage.push('Add image with mask employee success');
-                  } else {
-                    toastFalseMessage.push(response.message);
-                  }
-                })
-                .catch((error) => {
-                  toastFalseMessage.push(error.message);
-                });
-            }
             this.formCreate = {
               name: '',
-              email: '',
-              gender: '',
-              birthday: '',
-              address: '',
-              telephone: '',
-              entry_date: '',
-              slack_id: '',
-              skype_id: '',
-              github_id: '',
-              github_gmail: '',
-              paid_off: '',
+              url_end_point: '',
+              port: '',
+              username: '',
               password: '',
-              password_confirmation: '',
-              viam_user_id: '',
-              status: 1,
             };
             this.waitCreate = false;
             this.openModalAdd = false;
@@ -513,7 +389,7 @@ export default {
                 content: element,
               });
             });
-            await this.getListAllRds();
+            await this.getListRDS();
           } else {
             this.openModalAdd = false;
             this.waitCreate = false;
