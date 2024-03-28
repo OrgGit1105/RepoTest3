@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
 //        $this->call(WorkingTimeSeed::class);
         $this->call(UpdateNameUserSeeder::class);
         $this->call(RdsPermissionSeeder::class);
+        $this->call(RDSManagerSeeder::class);
     }
 }
