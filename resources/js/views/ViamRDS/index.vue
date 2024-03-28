@@ -125,7 +125,7 @@
             <div>
               <h3>Setting RDS Role</h3>
               <div class="d-flex justify-content-end">
-                <el-button @click="dialogVisible = false">Cancel</el-button>
+                <el-button @click="openModalAdd = false">Cancel</el-button>
                 <el-button type="primary" @click="handleUpdateRole">Save</el-button>
               </div>
             </div>
