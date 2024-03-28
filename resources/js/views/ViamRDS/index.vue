@@ -171,6 +171,7 @@ import {
   getListDatabases,
   createRdsRole,
   updateRdsRole,
+  deleteRdsRole,
 } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs';
@@ -410,6 +411,7 @@ export default {
     async handleChangeStatus(item) {
       console.log('item handleChangeStatus ===>', item);
       this.handleResetFormData();
+
       if (item.status) {
         // Thực hiện mở để chọn
         // await this.$store.dispatch('app/saveUserId', item.id);
@@ -421,7 +423,19 @@ export default {
         this.flag = true;
       } else {
         // thực hiện call denied xóa quyền
-        console.log('Denied');
+        const { user_id, rds_manager_id, database_id } = item;
+        await deleteRdsRole(user_id, rds_manager_id, database_id).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: 'Config role successfully',
+            });
+            this.openModalAdd = false;
+          }
+          this.getListViamRds(this.rds_id, this.database_name);
+        });
+        this.selectedItem = null;
       }
     },
 
