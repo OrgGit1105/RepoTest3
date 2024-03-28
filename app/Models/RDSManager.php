@@ -18,6 +18,9 @@ class RDSManager extends Model
     const USERNAME = 'username';
     const PASSWORD = 'password';
     const PORT = 'port';
+    const KEY_FILE = 'key_file';
+    const EC2_IP_ADDRESS = 'ec2_ip_address';
+    const EC2_USERNAME = 'ec2_username';
 
     protected $fillable = [
         self::NAME,
@@ -25,6 +28,9 @@ class RDSManager extends Model
         self::USERNAME,
         self::PASSWORD,
         self::PORT,
+        self::KEY_FILE,
+        self::EC2_IP_ADDRESS,
+        self::EC2_USERNAME,
     ];
 
     protected $hidden = [

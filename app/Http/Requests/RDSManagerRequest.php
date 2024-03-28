@@ -50,7 +50,17 @@ class RDSManagerRequest extends FormRequest
                 'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
-                'port' => 'required'
+                'key_file' => [
+                    'required', 'max:3072',
+                    function ($attribute, $value, $fail) {
+                        $mime = $value->getMimeType();
+                        $extension = $value->getClientOriginalExtension();
+                        if ($mime != 'text/plain' || $extension != 'pem') {
+                            return $fail(trans('api.key_file.extension'));
+                        }
+                    }],
+                'ec2_ip_address' => 'required|string|max:255',
+                'ec2_username' => 'required|string|max:255',
             ];
         }
         if (Route::getCurrentRoute()->getActionMethod() == 'update') {
@@ -59,7 +69,9 @@ class RDSManagerRequest extends FormRequest
                 'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
-                'port' => 'required'
+                'key_file' => 'nullable|max:3072|mimes:text/plain',
+                'ec2_ip_address' => 'required|string|max:255',
+                'ec2_username' => 'required|string|max:255',
             ];
         }
     }

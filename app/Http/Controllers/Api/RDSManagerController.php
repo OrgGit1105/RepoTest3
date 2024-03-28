@@ -124,30 +124,38 @@ class RDSManagerController extends Controller
      *     @OA\MediaType(
      *        mediaType="multipart/form-data",
      *        @OA\Schema(
-     *          required={"name", "url_end_point", "username", "password", "port"},
+     *          required={"name", "url_end_point", "username", "password", "port", "key_file", "ec2_ip_address", "ec2_username"},
      *            @OA\Property(
      *                property="name",
-     *                format="string",
+     *                type="string",
      *                example="Server240"
      *             ),
      *            @OA\Property(
      *                property="url_end_point",
-     *                format="string",
+     *                type="string",
      *                example=""
      *            ),
      *           @OA\Property(
      *                property="username",
-     *                example="root",
+     *                type="root",
      *                format="string",
      *           ),
      *           @OA\Property(
      *                property="password",
-     *                format="string",
+     *                type="string",
      *            ),
      *           @OA\Property(
-     *                property="port",
-     *                example="3306",
-     *                format="string",
+     *                property="key_file",
+     *                type="string",
+     *                type="binary",
+     *           ),
+     *           @OA\Property(
+     *                property="ec2_ip_address",
+     *                type="string",
+     *           ),
+     *           @OA\Property(
+     *                property="ec2_username",
+     *                type="string",
      *           ),
      *         ),
      *       ),
@@ -186,9 +194,9 @@ class RDSManagerController extends Controller
      *   ),
      *   @OA\RequestBody(
      *       @OA\MediaType(
-     *          mediaType="application/json",
+     *        mediaType="multipart/form-data",
      *          @OA\Schema(
-     *            required={"name", "url_end_point", "username", "password", "port"},
+     *            required={"name", "url_end_point", "username", "password", "port", "ec2_ip_address", "ec2_username"},
      *            @OA\Property(
      *                property="name",
      *                format="string",
@@ -208,29 +216,29 @@ class RDSManagerController extends Controller
      *                property="password",
      *                format="string",
      *            ),
-     *           @OA\Property(
-     *                property="port",
-     *                example="3306",
-     *                format="string",
+     *          @OA\Property(
+     *                property="key_file",
+     *                type="string",
+     *                format="binary",
+     *           ),
+     *          @OA\Property(
+     *                property="ec2_ip_address",
+     *                type="string",
+     *           ),
+     *          @OA\Property(
+     *                property="ec2_username",
+     *                type="string",
      *           ),
      *         ),
      *      )
      *   ),
-     *   @OA\Response(
+     *    @OA\Response(
      *     response=200,
      *     description="Send request success",
      *     @OA\MediaType(
      *      mediaType="application/json",
-     *      example={"code":200,"data":{"id": 1,"name":  "............."}}
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=403,
-     *     description="Access Deny permission",
-     *     @OA\MediaType(
-     *      mediaType="application/json",
-     *      example={"code":403,"message":"Access Deny permission"}
-     *     ),
+     *      example={"code":200,"data":{"id": 1,"name": "......"}}
+     *     )
      *   ),
      *   security={{"auth": {}}},
      * )
@@ -240,7 +248,8 @@ class RDSManagerController extends Controller
      */
     public function update(RDSManagerRequest $request, $id)
     {
-        return $this->repository->update($request->except([]), $id);
+        dd($request);
+        return $this->repository->update($request->except(['port']), $id);
     }
 
     /**

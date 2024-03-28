@@ -58,6 +58,7 @@ return [
     'rds_manager' => [
         'connect_failed' => 'Connection to RDS failed',
         'action_error' => 'Cannot :action because this connection already has data',
+        'key_file.extension' => 'File extension is not valid'
     ],
     'viam_rds' => [
         'database_exist' => 'The user account data on this database has been created previously.',
