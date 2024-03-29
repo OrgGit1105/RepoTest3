@@ -25,6 +25,7 @@ class SSHTunnelJob implements ShouldQueue
     private $ec2IpAddress;
     private $host;
     private $database;
+    private $action;
 
     /**
      * Create a new job instance.
@@ -32,18 +33,16 @@ class SSHTunnelJob implements ShouldQueue
      * @param array $attributes
      * @param int $port
      * @param string $filePath
+     * @param string $action
      */
-    public function __construct(array $attributes, int $port, string $filePath)
+    public function __construct(array $attributes, int $port, string $filePath, string $action)
     {
         $this->filePath = $filePath;
-        $this->username = $attributes['username'];
-        $this->password = $attributes['password'];
         $this->port = $port;
         $this->urlEndPoint = $attributes['url_end_point'];
         $this->ec2Username = $attributes['ec2_username'];
         $this->ec2IpAddress = $attributes['ec2_ip_address'];
-        $this->host = config('database.connections.mysql.host');
-        $this->database = '';
+        $this->action = $action;
     }
 
     /**
@@ -53,8 +52,11 @@ class SSHTunnelJob implements ShouldQueue
      */
     public function handle()
     {
-        try {
-            exec("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress", $output);
+        if ($this->action == 'open')
+            exec("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress -y");
+        if ($this->action == 'close')
+            exec('exist');
+
 //            dd("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress");
 //            \Illuminate\Support\Facades\Log::info("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress");
 //            $connection = mysqli_connect($this->host, $this->username, $this->password, $this->database, $this->port);
@@ -76,10 +78,5 @@ class SSHTunnelJob implements ShouldQueue
 //        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 //        dd($result);
 //            exec('exist');
-            return ResponseService::responseJson(CODE_SUCCESS);
-        } catch (\Exception $exception) {
-            return ResponseService::responseJson(500, $exception->getMessage());
-        }
-
     }
 }
