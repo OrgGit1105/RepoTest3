@@ -60,28 +60,37 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return $port;
     }
 
-    public function create(array $attributes)
+    private function checkConnect($attributes, $port, $filePath)
     {
-        $file = $attributes['key_file'];
-        $filePath = 'tests/V-face_test.pem';
-//        Storage::disk('s3')->put($filePath, file_get_contents($file));
-        $port = $this->random_port();
-        $connect = dispatch_now(new SSHTunnelJob($attributes, $port, $filePath));
-        sleep(1);
+        dispatch(new SSHTunnelJob($attributes, $port, $filePath, 'open'));
+        sleep(5);
+        $host = config('database.connections.mysql.host');
         $username = $attributes['username'];
         $password = $attributes['password'];
-        $host = config('database.connections.mysql.host');
         $database = '';
-        $dsn = "mysql:host=$host;port=$port;dbname=$database;chaset=utf8mb4";
-        $option = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_EMULATE_PREPARES => false,
-        ];
 
-        $pdo = new \PDO($dsn, $username, $password, $option);
-        $stmt = $pdo->query('SHOW DATABASES');
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        dd($result);
+        $connection = mysqli_connect($host, $username, $password, $database, $port);
+        mysqli_close($connection);
+        dispatch(new SSHTunnelJob($attributes, $port, $filePath, 'close'));
+
+        if (!$connection) {
+            return ResponseService::responseJsonError(
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                trans('api.rds_manager.connect_failed'),
+                trans('api.rds_manager.connect_failed'));
+        }
+        return ResponseService::responseJson(CODE_SUCCESS);
+    }
+
+    public function create(array $attributes)
+    {
+//        $file = $attributes['key_file'];
+        $filePath = 'C:/xampp/htdocs/v-face/tests/V-face_test.pem';
+//        Storage::disk('s3')->put($filePath, file_get_contents($file));
+        $attributes['port'] = $this->random_port();
+        $attributes[RDSManager::KEY_FILE] = $filePath;
+
+        $connect = $this->checkConnect($attributes, $attributes['port'], $filePath);
         if ($connect->original['code'] != CODE_SUCCESS) {
             return $connect;
         }
