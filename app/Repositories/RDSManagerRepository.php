@@ -20,6 +20,7 @@ use Helper\ResponseService;
 use http\Env\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Namshi\JOSE\Signer\SecLib\RSA;
 use phpseclib3\Net\SSH2;
 use Repository\BaseRepository;
@@ -61,10 +62,26 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
 
     public function create(array $attributes)
     {
-        $filePath = 'storage/app/public/'.$attributes['key_file']->store('rds');
+        $file = $attributes['key_file'];
+        $filePath = 'tests/V-face_test.pem';
+//        Storage::disk('s3')->put($filePath, file_get_contents($file));
         $port = $this->random_port();
         $connect = dispatch_now(new SSHTunnelJob($attributes, $port, $filePath));
-        dd($connect);
+        sleep(1);
+        $username = $attributes['username'];
+        $password = $attributes['password'];
+        $host = config('database.connections.mysql.host');
+        $database = '';
+        $dsn = "mysql:host=$host;port=$port;dbname=$database;chaset=utf8mb4";
+        $option = [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+
+        $pdo = new \PDO($dsn, $username, $password, $option);
+        $stmt = $pdo->query('SHOW DATABASES');
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        dd($result);
         if ($connect->original['code'] != CODE_SUCCESS) {
             return $connect;
         }

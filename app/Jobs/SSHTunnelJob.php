@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use AWS\CRT\Log;
 use Helper\ResponseService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -54,14 +55,16 @@ class SSHTunnelJob implements ShouldQueue
     {
         try {
             exec("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress", $output);
-            $connection = mysqli_connect($this->host, $this->username, $this->password, $this->database, $this->port);
-            if (!$connection) {
-                return ResponseService::responseJsonError(
-                    Response::HTTP_INTERNAL_SERVER_ERROR,
-                    trans('api.rds_manager.connect_failed'),
-                    trans('api.rds_manager.connect_failed'));
-            }
-            mysqli_close($connection);
+//            dd("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress");
+//            \Illuminate\Support\Facades\Log::info("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress");
+//            $connection = mysqli_connect($this->host, $this->username, $this->password, $this->database, $this->port);
+//            if (!$connection) {
+//                return ResponseService::responseJsonError(
+//                    Response::HTTP_INTERNAL_SERVER_ERROR,
+//                    trans('api.rds_manager.connect_failed'),
+//                    trans('api.rds_manager.connect_failed'));
+//            }
+//            mysqli_close($connection);
 //        $dsn = "mysql:host=$this->host;port=$this->port;dbname=$this->database;chaset=utf8mb4";
 //        $option = [
 //            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
@@ -72,7 +75,7 @@ class SSHTunnelJob implements ShouldQueue
 //        $stmt = $pdo->query('SHOW DATABASES');
 //        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 //        dd($result);
-            exec('exist');
+//            exec('exist');
             return ResponseService::responseJson(CODE_SUCCESS);
         } catch (\Exception $exception) {
             return ResponseService::responseJson(500, $exception->getMessage());
