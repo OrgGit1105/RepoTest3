@@ -3,6 +3,8 @@
 
 namespace Helper;
 
+use App\Jobs\SSHTunnelJob;
+use App\Models\RDSManager;
 use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
 use Illuminate\Http\Response;
@@ -240,5 +242,35 @@ class Common
             ],
         ];
         $ssmClient->sendCommand($parameters);
+    }
+
+    public function connectRDS(array $data, $filePath, $openConnect = true)
+    {
+        try {
+            if($openConnect) {
+                dispatch(new SSHTunnelJob($data, $filePath));
+                sleep(5);
+            }
+
+            $host = config('database.connections.mysql.host');
+            $username = $data[RDSManager::USERNAME];
+            $password = $data[RDSManager::PASSWORD];
+            $database = '';
+
+            $port = $data[RDSManager::PORT];
+            $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
+            $option = [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+            ];
+
+            $pdo = new \PDO($dsn, $username, $password, $option);
+            return ResponseService::responseJson(CODE_SUCCESS, $pdo);
+        } catch (\PDOException $e) {
+            return ResponseService::responseJsonError(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                trans('api.rds_manager.connect_failed'),
+                trans('api.rds_manager.connect_failed'));
+        }
     }
 }

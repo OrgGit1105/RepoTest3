@@ -61,43 +61,15 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return $port;
     }
 
-    private function checkConnect($attributes, $filePath)
-    {
-        try {
-            dispatch_now(new SSHTunnelJob($attributes, $filePath));
-            sleep(10);
-            $host = config('database.connections.mysql.host');
-            $username = $attributes['username'];
-            $password = $attributes['password'];
-            $database = '';
-
-            $port = $attributes[RDSManager::PORT];
-            $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
-            $option = [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_EMULATE_PREPARES => false,
-            ];
-
-            $pdo = new \PDO($dsn, $username, $password, $option);
-            dd($pdo);
-            return ResponseService::responseJson(CODE_SUCCESS);
-        } catch (\PDOException $e) {
-            return ResponseService::responseJsonError(
-                Response::HTTP_INTERNAL_SERVER_ERROR,
-                trans('api.rds_manager.connect_failed'),
-                trans('api.rds_manager.connect_failed'));
-        }
-    }
-
     public function create(array $attributes)
     {
         $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
         $attributes[RDSManager::PORT] = $this->random_port();
 
-//        $connect = $this->checkConnect($attributes, $filePath);
-//        if ($connect->original['code'] != CODE_SUCCESS) {
-//            return $connect;
-//        }
+        $connect = Common::connectRDS($attributes, $filePath);
+        if ($connect->original['code'] != CODE_SUCCESS) {
+            return $connect;
+        }
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
     }
 
@@ -121,11 +93,11 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
 
-//        $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
-//        $connect = $this->checkConnect($attributes, $filePath);
-//        if ($connect->original['code'] != CODE_SUCCESS) {
-//            return $connect;
-//        }
+        $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
+        $connect = Common::connectRDS($attributes, $filePath);
+        if ($connect->original['code'] != CODE_SUCCESS) {
+            return $connect;
+        }
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
 
