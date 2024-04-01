@@ -125,8 +125,8 @@
             <div>
               <h3>Setting RDS Role</h3>
               <div class="d-flex justify-content-end">
-                <el-button @click="dialogVisible = false">Cancel</el-button>
-                <el-button type="primary" @click="handleUpdateRole">Save</el-button>
+                <el-button @click="openModalAdd = false">{{ $t('LANGUAGES.TEXT_BUTTON_CANCEL') }}</el-button>
+                <el-button type="primary" @click="handleUpdateRole">{{ $t('LANGUAGES.TEXT_BUTTON_SAVE') }} </el-button>
               </div>
             </div>
             <hr class="line">
