@@ -31,7 +31,6 @@ use function Clue\StreamFilter\fun;
 
 class RDSManagerRepository extends BaseRepository implements RDSManagerRepositoryInterface
 {
-
     public function __construct(Application $app)
     {
         parent::__construct($app);
@@ -90,10 +89,10 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         $attributes['port'] = $this->random_port();
         $attributes[RDSManager::KEY_FILE] = $filePath;
 
-        $connect = $this->checkConnect($attributes, $attributes['port'], $filePath);
-        if ($connect->original['code'] != CODE_SUCCESS) {
-            return $connect;
-        }
+//        $connect = $this->checkConnect($attributes, $attributes['port'], $filePath);
+//        if ($connect->original['code'] != CODE_SUCCESS) {
+//            return $connect;
+//        }
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
     }
 
@@ -110,10 +109,10 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
 
-        $connect = $this->checkConnect($attributes);
-        if ($connect->original['code'] != CODE_SUCCESS) {
-            return $connect;
-        }
+//        $connect = $this->checkConnect($attributes);
+//        if ($connect->original['code'] != CODE_SUCCESS) {
+//            return $connect;
+//        }
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
 
