@@ -10,11 +10,13 @@ namespace Repository;
 use App\Jobs\SSHTunnelJob;
 use App\Models\HistoryEditReport;
 use App\Models\RDSManager;
+use App\Models\UploadFile;
 use App\Models\User;
 use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
 use App\Repositories\Contracts\RDSManagerRepositoryInterface;
 use Aws\Rds\RdsClient;
 use Aws\Ssm\SsmClient;
+use Carbon\Carbon;
 use Helper\Common;
 use Helper\ResponseService;
 use http\Env\Request;
@@ -59,37 +61,40 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return $port;
     }
 
-    private function checkConnect($attributes, $port, $filePath)
+    private function checkConnect($attributes, $filePath)
     {
-        dispatch(new SSHTunnelJob($attributes, $port, $filePath, 'open'));
-        sleep(5);
-        $host = config('database.connections.mysql.host');
-        $username = $attributes['username'];
-        $password = $attributes['password'];
-        $database = '';
+        try {
+            dispatch_now(new SSHTunnelJob($attributes, $filePath));
+            sleep(10);
+            $host = config('database.connections.mysql.host');
+            $username = $attributes['username'];
+            $password = $attributes['password'];
+            $database = '';
 
-        $connection = mysqli_connect($host, $username, $password, $database, $port);
-        mysqli_close($connection);
-        dispatch(new SSHTunnelJob($attributes, $port, $filePath, 'close'));
+            $port = $attributes[RDSManager::PORT];
+            $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
+            $option = [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+            ];
 
-        if (!$connection) {
+            $pdo = new \PDO($dsn, $username, $password, $option);
+            dd($pdo);
+            return ResponseService::responseJson(CODE_SUCCESS);
+        } catch (\PDOException $e) {
             return ResponseService::responseJsonError(
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 trans('api.rds_manager.connect_failed'),
                 trans('api.rds_manager.connect_failed'));
         }
-        return ResponseService::responseJson(CODE_SUCCESS);
     }
 
     public function create(array $attributes)
     {
-//        $file = $attributes['key_file'];
-        $filePath = 'C:/xampp/htdocs/v-face/tests/V-face_test.pem';
-//        Storage::disk('s3')->put($filePath, file_get_contents($file));
-        $attributes['port'] = $this->random_port();
-        $attributes[RDSManager::KEY_FILE] = $filePath;
+        $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
+        $attributes[RDSManager::PORT] = $this->random_port();
 
-//        $connect = $this->checkConnect($attributes, $attributes['port'], $filePath);
+//        $connect = $this->checkConnect($attributes, $filePath);
 //        if ($connect->original['code'] != CODE_SUCCESS) {
 //            return $connect;
 //        }
@@ -99,17 +104,25 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
     public function update(array $attributes, $id)
     {
         $rdsManager = $this->model->find($id);
+        $attributes['port'] = $rdsManager->port;
+
         if (!$rdsManager) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('messages.mes.data_not_found'), trans('messages.mes.data_not_found'));
+            return ResponseService::responseJsonError(
+                Response::HTTP_NOT_FOUND,
+                trans('messages.mes.data_not_found'),
+                trans('messages.mes.data_not_found'));
         }
 
-        $data = $rdsManager->whereHas('users', fn($query) => $query->where('rds_manager_id', $id))->exists();
+        $data = $rdsManager->whereHas('users', function ($query) use ($id) {
+            $query->where('rds_manager_id', $id);
+        })->exists();
         if ($attributes['url_end_point'] != $rdsManager->url_end_point && $data) {
             $msg = trans('api.rds_manager.action_error', ['action' => 'update']);
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
 
-//        $connect = $this->checkConnect($attributes);
+//        $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
+//        $connect = $this->checkConnect($attributes, $filePath);
 //        if ($connect->original['code'] != CODE_SUCCESS) {
 //            return $connect;
 //        }
@@ -120,14 +133,19 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
     {
         $rdsManager = $this->model->find($id);
         if (!$rdsManager) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('messages.mes.data_not_found'), trans('messages.mes.data_not_found'));
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,
+                trans('messages.mes.data_not_found'),
+                trans('messages.mes.data_not_found'));
         }
 
-        $data = $rdsManager->whereHas('users', fn($query) => $query->where('rds_manager_id', $id))->exists();
+        $data = $rdsManager->whereHas('users', function ($query) use ($id) {
+            $query->where('rds_manager_id', $id);
+        })->exists();
         if ($data) {
             $msg = trans('api.rds_manager.action_error', ['action' => 'delete']);
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
+
         parent::delete($id);
         return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
     }

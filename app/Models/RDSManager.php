@@ -18,7 +18,7 @@ class RDSManager extends Model
     const USERNAME = 'username';
     const PASSWORD = 'password';
     const PORT = 'port';
-    const KEY_FILE = 'key_file';
+    const FILE_ID = 'file_id';
     const EC2_IP_ADDRESS = 'ec2_ip_address';
     const EC2_USERNAME = 'ec2_username';
 
@@ -28,7 +28,7 @@ class RDSManager extends Model
         self::USERNAME,
         self::PASSWORD,
         self::PORT,
-        self::KEY_FILE,
+        self::FILE_ID,
         self::EC2_IP_ADDRESS,
         self::EC2_USERNAME,
     ];
@@ -51,5 +51,10 @@ class RDSManager extends Model
     public function databases()
     {
         return $this->hasManyThrough(Database::class, RDSInfo::class,'rds_manager_id', 'rds_info_id', 'id', 'id');
+    }
+
+    public function file()
+    {
+        return $this->belongsTo(UploadFile::class, 'file_id', 'id');
     }
 }

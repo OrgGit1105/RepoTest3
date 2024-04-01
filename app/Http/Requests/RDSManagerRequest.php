@@ -50,15 +50,7 @@ class RDSManagerRequest extends FormRequest
                 'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
-                'key_file' => [
-                    'required', 'max:3072',
-                    function ($attribute, $value, $fail) {
-                        $mime = $value->getMimeType();
-                        $extension = $value->getClientOriginalExtension();
-                        if ($mime != 'text/plain' || $extension != 'pem') {
-                            return $fail(trans('api.key_file.extension'));
-                        }
-                    }],
+                'file_id' => 'required|exists:files,id',
                 'ec2_ip_address' => 'required|string|max:255',
                 'ec2_username' => 'required|string|max:255',
             ];
@@ -69,7 +61,7 @@ class RDSManagerRequest extends FormRequest
                 'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
-                'key_file' => 'nullable|max:3072|mimes:text/plain',
+                'file_id' => 'required|exists:files,id',
                 'ec2_ip_address' => 'required|string|max:255',
                 'ec2_username' => 'required|string|max:255',
             ];

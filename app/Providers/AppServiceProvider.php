@@ -13,6 +13,7 @@ use App\Repositories\Contracts\PolicyRepositoryInterface;
 use App\Repositories\Contracts\RDSManagerRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\ScheduleRepositoryInterface;
+use App\Repositories\Contracts\UploadFileRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\VIAMRDSRepositoryInterface;
 use App\Repositories\Contracts\VIAMUserRepositoryInterface;
@@ -29,6 +30,7 @@ use Repository\PolicyRepository;
 use Repository\RDSManagerRepository;
 use Repository\RoleRepository;
 use Repository\ScheduleRepository;
+use Repository\UploadFileRepository;
 use Repository\UserRepository;
 use Repository\VIAMRDSRepository;
 use Repository\VIAMUserRepository;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(VIAMUserRepositoryInterface::class, VIAMUserRepository::class);
     $this->app->bind(RDSManagerRepositoryInterface::class, RDSManagerRepository::class);
     $this->app->bind(VIAMRDSRepositoryInterface::class, VIAMRDSRepository::class);
+    $this->app->bind(UploadFileRepositoryInterface::class, UploadFileRepository::class);
 
       //Customer
     if ($this->app->environment('local', 'testing')) {

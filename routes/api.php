@@ -70,6 +70,10 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         });
 
         Route::apiResource('rds_manager', 'RDSManagerController');
+
+        Route::post('upload', 'UploadFileController@store');
+        Route::get('download/{id}', 'UploadFileController@downloadFile');
+
         Route::get('viam_rds', [VIAMRDSController::class, 'index']);
         Route::get('viam_rds/detail-permission', [VIAMRDSController::class, 'show']);
         Route::get('viam_rds/{rds_manager_id}', [VIAMRDSController::class, 'listDatabase']);
