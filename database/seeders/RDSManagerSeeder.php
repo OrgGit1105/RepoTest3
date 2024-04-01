@@ -14,14 +14,13 @@ class RDSManagerSeeder extends Seeder
      */
     public function run()
     {
-        if (!RDSManager::first()) {
-            RDSManager::query()->create([
-                RDSManager::NAME => 'Server Dev',
-                RDSManager::URL_END_POINT => config('database.connections.mysql.host'),
-                RDSManager::USERNAME => config('database.connections.mysql.username'),
-                RDSManager::PASSWORD => config('database.connections.mysql.password'),
-                RDSManager::PORT => config('database.connections.mysql.port'),
-            ]);
-        }
+       RDSManager::query()->firstOrCreate([
+            RDSManager::URL_END_POINT => config('database.connections.mysql.host'),
+            RDSManager::USERNAME => config('database.connections.mysql.username'),
+            RDSManager::PASSWORD => config('database.connections.mysql.password'),
+            RDSManager::PORT => config('database.connections.mysql.port'),
+        ], [
+            RDSManager::NAME => 'Server Dev',
+        ]);
     }
 }
