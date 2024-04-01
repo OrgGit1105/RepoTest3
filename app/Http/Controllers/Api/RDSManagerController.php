@@ -124,7 +124,7 @@ class RDSManagerController extends Controller
      *     @OA\MediaType(
      *        mediaType="multipart/form-data",
      *        @OA\Schema(
-     *          required={"name", "url_end_point", "username", "password", "port", "key_file", "ec2_ip_address", "ec2_username"},
+     *          required={"name", "url_end_point", "username", "password", "port", "file_id", "ec2_ip_address", "ec2_username"},
      *            @OA\Property(
      *                property="name",
      *                type="string",
@@ -133,21 +133,19 @@ class RDSManagerController extends Controller
      *            @OA\Property(
      *                property="url_end_point",
      *                type="string",
-     *                example=""
      *            ),
      *           @OA\Property(
      *                property="username",
-     *                type="root",
-     *                format="string",
+     *                type="string",
+     *                example="root",
      *           ),
      *           @OA\Property(
      *                property="password",
      *                type="string",
      *            ),
      *           @OA\Property(
-     *                property="key_file",
-     *                type="string",
-     *                type="binary",
+     *                property="file_id",
+     *                type="integer",
      *           ),
      *           @OA\Property(
      *                property="ec2_ip_address",
@@ -193,10 +191,11 @@ class RDSManagerController extends Controller
      *     ),
      *   ),
      *   @OA\RequestBody(
+     *       required=true,
      *       @OA\MediaType(
-     *        mediaType="multipart/form-data",
+     *        mediaType="application/json",
      *          @OA\Schema(
-     *            required={"name", "url_end_point", "username", "password", "port", "ec2_ip_address", "ec2_username"},
+     *            required={"name", "url_end_point", "username", "password", "port", "ec2_ip_address", "ec2_username", "file_id"},
      *            @OA\Property(
      *                property="name",
      *                format="string",
@@ -217,17 +216,16 @@ class RDSManagerController extends Controller
      *                format="string",
      *            ),
      *          @OA\Property(
-     *                property="key_file",
-     *                type="string",
-     *                format="binary",
+     *                property="file_id",
+     *                format="integer",
      *           ),
      *          @OA\Property(
      *                property="ec2_ip_address",
-     *                type="string",
+     *                format="string",
      *           ),
      *          @OA\Property(
      *                property="ec2_username",
-     *                type="string",
+     *                format="string",
      *           ),
      *         ),
      *      )
@@ -240,15 +238,24 @@ class RDSManagerController extends Controller
      *      example={"code":200,"data":{"id": 1,"name": "......"}}
      *     )
      *   ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Access Deny permission",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":403,"message":"Access Deny permission"}
+     *     ),
+     *   ),
      *   security={{"auth": {}}},
      * )
      * Display a listing of the resource.
      *
+     * @param RDSManagerRequest $request
+     * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(RDSManagerRequest $request, $id)
     {
-        dd($request);
         return $this->repository->update($request->except(['port']), $id);
     }
 
