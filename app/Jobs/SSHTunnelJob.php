@@ -43,11 +43,10 @@ class SSHTunnelJob implements ShouldQueue
      */
     public function handle()
     {
-        $command = "ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress -y -f -N";
+        $command = "ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress -y";
         exec($command, $output, $returnCode);
-
         if ($returnCode !== 0) {
-            Log::info("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress -y -f");
+            Log::info("ssh -i $this->filePath -L $this->port:$this->urlEndPoint:3306 $this->ec2Username@$this->ec2IpAddress -y");
         }
     }
 }

@@ -9,24 +9,17 @@ namespace Repository;
 
 use App\Models\Database;
 use App\Models\DatabasePermission;
-use App\Models\HistoryEditReport;
 use App\Models\RDSInfo;
 use App\Models\RDSManager;
 use App\Models\RDSPermission;
 use App\Models\User;
-use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
-use App\Repositories\Contracts\RDSManagerRepositoryInterface;
 use App\Repositories\Contracts\VIAMRDSRepositoryInterface;
-use Aws\Rds\RdsClient;
-use Aws\Ssm\SsmClient;
 use Helper\Common;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
-use function Clue\StreamFilter\fun;
 
 class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInterface
 {
@@ -167,80 +160,118 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         return (new Common)->myPaginate($arrayData);
     }
 
-    public function getListDatabase(array $attributes)
+    private function getData($rds_manager_id)
     {
-        $databases = DB::select('SHOW DATABASES');
-        $databaseNames = array_map('current', $databases);
-        $data = [];
+        $rdsManager = RDSManager::query()->find($rds_manager_id);
+        $rdsManagerLocal = RDSManager::query()
+            ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
+            ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
+            ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
+            ->where(RDSManager::PORT, config('database.connections.mysql.port'))
+            ->first();
+        $openConnect = ($rds_manager_id != $rdsManagerLocal->id);
+        $filePath = @$rdsManager->file->file_path;
+        $data = [
+            RDSManager::USERNAME => $rdsManager->username,
+            RDSManager::PASSWORD => $rdsManager->password,
+            RDSManager::PORT => $rdsManager->port,
+            RDSManager::URL_END_POINT => $rdsManager->url_end_point,
+            RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
+            RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,
+        ];
+        return compact('data', 'filePath', 'openConnect');
+    }
 
-        foreach ($databaseNames as $databaseName) {
-            $data[] = $databaseName;
+    public function getListDatabase($rds_manager_id)
+    {
+        $data = $this->getData($rds_manager_id);
+        $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect']);
+        try {
+            $pdo = $connect->original['data'];
+            $query = $pdo->query('SHOW DATABASES');
+            $result = $query->fetchAll(\PDO::FETCH_ASSOC);
+            $databaseNames = array_map('current', $result);
+            $databaseList = [];
+
+            foreach ($databaseNames as $databaseName) {
+                $databaseList[] = $databaseName;
+            }
+            return ResponseService::responseJson(CODE_SUCCESS, $databaseList);
+        } catch (\PDOException $e) {
+            return ResponseService::responseJsonError(CODE_ERROR_SERVER, $e->getMessage());
         }
-        return $data;
     }
 
     public function create(array $attributes)
     {
-        $rds_manager_id = $attributes['rds_manager_id'];
-        $database_name = $attributes['database_name'];
-        $user_id = $attributes['user_id'];
-        $permission = $attributes['permission'];
-
-        $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
-        $rds_info = RDSInfo::query()->firstOrCreate([
-            RDSInfo::USER_ID => $user_id,
-            RDSInfo::RDS_MANAGER_ID => $rds_manager_id
-        ]);
-
-        $databaseExisted = Database::query()
-            ->where(Database::NAME, $database_name)
-            ->where(Database::RDS_INFO_ID, $rds_info->id)
-            ->exists();
-        if ($databaseExisted) {
-            return ResponseService::responseJsonError(
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-                trans('api.viam_rds.database_exist'),
-                trans('api.viam_rds.database_exist')
-            );
-        }
-        $database = Database::query()->create([
-            Database::NAME => $database_name,
-            Database::RDS_INFO_ID => $rds_info->id
-        ]);
-
-        $dataInsert = [];
-        $permissionText = '';
-        $grantOption = '';
-        $isGrantPermission = true;
-        foreach ($permission as $p_id) {
-            $dataInsert [] = [
-                DatabasePermission::DATABASE_ID => $database->id,
-                DatabasePermission::RDS_PERMISSION_ID => $p_id
-            ];
-            if($permissionList[$p_id] != PERMISSION_GRANT) {
-                $permissionText .= $permissionList[$p_id] . ', ';
-                $isGrantPermission = false;
-            }
-            if(in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
-                $grantOption = "WITH GRANT OPTION";
-            }
-        }
-        $permissionText = trim($permissionText, ', ');
-        DatabasePermission::query()->insert($dataInsert);
-
         try {
-            $users = DB::select("SELECT User FROM mysql.user");
-            $usernames = array_map('current', $users);
-            $userCreate = $this->model->find($user_id);
-            $name = $userCreate->name;
+            $rds_manager_id = $attributes['rds_manager_id'];
+            $database_name = $attributes['database_name'];
+            $user_id = $attributes['user_id'];
+            $permission = $attributes['permission'];
+
+            $dataConnect = $this->getData($rds_manager_id);
+            $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
+            if ($connect->original['code'] != CODE_SUCCESS) {
+                return $connect;
+            }
+            $pdo = $connect->original['data'];
+
+            $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
+            $rds_info = RDSInfo::query()->firstOrCreate([
+                RDSInfo::USER_ID => $user_id,
+                RDSInfo::RDS_MANAGER_ID => $rds_manager_id
+            ]);
+
+            $databaseExisted = Database::query()
+                ->where(Database::NAME, $database_name)
+                ->where(Database::RDS_INFO_ID, $rds_info->id)
+                ->exists();
+            if ($databaseExisted) {
+                return ResponseService::responseJsonError(
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    trans('api.viam_rds.database_exist'),
+                    trans('api.viam_rds.database_exist')
+                );
+            }
+            $database = Database::query()->create([
+                Database::NAME => $database_name,
+                Database::RDS_INFO_ID => $rds_info->id
+            ]);
+
+            $dataInsert = [];
+            $permissionText = '';
+            $grantOption = '';
+            $isGrantPermission = true;
+            foreach ($permission as $p_id) {
+                $dataInsert [] = [
+                    DatabasePermission::DATABASE_ID => $database->id,
+                    DatabasePermission::RDS_PERMISSION_ID => $p_id
+                ];
+                if ($permissionList[$p_id] != PERMISSION_GRANT) {
+                    $permissionText .= $permissionList[$p_id] . ', ';
+                    $isGrantPermission = false;
+                }
+                if (in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
+                    $grantOption = "WITH GRANT OPTION";
+                }
+            }
+            $permissionText = trim($permissionText, ', ');
+            DatabasePermission::query()->insert($dataInsert);
+
+            $query = $pdo->query("SELECT User FROM mysql.user");
+            $result = $query->fetchAll(\PDO::FETCH_ASSOC);
+            $usernames = array_map('current', $result);
+            $name = $this->model->find($user_id)->name;
+
             if (!in_array($name, $usernames)) {
-                DB::statement("CREATE USER '{$name}'@'localhost' IDENTIFIED BY '12345678';");
+                $pdo->query("CREATE USER '{$name}'@'localhost' IDENTIFIED BY '12345678';");
             }
 
-            if($isGrantPermission) {
+            if ($isGrantPermission) {
                 $permissionText = 'USAGE';
             }
-            DB::statement("GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};");
+            $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};");
 
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.create_success'),
@@ -257,11 +288,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
 
+            $dataConnect = $this->getData($rds_manager_id);
+            $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
+            if ($connect->original['code'] != CODE_SUCCESS) {
+                return $connect;
+            }
+            $pdo = $connect->original['data'];
+
             $checkData = $this->model->where('id', $user_id)
                 ->whereHas('databases', function ($e) use ($database_id) {
                     $e->where('database.id', $database_id);
                 })->exists();
-            if(!$checkData) {
+            if (!$checkData) {
                 return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY,
                     trans('messages.mes.data_not_found'),
                     trans('messages.mes.data_not_found')
@@ -276,7 +314,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $username = $this->model->find($user_id)->name;
             $database_name = Database::query()->find($database_id)->name;
             $databasePermission = DatabasePermission::query()->where(DatabasePermission::DATABASE_ID, $database_id);
-            $listPermissionOld =  $databasePermission->pluck(DatabasePermission::RDS_PERMISSION_ID)->toArray();
+            $listPermissionOld = $databasePermission->pluck(DatabasePermission::RDS_PERMISSION_ID)->toArray();
             $databasePermission->delete();
 
             $dataInsert = [];
@@ -288,29 +326,29 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                     DatabasePermission::DATABASE_ID => $database_id,
                     DatabasePermission::RDS_PERMISSION_ID => $p_id
                 ];
-                if($permissionList[$p_id] != PERMISSION_GRANT) {
+                if ($permissionList[$p_id] != PERMISSION_GRANT) {
                     $isGrantPermission = false;
                     $permissionText .= $permissionList[$p_id] . ', ';
                 }
-                if(in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
+                if (in_array($permissionList[$p_id], [PERMISSION_GRANT, PERMISSION_ALL_PRIVILEGES])) {
                     $grantOption = "WITH GRANT OPTION";
                 }
             }
             $permissionText = trim($permissionText, ', ');
             DatabasePermission::query()->insert($dataInsert);
 
-            if(!$permission) { // permission = null => delete RDS
-                $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id);
+            if (!$permission) { // permission = null => delete RDS
+                $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id, $pdo);
             } else {
-                DB::statement("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                $pdo->query("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
 
-                if(array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
-                    DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                    $pdo->query("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
                 }
-                if($isGrantPermission) {
+                if ($isGrantPermission) {
                     $permissionText = 'USAGE';
                 }
-                DB::statement("GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};");
+                $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};");
             }
 
             return ResponseService::responseJson(CODE_SUCCESS,
@@ -323,18 +361,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
     }
 
-    public function deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id)
+    public function deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id, \PDO $pdo)
     {
         Database::query()->find($database_id)->delete();
         $dbOtherOfAccountExist = $this->model->where('id', $user_id)
-            ->whereHas('databases', function ($e) use($database_id) {
+            ->whereHas('databases', function ($e) use ($database_id) {
                 $e->where('database.id', '!=', $database_id);
             })->exists();
-        if(!$dbOtherOfAccountExist) {
+        if (!$dbOtherOfAccountExist) {
             RDSInfo::query()->where(RDSInfo::USER_ID, $user_id)
                 ->where(RDSInfo::RDS_MANAGER_ID, $rds_manager_id)
                 ->delete();
-            DB::statement("DROP USER '{$username}'@'localhost'");
+            $pdo->query("DROP USER '{$username}'@'localhost'");
 
             return true;
         }
@@ -347,11 +385,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
 
+            $dataConnect = $this->getData($rds_manager_id);
+            $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
+            if ($connect->original['code'] != CODE_SUCCESS) {
+                return $connect;
+            }
+            $pdo = $connect->original['data'];
+
             $checkData = $this->model->where('id', $user_id)
                 ->whereHas('databases', function ($e) use ($database_id) {
                     $e->where('database.id', $database_id);
                 })->exists();
-            if(!$checkData) {
+            if (!$checkData) {
                 return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY,
                     trans('messages.mes.data_not_found'),
                     trans('messages.mes.data_not_found')
@@ -363,18 +408,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $database_name = $database->name;
 
             $databasePermission = DatabasePermission::query()->where(DatabasePermission::DATABASE_ID, $database_id);
-            $listPermissionOld =  $databasePermission->pluck(DatabasePermission::RDS_PERMISSION_ID)->toArray();
+            $listPermissionOld = $databasePermission->pluck(DatabasePermission::RDS_PERMISSION_ID)->toArray();
             $databasePermission->delete();
 
-            $isDeleteRDS = $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id);
-            if(!$isDeleteRDS) {
+            $isDeleteRDS = $this->deleteAccountRDS($database_id, $user_id, $username, $rds_manager_id, $pdo);
+            if (!$isDeleteRDS) {
                 $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
                 $permissionGrant = array_search(PERMISSION_GRANT, $permissionList);
                 $permissionAllPrivileges = array_search(PERMISSION_ALL_PRIVILEGES, $permissionList);
 
-                DB::statement("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
-                if(array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
-                    DB::statement("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                $pdo->query("REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';");
+                if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                    $pdo->query("REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';");
                 }
             }
 

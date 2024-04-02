@@ -197,8 +197,7 @@ class VIAMRDSController extends Controller
     public function listDatabase(VIAMRDSRequest $request)
     {
         try {
-            $data = $this->repository->getListDatabase($request->all());
-            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
+            return $this->repository->getListDatabase($request->rds_manager_id);
         } catch (\Exception $e) {
             throw $e;
         }

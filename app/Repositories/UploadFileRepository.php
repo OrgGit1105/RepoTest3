@@ -39,7 +39,7 @@ class UploadFileRepository extends BaseRepository implements UploadFileRepositor
         if($file) {
             $fileName = md5(Carbon::now()->format('YmdHis')) . $file->getClientOriginalName();
             return UploadFile::create([
-                'file_path' => 'storage/app/public/' . $file->storeAs('rds', $fileName),
+                'file_path' => 'storage/app/' . $file->storeAs('rds', $fileName),
                 'file_name' => $file->getClientOriginalName(),
                 "file_extension" => $file->getClientOriginalExtension(),
                 "file_size" => $file->getSize(),
