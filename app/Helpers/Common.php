@@ -277,9 +277,9 @@ class Common
         }
     }
 
-    public function stopJobSSHTunnel()
+    public function stopJobSSHTunnel($closeConnect = true)
     {
-        if(config('app.env') != 'local') {
+        if(config('app.env') != 'local' && $closeConnect) {
             DB::table('jobs')->whereNotNull('reserved_at')->delete();
             dispatch(new StopSSHTunnelJob());
         }

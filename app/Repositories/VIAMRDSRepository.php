@@ -196,7 +196,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             foreach ($databaseNames as $databaseName) {
                 $databaseList[] = $databaseName;
             }
-            Common::stopJobSSHTunnel();
+            Common::stopJobSSHTunnel($data['openConnect']); //only stop when openConnect = true
             return ResponseService::responseJson(CODE_SUCCESS, $databaseList);
         } catch (\PDOException $e) {
             return ResponseService::responseJsonError(CODE_ERROR_SERVER, $e->getMessage());
@@ -274,7 +274,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             }
             $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};");
 
-            Common::stopJobSSHTunnel();
+            Common::stopJobSSHTunnel($dataConnect['openConnect']);
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.create_success'),
                 trans('messages.mes.create_success')
@@ -353,7 +353,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};");
             }
 
-            Common::stopJobSSHTunnel();
+            Common::stopJobSSHTunnel($dataConnect['openConnect']);
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.update_success'),
                 trans('messages.mes.update_success')
@@ -426,7 +426,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 }
             }
 
-            Common::stopJobSSHTunnel();
+            Common::stopJobSSHTunnel($dataConnect['openConnect']);
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.delete_success'),
                 trans('messages.mes.delete_success')
