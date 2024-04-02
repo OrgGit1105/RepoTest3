@@ -4,6 +4,7 @@
 namespace Helper;
 
 use App\Jobs\SSHTunnelJob;
+use App\Jobs\StopSSHTunnelJob;
 use App\Models\RDSManager;
 use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
@@ -13,6 +14,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -267,10 +269,19 @@ class Common
             $pdo = new \PDO($dsn, $username, $password, $option);
             return ResponseService::responseJson(CODE_SUCCESS, $pdo);
         } catch (\PDOException $e) {
+            self::stopJobSSHTunnel();
             return ResponseService::responseJsonError(
                 Response::HTTP_UNPROCESSABLE_ENTITY,
                 trans('api.rds_manager.connect_failed'),
                 trans('api.rds_manager.connect_failed'));
+        }
+    }
+
+    public function stopJobSSHTunnel($closeConnect = true)
+    {
+        if(config('app.env') != 'local' && $closeConnect) {
+            DB::table('jobs')->whereNotNull('reserved_at')->delete();
+            dispatch(new StopSSHTunnelJob());
         }
     }
 }
