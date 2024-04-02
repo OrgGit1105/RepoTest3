@@ -249,7 +249,7 @@ class Common
         try {
             if($openConnect) {
                 dispatch(new SSHTunnelJob($data, $filePath));
-                sleep(5);
+                sleep(10);
             }
 
             $host = config('database.connections.mysql.host');
