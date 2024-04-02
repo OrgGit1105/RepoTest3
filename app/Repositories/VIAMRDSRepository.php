@@ -184,9 +184,9 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
     public function getListDatabase($rds_manager_id)
     {
-        $data = $this->getData($rds_manager_id);
-        $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect']);
         try {
+            $data = $this->getData($rds_manager_id);
+            $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect']);
             $pdo = $connect->original['data'];
             $query = $pdo->query('SHOW DATABASES');
             $result = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -196,6 +196,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             foreach ($databaseNames as $databaseName) {
                 $databaseList[] = $databaseName;
             }
+            Common::stopJobSSHTunnel();
             return ResponseService::responseJson(CODE_SUCCESS, $databaseList);
         } catch (\PDOException $e) {
             return ResponseService::responseJsonError(CODE_ERROR_SERVER, $e->getMessage());
@@ -273,6 +274,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             }
             $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};");
 
+            Common::stopJobSSHTunnel();
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.create_success'),
                 trans('messages.mes.create_success')
@@ -351,6 +353,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $pdo->query("GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};");
             }
 
+            Common::stopJobSSHTunnel();
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.update_success'),
                 trans('messages.mes.update_success')
@@ -423,6 +426,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 }
             }
 
+            Common::stopJobSSHTunnel();
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.delete_success'),
                 trans('messages.mes.delete_success')

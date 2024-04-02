@@ -70,6 +70,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         if ($connect->original['code'] != CODE_SUCCESS) {
             return $connect;
         }
+        Common::stopJobSSHTunnel();
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
     }
 
@@ -98,6 +99,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         if ($connect->original['code'] != CODE_SUCCESS) {
             return $connect;
         }
+        Common::stopJobSSHTunnel();
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
 
