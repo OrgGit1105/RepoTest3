@@ -187,6 +187,9 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         try {
             $data = $this->getData($rds_manager_id);
             $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect']);
+            if ($connect->original['code'] != CODE_SUCCESS) {
+                return $connect;
+            }
             $pdo = $connect->original['data'];
             $query = $pdo->query('SHOW DATABASES');
             $result = $query->fetchAll(\PDO::FETCH_ASSOC);
