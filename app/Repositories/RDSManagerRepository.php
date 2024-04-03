@@ -50,9 +50,16 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return RDSManager::class;
     }
 
+    public function detail($id)
+    {
+        return $this->model->where('id', $id)->with('file')->get();
+    }
+
     private function random_port()
     {
         $portExisted = $this->model->pluck(RDSManager::PORT)->toArray();
+        $portExistedInEnv = [1025, 6379];
+        $portExisted = array_merge($portExisted, $portExistedInEnv);
         $port = rand(1024, 65535);
 
         while (in_array($port, $portExisted)) {
