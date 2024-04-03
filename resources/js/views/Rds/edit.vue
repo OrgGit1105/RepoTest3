@@ -13,7 +13,7 @@
         </div>
         <hr class="line-bottom">
         <div class="use-management-title-table mt-5">
-          <p class="back-list cursor-pointer" @click="listEmployees()"> <i class="el-icon-arrow-left icon-back-list" /> All RDS </p>
+          <p class="back-list cursor-pointer" @click="backToList()"> <i class="el-icon-arrow-left icon-back-list" /> All RDS </p>
           <div class="card-body p-card-body">
             <div class="d-flex justify-content-between align-items-center">
               <div class="basic">
@@ -30,7 +30,7 @@
             </div>
             <hr class="line">
             <ValidationObserver
-              ref="obsEditEmployee"
+              ref="obsEditRds"
               tag="div"
             >
               <h4 class="mb-0 font-weight-normal">
@@ -45,8 +45,8 @@
                       >
                         <b-input-group>
                           <b-form-input
-                            id="ssh_public"
-                            v-model="formEdit.ssh_public_key"
+                            id="name"
+                            v-model="formEdit.name"
                             class="p-1"
                           />
                         </b-input-group>
@@ -54,21 +54,20 @@
                           {{ errors[0] }}
                         </div>
                       </ValidationProvider>
-
                     </div>
                   </div>
                   <div class="employee-edit" style="justify-content: start">
                     <div style="flex: 1">
-                      <p class="header-employee-edit fw-5">URL enport</p>
+                      <p class="header-employee-edit fw-5">URL enpoint</p>
                       <ValidationProvider
                         v-slot="{ errors }"
-                        name="name"
+                        name="url_end_point"
                         rules="required"
                       >
                         <b-input-group>
                           <b-form-input
-                            id="ssh_public"
-                            v-model="formEdit.ssh_public_key"
+                            id="url_end_point"
+                            v-model="formEdit.url_end_point"
                             class="p-1"
                           />
                         </b-input-group>
@@ -84,13 +83,35 @@
                       <p class="header-employee-edit fw-5">Username</p>
                       <ValidationProvider
                         v-slot="{ errors }"
+                        name="username"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="username"
+                            v-model="formEdit.username"
+                            class="p-1"
+                          />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">File upload</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
                         name="name"
                         rules="required"
                       >
                         <b-input-group>
                           <b-form-input
                             id="ssh_public"
-                            v-model="formEdit.ssh_public_key"
+                            v-model="formEdit.file_id"
                             class="p-1"
                           />
                           <div class="text-error">
@@ -103,14 +124,46 @@
                   </div>
                   <div class="employee-edit" style="justify-content: start">
                     <div style="flex: 1">
-                      <p class="header-employee-edit fw-5">Password</p>
-                      <b-input-group>
-                        <b-form-input
-                          id="ssh_public"
-                          v-model="formEdit.ssh_public_key"
-                          class="p-1"
-                        />
-                      </b-input-group>
+                      <p class="header-employee-edit fw-5">EC2 IP address</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="name"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="ssh_public"
+                            v-model="formEdit.ec2_ip_address"
+                            class="p-1"
+                          />
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                        </b-input-group>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">EC2 Username</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="name"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="ssh_public"
+                            v-model="formEdit.ec2_username"
+                            class="p-1"
+                          />
+                          <div class="text-error">
+                            {{ errors[0] }}
+                          </div>
+                        </b-input-group>
+                      </ValidationProvider>
+
                     </div>
                   </div>
                 </div>
@@ -138,14 +191,11 @@
 </template>
 
 <script>
-import * as CONFIGS from '../../configs/index';
 import * as UserApi from '../../api/user';
-import * as ImageApi from '../../api/image_face';
+import { getOneRds } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { getAllRole } from '../../api/viamUser';
 import { deleteOneUser } from '../../api/user';
-import { getImageByUserId } from '../../api/image_face';
 
 export default {
   name: 'EditRds',
@@ -155,44 +205,16 @@ export default {
   },
   data() {
     return {
-      headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
-      authorityOption: CONFIGS.AuthorityList,
-      branchList: [],
       formEdit: {
         name: '',
-        email: '',
-        gender: '',
-        birthday: '',
-        address: '',
-        telephone: '',
-        entry_date: '',
-        slack_id: '',
-        skype_id: '',
-        github_id: '',
-        github_gmail: '',
-        ssh_public_key: '',
-        paid_off: '',
-        password: '',
-        password_confirmation: '',
-        viam_user_id: '',
-        retirement_date: '',
+        url_end_point: '',
+        username: '',
+        file_id: '',
+        ec2_ip_address: '',
+        ec2_username: '',
       },
-      listGender: [
-        { id: 0, name: 'male' },
-        { id: 1, name: 'female' },
-      ],
       id: this.$route.params.id,
       userInfo: {},
-      author: true,
-      selectedWithMaskFiles: [],
-      selectedWithoutMaskFiles: [],
-      withoutMask: true,
-      withMask: false,
-      linkFilesWithoutMask: [],
-      linkFilesWithMask: [],
-      linkFileDelete: [],
-      validateFile: false,
-      messageErrorFile: [],
       showModalDelete: false,
       waitEdit: false,
     };
@@ -201,24 +223,11 @@ export default {
     roleId() {
       return this.$store.getters.role_id;
     },
-    companyBranch() {
-      return this.$store.getters.listBranch;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
-    },
   },
   watch: {
-    companyBranch() {
-    },
-    'userInfo.viam_user': function() {
-      this.formEdit.viam_user_id = this.userInfo.viam_user;
-    },
   },
   created() {
-    this.getListRole();
-    this.getUserInfo();
-    this.getImageByUserId();
+    this.getRdsInfo();
   },
 
   methods: {
@@ -228,48 +237,21 @@ export default {
     closeLoading() {
       this.$store.dispatch('loading/setLoading', false);
     },
-    async getListRole(){
-      this.openLoading();
-      await getAllRole().then((response) => {
-        if (response.code === 200){
-          this.$store.dispatch('app/saveListRoles', response.data);
-          this.closeLoading();
-        }
-      }).catch((error) => {
-        this.closeLoading();
-        MakeToast({
-          variant: 'warning',
-          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-          content: '1. ' + error.message,
-        });
-      });
-    },
-    async getUserInfo() {
+    async getRdsInfo() {
       this.openLoading();
       try {
-        const response = await UserApi.getOneUser(this.id);
+        const response = await getOneRds(this.id);
+        console.log('response nhận được trả về===>', response);
         this.userInfo = {
-          viam_user: response.data.viam_user.id,
+          viam_user: response.data,
         };
         this.formEdit = {
           name: response.data.name,
-          email: response.data.email,
-          gender: response.data.gender,
-          birthday: response.data.birthday,
-          address: response.data.address,
-          telephone: response.data.telephone,
-          entry_date: response.data.entry_date,
-          slack_id: response.data.slack_id,
-          skype_id: response.data.skype_id,
-          github_id: response.data.github_id,
-          github_gmail: response.data.github_gmail,
-          ssh_public_key: response.data.ssh_public_key,
-          paid_off: response.data.paid_off_start,
-          password: '',
-          password_confirmation: '',
-          viam_user: response.data.viam_user.name,
-          role_id: response.data.role_id,
-          retirement_date: response.data.retirement_date ? this.formatTimeStamp(response.data.retirement_date) : null,
+          url_end_point: response.data.url_end_point,
+          username: response.data.username,
+          file_id: response.data.file_id,
+          ec2_ip_address: response.data.ec2_ip_address,
+          ec2_username: response.data.ec2_username,
         };
         this.closeLoading();
       } catch (error) {
@@ -281,51 +263,11 @@ export default {
         });
       }
     },
-    async getImageByUserId(){
-      this.openLoading();
-      await getImageByUserId(this.id)
-        .then((response) => {
-          response.data.forEach((element) => {
-            if (element.type === 'WithoutMask'){
-              this.linkFilesWithoutMask.push({
-                id: element.id,
-                file: element.file,
-                type: element.type,
-                face_rekognition_id: element.face_rekognition_id,
-              });
-            }
-            if (element.type === 'WithMask'){
-              this.linkFilesWithMask.push({
-                id: element.id,
-                file: element.file,
-                type: element.type,
-                face_rekognition_id: element.face_rekognition_id,
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          this.closeLoading();
-          MakeToast({
-            variant: 'warning',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: '3. ' + error.message,
-          });
-        });
-    },
-    formatTimeStamp(date){
-      const datePart = date.split(' ')[0]; // Extract the date part from the received value
-      const parts = datePart.split('-');
-      const year = parts[0];
-      const month = parts[1];
-      const day = parts[2];
-      return `${year}-${month}-${day}`;
-    },
+
     async onSubmit(e) {
       e.preventDefault();
-      this.checkNumImage();
-      const isValid = await this.$refs.obsEditEmployee.validate();
-      if (isValid === true && !this.validateFile) {
+      const isValid = await this.$refs.obsEditRds.validate();
+      if (isValid === true) {
         // const EDIT_DATA = {
         //   role_id: this.form.role_id,
         //   department_id: this.form.department_id,
@@ -348,102 +290,7 @@ export default {
                 title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
                 content: 'Edit employee success',
               });
-              if (this.linkFileDelete.length !== 0){
-                for (const element of this.linkFileDelete) {
-                  await ImageApi.deleteImageByUserId(element.id)
-                    .then((response) => {
-                      if (response.code === 200){
-                        MakeToast({
-                          variant: 'success',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                          content: `Delete image employee with link ${element.file} success`,
-                        });
-                      } else {
-                        MakeToast({
-                          variant: 'warning',
-                          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                          content: response.message,
-                        });
-                      }
-                    })
-                    .catch((error) => {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: '4. ' + error.message,
-                      });
-                    });
-                }
-              }
-              // Kiểm tra selectedWithoutMaskFiles
-              if (this.selectedWithoutMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithoutMaskFiles.length; i++) {
-                  const file = this.selectedWithoutMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithoutMask');
-                image.append('user_id', this.id);
 
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: '5. ' + error.message,
-                    });
-                  });
-              }
-
-              // Kiểm tra selectedWithMaskFiles
-              if (this.selectedWithMaskFiles.length !== 0){
-                const image = new FormData();
-                for (let i = 0; i < this.selectedWithMaskFiles.length; i++) {
-                  const file = this.selectedWithMaskFiles[i];
-                  image.append('file[]', file);
-                }
-                image.append('type', 'WithMask');
-                image.append('user_id', this.id);
-
-                await ImageApi.createImage(image)
-                  .then((response) => {
-                    if (response.code === 200){
-                      MakeToast({
-                        variant: 'success',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-                        content: 'Add image employee success',
-                      });
-                    } else {
-                      MakeToast({
-                        variant: 'warning',
-                        title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                        content: response.message,
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    MakeToast({
-                      variant: 'warning',
-                      title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-                      content: '6. ' + error.message,
-                    });
-                  });
-              }
               this.waitEdit = false;
               await this.$router.push('/rds/index');
             } else {
@@ -473,170 +320,7 @@ export default {
         this.waitEdit = false;
       }
     },
-    removeLinkFile(file, index){
-      if (file.type === 'WithoutMask'){
-        this.linkFileDelete.push(file);
-        this.linkFilesWithoutMask.splice(index, 1);
-      }
-      if (file.type === 'WithMask'){
-        this.linkFileDelete.push(file);
-        this.linkFilesWithMask.splice(index, 1);
-      }
-      this.checkNumImage();
-    },
-    checkNumImage(){
-      this.messageErrorFile = [];
-      if (this.linkFilesWithoutMask.length === 0 && this.selectedWithoutMaskFiles.length === 0){
-        this.validateFile = true;
-        this.messageErrorFile.push('Image without mask must one image');
-      }
 
-      if (this.linkFilesWithMask.length === 0 && this.linkFilesWithoutMask.length === 0 && this.selectedWithoutMaskFiles.length === 0 && this.selectedWithMaskFiles.length === 0){
-        this.validateFile = true;
-        this.messageErrorFile.push('Pleas choose image');
-      }
-      if (this.messageErrorFile.length === 0){
-        this.validateFile = false;
-      }
-    },
-    async checkImage() {
-      let dem = 0;
-      this.waitEdit = true;
-      for (const item of this.selectedWithoutMaskFiles) {
-        const file = new FormData();
-        file.append('file', item);
-        await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
-              this.messageErrorFile.push('Image must only one person');
-              dem++;
-            }
-          } else {
-            this.messageErrorFile.push(response.message);
-            this.validateFile = true;
-          }
-        }).catch((error) => {
-          this.messageErrorFile.push(error.getMessage());
-          this.validateFile = true;
-        });
-      }
-      for (const item of this.selectedWithMaskFiles) {
-        const file = new FormData();
-        file.append('file', item);
-        await ImageApi.checkImage(file).then((response) => {
-          if (response.code === 200){
-            if (response.data.checkImage === false){
-              this.messageErrorFile.push('Image must only one person');
-              dem++;
-            }
-          } else {
-            this.messageErrorFile.push(response.message);
-            this.validateFile = true;
-          }
-        }).catch((error) => {
-          this.messageErrorFile.push(error.getMessage());
-          this.validateFile = true;
-        });
-      }
-      if (dem > 0){
-        this.validateFile = true;
-      } else {
-        this.validateFile = false;
-      }
-      this.waitEdit = false;
-    },
-    checkWithoutMask(){
-      this.withoutMask = true;
-      this.withMask = false;
-    },
-    checkWithMask(){
-      this.withoutMask = false;
-      this.withMask = true;
-    },
-    handleDrop(event) {
-      event.preventDefault();
-      const files = event.dataTransfer.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        // const fileURL = URL.createObjectURL(file);
-        if (this.withoutMask){
-          this.selectedWithoutMaskFiles.push(file);
-        }
-        if (this.withMask){
-          this.selectedWithMaskFiles.push(file);
-        }
-      }
-      this.validateFile = false;
-      this.checkNumImage();
-      this.checkImage();
-    },
-    openFilePicker() {
-      this.$refs.fileInput.click();
-    },
-    handleFileSelect(event) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (this.isImageFile(file)) {
-          if (this.withoutMask){
-            this.selectedWithoutMaskFiles.push(file);
-          }
-          if (this.withMask){
-            this.selectedWithMaskFiles.push(file);
-          }
-        }
-      }
-      this.validateFile = false;
-      this.checkNumImage();
-      this.checkImage();
-    },
-    isImageFile(file) {
-      const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
-      return allowedExtensions.test(file.name);
-    },
-    convertFileToUrl(file){
-      return URL.createObjectURL(file);
-    },
-    removeFile(index) {
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(index, 1);
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(index, 1);
-      }
-      this.checkNumImage();
-      this.checkImage();
-    },
-    chooseFiles() {
-      this.$refs.fileInput.click();
-    },
-    removeFileAll(){
-      if (this.withoutMask){
-        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-        if (this.linkFilesWithoutMask.length > 0){
-          this.linkFilesWithoutMask.forEach((element) => {
-            this.linkFileDelete.push(element);
-          });
-          this.linkFilesWithoutMask.splice(0, this.linkFilesWithoutMask.length);
-        }
-      }
-      if (this.withMask){
-        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-        if (this.linkFilesWithMask.length > 0){
-          this.linkFilesWithMask.forEach((element) => {
-            this.linkFileDelete.push(element);
-          });
-          this.linkFilesWithMask.splice(0, this.linkFilesWithMask.length);
-        }
-      }
-      this.checkNumImage();
-    },
-    // showModalDelete(){
-    //   this.$bvModal.show('bv-modal-delete');
-    // },
-    // hideModalDelete() {
-    //   this.$bvModal.hide('bv-modal-delete');
-    // },
     async submitDelete() {
       if (this.id) {
         await deleteOneUser(this.id).then(() => {
@@ -649,7 +333,7 @@ export default {
         });
       }
     },
-    listEmployees(){
+    backToList(){
       this.$router.push({ path: `/rds/index` });
     },
   },

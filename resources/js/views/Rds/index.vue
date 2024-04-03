@@ -50,8 +50,8 @@
                 </template>
               </el-table-column>
               <el-table-column
-                prop="endport"
-                label="URL endport"
+                prop="endpoint"
+                label="URL endpoint"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -65,6 +65,24 @@
               >
                 <template slot-scope="scope">
                   {{ scope.row.username }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="ec2_ip_address"
+                label="EC2 IP address"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.ec2_ip_address }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="ec2_username"
+                label="EC2 Username"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.ec2_username }}
                 </template>
               </el-table-column>
             </el-table>
@@ -90,11 +108,12 @@
           class="title-add-working"
           title="Add RDS"
           :visible.sync="openModalAdd"
+          :close-on-click-modal="false"
           width="50%"
           @click="hideCreateModal()"
         >
           <ValidationObserver
-            ref="obsAddRds"
+            ref="obsAddRDS"
             tag="div"
           >
             <ValidationProvider
@@ -102,56 +121,81 @@
               name="name"
               rules="required"
             >
-              <label for="name">Name RDS</label>
+              <label for="name">Server name</label>
               <el-input id="name" v-model="formCreate.name" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-
             <ValidationProvider
               v-slot="{ errors }"
-              name="name"
+              name="url_end_point"
               rules="required"
             >
-              <label for="url_end_point">URL endport</label>
+              <label for="url_end_point" class="mt-3">URL endpoint</label>
               <el-input id="url_end_point" v-model="formCreate.url_end_point" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="name"
-              rules="required"
-            >
-              <label for="port">Port</label>
-              <el-input id="port" v-model="formCreate.port" />
-              <div class="text-error">
-                {{ errors[0] }}
-              </div>
-            </ValidationProvider>
-
             <ValidationProvider
               v-slot="{ errors }"
               name="username"
               rules="required"
             >
-              <label for="username">Username</label>
+              <label for="username" class="mt-3">Username</label>
               <el-input id="username" v-model="formCreate.username" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-
             <ValidationProvider
               v-slot="{ errors }"
               name="password"
+              vid="password"
+              rules="required|min:8"
+            >
+              <label for="passwordEmployee" class="mt-3">Password</label>
+              <el-input id="passwordEmployee" v-model="formCreate.password" type="password" show-password />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="file_id"
               rules="required"
             >
-              <label for="password">Password</label>
-              <el-input id="password" v-model="formCreate.password" type="password" />
+              <label for="file_id" class="mt-3">Upload file</label>
+              <div>
+                <input
+                  ref="fileInput"
+                  type="file"
+                  @change="handleFileSelect"
+                >
+              </div>
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="ec2_ip_address"
+              rules="required"
+            >
+              <label for="ec2_ip_address" class="mt-3">EC2 IP address</label>
+              <el-input id="ec2_ip_address" v-model="formCreate.ec2_ip_address" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="ec2_username"
+              rules="required"
+            >
+              <label for="ec2_username" class="mt-3">EC2 Username</label>
+              <el-input id="ec2_username" v-model="formCreate.ec2_username" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -204,7 +248,7 @@
 <script>
 import { deleteOneUser } from '../../api/user';
 import { MakeToast } from '../../utils/toast_message';
-import { getAllRDS, postOneRDS } from '../../api/viamUser';
+import { getAllRDS, postOneRDS, uploadFileHandler } from '../../api/viamUser';
 import * as CONFIGS from '../../configs/index';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
@@ -224,20 +268,16 @@ export default {
       },
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
-      role_id_selected: '',
       name_search: null,
       formCreate: {
         name: '',
         url_end_point: '',
-        port: '',
         username: '',
         password: '',
+        file_id: '',
+        ec2_ip_address: '',
+        ec2_username: '',
       },
-      selectedWithMaskFiles: [],
-      selectedWithoutMaskFiles: [],
-      withoutMask: true,
-      withMask: false,
-      messageErrorFile: [],
       openModalAdd: false,
       waitCreate: false,
       displayBoxSearch: 'd-none',
@@ -246,16 +286,6 @@ export default {
     };
   },
   computed: {
-    role_id() {
-      return this.$store.getters.role_id;
-    },
-    listRoles() {
-      return this.$store.getters.listRoles;
-    },
-    // listRds() {
-    //   // return this.$store.getters.listRds;
-    //   return this.listRds;
-    // },
     currChange() {
       return this.pagination.current_page;
     },
@@ -291,6 +321,8 @@ export default {
                 name: item.name,
                 url_end_point: item.url_end_point,
                 username: item.username,
+                ec2_ip_address: item.ec2_ip_address,
+                ec2_username: item.ec2_username,
               };
             });
             // this.$store.dispatch('app/savelistRds', listRds);
@@ -324,16 +356,12 @@ export default {
       this.formCreate = {
         name: '',
         url_end_point: '',
-        port: '',
         username: '',
         password: '',
+        file_id: '',
+        ec2_ip_address: '',
+        ec2_username: '',
       };
-      if (this.withoutMask) {
-        this.selectedWithoutMaskFiles.splice(0, this.selectedWithoutMaskFiles.length);
-      }
-      if (this.withMask) {
-        this.selectedWithMaskFiles.splice(0, this.selectedWithMaskFiles.length);
-      }
       this.openModalAdd = false;
     },
     hideModal() {
@@ -356,12 +384,14 @@ export default {
       }
     },
     async submitCreate() {
-      const isValid = await this.$refs.obsAddRds.validate();
+      // const isValid = await this.$refs.obsAddRds.validate();
+      const isValid = true;
       console.log('isValid isValid ===>', isValid);
       if (!isValid) {
         return;
       } else {
         this.waitCreate = true;
+        console.log('this.formCreate===>', this.formCreate);
         await postOneRDS(this.formCreate).then(async(response) => {
           const toastSuccessMessage = [];
           const toastFalseMessage = [];
@@ -369,9 +399,11 @@ export default {
             this.formCreate = {
               name: '',
               url_end_point: '',
-              port: '',
               username: '',
               password: '',
+              file_id: '',
+              ec2_ip_address: '',
+              ec2_username: '',
             };
             this.waitCreate = false;
             this.openModalAdd = false;
@@ -412,6 +444,29 @@ export default {
     closeInputSearch() {
       this.displayBoxSearch = 'd-none';
       this.displaySearch = 'd-block';
+    },
+    async handleFileSelect(event) {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      if (!file) {
+        return 0;
+      }
+      formData.append('file', file); // Make the request to the POST /single-file URL
+      try {
+        await uploadFileHandler(formData).then(async(response) => {
+          if (response.code === 200) {
+            this.formCreate.file_id = response.data.id;
+          }
+        }).catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
+      } catch (error) {
+        console.log('error===>', error);
+      }
     },
   },
 };
@@ -787,4 +842,28 @@ el-select {
 ::v-deep .el-date-editor {
   width: 100%;
 }
+
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 </style>
