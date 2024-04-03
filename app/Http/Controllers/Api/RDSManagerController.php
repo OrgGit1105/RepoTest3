@@ -107,7 +107,7 @@ class RDSManagerController extends Controller
     public function show($id)
     {
         try {
-            $data = $this->repository->find($id);
+            $data = $this->repository->detail($id);
             return $this->responseJson(200, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
