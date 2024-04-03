@@ -97,23 +97,42 @@
                           {{ errors[0] }}
                         </div>
                       </ValidationProvider>
-
                     </div>
                   </div>
                   <div class="employee-edit" style="justify-content: start">
                     <div style="flex: 1">
-                      <p class="header-employee-edit fw-5">File upload</p>
+                      <p class="header-employee-edit fw-5">Password</p>
                       <ValidationProvider
                         v-slot="{ errors }"
-                        name="name"
+                        name="password"
                         rules="required"
                       >
                         <b-input-group>
-                          <b-form-input
-                            id="ssh_public"
-                            v-model="formEdit.file_id"
-                            class="p-1"
+                          <el-input
+                            id="password"
+                            v-model="formEdit.password"
+                            type="password"
+                            show-password
                           />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">Upload file</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="file_id"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <button class="button-upload" :style="{ display: checkUploadFileSuccess ? 'none' : '' }" @click="openFileInput">Choose File</button>
+                          <span :style="{ display: checkUploadFileSuccess ? 'none' : '' }">{{ fileName }}</span>
+                          <input ref="fileInput" type="file" :style="{ display: checkUploadFileSuccess ? '' : 'none' }" @change="handleFileSelect">
                           <div class="text-error">
                             {{ errors[0] }}
                           </div>
@@ -191,11 +210,9 @@
 </template>
 
 <script>
-import * as UserApi from '../../api/user';
-import { getOneRds } from '../../api/viamUser';
+import { getOneRds, uploadFileHandler, updateOneRds, deleteOneRds } from '../../api/viamUser';
 import { MakeToast } from '../../utils/toast_message';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
-import { deleteOneUser } from '../../api/user';
 
 export default {
   name: 'EditRds',
@@ -209,20 +226,19 @@ export default {
         name: '',
         url_end_point: '',
         username: '',
+        password: '',
         file_id: '',
         ec2_ip_address: '',
         ec2_username: '',
       },
       id: this.$route.params.id,
-      userInfo: {},
       showModalDelete: false,
       waitEdit: false,
+      fileName: '',
+      checkUploadFileSuccess: false,
     };
   },
   computed: {
-    roleId() {
-      return this.$store.getters.role_id;
-    },
   },
   watch: {
   },
@@ -241,18 +257,16 @@ export default {
       this.openLoading();
       try {
         const response = await getOneRds(this.id);
-        console.log('response nhận được trả về===>', response);
-        this.userInfo = {
-          viam_user: response.data,
-        };
         this.formEdit = {
           name: response.data.name,
           url_end_point: response.data.url_end_point,
           username: response.data.username,
+          password: response.data.password,
           file_id: response.data.file_id,
           ec2_ip_address: response.data.ec2_ip_address,
           ec2_username: response.data.ec2_username,
         };
+        this.fileName = response.data.file.file_name;
         this.closeLoading();
       } catch (error) {
         this.closeLoading();
@@ -264,10 +278,13 @@ export default {
       }
     },
 
-    async onSubmit(e) {
-      e.preventDefault();
-      const isValid = await this.$refs.obsEditRds.validate();
-      if (isValid === true) {
+    async onSubmit(event) {
+      event.preventDefault();
+      // const isValid = await this.$refs.obsEditRds.validate();
+      const isValid = true;
+      console.log('onSubmit===>');
+      console.log('isValid===>', isValid);
+      if (isValid) {
         // const EDIT_DATA = {
         //   role_id: this.form.role_id,
         //   department_id: this.form.department_id,
@@ -281,7 +298,7 @@ export default {
         // // console.log('Form edit gui di', EDIT_DATA);
         // this.openLoading();
         this.waitEdit = true;
-        await UserApi.putOneUser(this.id, this.formEdit)
+        await updateOneRds(this.id, this.formEdit)
           .then(async(response) => {
             if (response.code === 200) {
               // this.closeLoading();
@@ -323,7 +340,7 @@ export default {
 
     async submitDelete() {
       if (this.id) {
-        await deleteOneUser(this.id).then(() => {
+        await deleteOneRds(this.id).then(() => {
           MakeToast({
             variant: 'success',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
@@ -333,6 +350,36 @@ export default {
         });
       }
     },
+
+    async handleFileSelect(event) {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      if (!file) {
+        return 0;
+      }
+      formData.append('file', file); // Make the request to the POST /single-file URL
+      try {
+        await uploadFileHandler(formData).then(async(response) => {
+          if (response.code === 200) {
+            this.formEdit.file_id = response.data.id;
+            this.checkUploadFileSuccess = true;
+          }
+        }).catch((error) => {
+          MakeToast({
+            variant: 'warning',
+            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+            content: error.message,
+          });
+        });
+      } catch (error) {
+        console.log('error===>', error);
+      }
+    },
+
+    openFileInput() {
+      this.$refs.fileInput.click();
+    },
+
     backToList(){
       this.$router.push({ path: `/rds/index` });
     },
@@ -341,20 +388,6 @@ export default {
 </script>
 
 <style scoped>
-
-.main-page {
-  width: 98%;
-  margin: 0 auto;
-}
-.title-info {
-  border-left: 9px solid #fb9a09;
-  color: #3189bb;
-  font-size: 25px;
-}
-.label-name{
-  font-size: 17px;
-  padding-top: 9px;
-}
 ::v-deep .btn-warning {
   color: #fff !important;
   background: #fb9a09;
@@ -398,45 +431,7 @@ select:required:invalid { color: #6f737c; }
   color: red;
   font-size: 12px;
 }
-.image-dropzone {
-  border: 2px solid #ccc;
-  padding: 20px;
-  text-align: center;
-  background: rgb(245 246 247);
-  width: 800px;
-}
 
-.image-dropzone p {
-  margin: 0;
-}
-
-.image-preview {
-  display: table;
-  flex-wrap: wrap;
-  height: 200px;
-  margin: 15px;
-}
-
-.preview-item {
-  display: inline-block;
-  margin: 10px;
-}
-
-.preview-item img {
-  width: 180px;
-  height: 200px;
-}
-
-.preview-item button {
-  margin-top: 5px;
-}
-.check_with_or_without_mask{
-  border-bottom: 4px solid;
-}
-.line-form{
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  margin-bottom: 10px;
-}
 .submit_button:hover{
   background: #0f68b1 !important;
 }
@@ -519,6 +514,16 @@ select:required:invalid { color: #6f737c; }
 }
 ::v-deep .el-date-editor {
   width: 100%;
+}
+
+.button-upload {
+  border: 1px solid #111;
+  border-radius: 3px;
+  font-size: 24px;
+  width: 138px;
+  padding: 1px 6px;
+  height: 35px;
+  margin-right: 6px;
 }
 </style>
 

@@ -17,6 +17,8 @@ const urlAPI = {
   deleteRdsRole: template`/viam_rds/${'user_id'}?rds_manager_id=${'rds_manager_id'}&database_id=${'database_id'}`,
   uploadFileHandler: template`/upload`,
   urlGETOneRds: template`/rds_manager/${'id'}`,
+  urlPUTOneRds: template`/rds_manager/${'id'}`,
+  deleteOneRds: template`/rds_manager/${'id'}`,
 };
 
 export function getAllRole() {
@@ -93,4 +95,12 @@ export function uploadFileHandler(formData) {
 
 export function getOneRds(id, data) {
   return request.getRequest(urlAPI.urlGETOneRds({ id: id }), data);
+}
+
+export function updateOneRds(id, data) {
+  return request.putRequest(urlAPI.urlPUTOneRds({ id: id }), data);
+}
+
+export function deleteOneRds(id) {
+  return request.deleteRequest(urlAPI.deleteOneRds({ id: id }));
 }
