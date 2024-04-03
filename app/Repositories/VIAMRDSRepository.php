@@ -185,22 +185,22 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
     public function getListDatabase($rds_manager_id)
     {
         try {
+            $rdsManager = RDSManager::query()->find($rds_manager_id);
+            if (!$rdsManager) {
+                return ResponseService::responseJsonError(
+                    Response::HTTP_NOT_FOUND,
+                    trans('messages.mes.data_not_found'),
+                    trans('messages.mes.data_not_found'));
+            }
+
             $data = $this->getData($rds_manager_id);
-            $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect']);
-            if ($connect->original['code'] != CODE_SUCCESS) {
+            $query = 'SHOW DATABASES';
+            $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect'], $query);
+            if ($connect['code'] != CODE_SUCCESS) {
                 return $connect;
             }
-            $pdo = $connect->original['data'];
-            $query = $pdo->query('SHOW DATABASES');
-            $result = $query->fetchAll(\PDO::FETCH_ASSOC);
-            $databaseNames = array_map('current', $result);
-            $databaseList = [];
-
-            foreach ($databaseNames as $databaseName) {
-                $databaseList[] = $databaseName;
-            }
-            Common::stopJobSSHTunnel($data['openConnect']); //only stop when openConnect = true
-            return ResponseService::responseJson(CODE_SUCCESS, $databaseList);
+            $databaseNames = array_map('current', $connect['data']);
+            return ResponseService::responseJson(CODE_SUCCESS, $databaseNames);
         } catch (\PDOException $e) {
             return ResponseService::responseJsonError(CODE_ERROR_SERVER, $e->getMessage());
         }

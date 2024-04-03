@@ -34,7 +34,6 @@ class RDSManager extends Model
     ];
 
     protected $hidden = [
-        self::PASSWORD
     ];
 
     protected $dates = ['deleted_at'];
