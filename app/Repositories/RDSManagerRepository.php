@@ -52,7 +52,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
 
     public function detail($id)
     {
-        return $this->model->where('id', $id)->with('file')->get();
+        return $this->model->with('file')->find($id);
     }
 
     private function random_port()
