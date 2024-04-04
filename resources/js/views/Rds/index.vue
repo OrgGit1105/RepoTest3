@@ -108,12 +108,11 @@
           class="title-add-working"
           title="Add RDS"
           :visible.sync="openModalAdd"
-          :close-on-click-modal="false"
-          width="50%"
+          width="40%"
           @click="hideCreateModal()"
         >
           <ValidationObserver
-            ref="obsAddRDS"
+            ref="obsAddRds"
             tag="div"
           >
             <ValidationProvider
@@ -174,7 +173,7 @@
                   @change="handleFileSelect"
                 >
               </div>
-              <div class="text-error">
+              <div v-if="!formCreate.file_id" class="text-error">
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
@@ -201,7 +200,7 @@
               </div>
             </ValidationProvider>
           </ValidationObserver>
-          <span slot="footer" class="dialog-footer">
+          <span slot="footer" class="dialog-footer mt-3">
             <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
             <template v-if="!waitCreate">
               <el-button class="btn-add-custom" type="primary" @click="submitCreate()">Add</el-button>
@@ -384,14 +383,11 @@ export default {
       }
     },
     async submitCreate() {
-      // const isValid = await this.$refs.obsAddRds.validate();
-      const isValid = true;
-      console.log('isValid isValid ===>', isValid);
+      const isValid = await this.$refs.obsAddRds.validate();
       if (!isValid) {
         return;
       } else {
         this.waitCreate = true;
-        console.log('this.formCreate===>', this.formCreate);
         await postOneRDS(this.formCreate).then(async(response) => {
           const toastSuccessMessage = [];
           const toastFalseMessage = [];
