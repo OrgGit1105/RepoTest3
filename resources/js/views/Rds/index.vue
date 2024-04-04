@@ -383,14 +383,11 @@ export default {
       }
     },
     async submitCreate() {
-      console.log('submitCreate this.$refs===>', this.$refs.obsAddRds);
       const isValid = await this.$refs.obsAddRds.validate();
-      console.log('isValid isValid ===>', isValid);
       if (!isValid) {
         return;
       } else {
         this.waitCreate = true;
-        console.log('this.formCreate===>', this.formCreate);
         await postOneRDS(this.formCreate).then(async(response) => {
           const toastSuccessMessage = [];
           const toastFalseMessage = [];

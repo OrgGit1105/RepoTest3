@@ -282,8 +282,6 @@ export default {
       event.preventDefault();
       // const isValid = await this.$refs.obsEditRds.validate();
       const isValid = true;
-      console.log('onSubmit===>');
-      console.log('isValid===>', isValid);
       if (isValid) {
         // const EDIT_DATA = {
         //   role_id: this.form.role_id,
