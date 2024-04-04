@@ -256,7 +256,7 @@ class RDSManagerController extends Controller
      */
     public function update(RDSManagerRequest $request, $id)
     {
-        return $this->repository->update($request->except(['port']), $id);
+        return $this->repository->update($request->all(), $id);
     }
 
     /**

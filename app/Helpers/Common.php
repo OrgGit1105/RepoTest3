@@ -255,10 +255,10 @@ class Common
 
                 $localFile = base_path("connect.php");
                 $remoteFile = "/var/www/html/connect.php";
-                $scpCommand = "scp -i $filePath $localFile $ec2Username@$ec2IpAddress:$remoteFile";
+                $scpCommand = "scp -o StrictHostKeyChecking=no -i $filePath $localFile $ec2Username@$ec2IpAddress:$remoteFile 2>&1";
                 exec($scpCommand, $scpOutput, $scpReturnVar);
                 $command = "ssh -i $filePath $ec2Username@$ec2IpAddress \"php $remoteFile $host $username $password '$query'\"";
-                exec($command, $output);
+                exec($command, $output, $code);
                 return json_decode($output[0], true);
             }
 
@@ -266,7 +266,7 @@ class Common
             $username = $data[RDSManager::USERNAME];
             $password = $data[RDSManager::PASSWORD];
             $database = '';
-            $port = $data[RDSManager::PORT];
+            $port = config('database.connections.mysql.port');
             $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
             $option = [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
@@ -283,9 +283,11 @@ class Common
                 ];
             }
         } catch (\Exception $e) {
+            Log::error('err_scp: ', $scpOutput);
+            Log::error('err_ssh:', $output);
             return [
                 'code' => CODE_ERROR_SERVER,
-                'data' => $e->getMessage()
+                'data' => trans('api.rds_manager.connect_failed')
             ];
         }
     }

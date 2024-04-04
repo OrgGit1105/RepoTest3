@@ -38,19 +38,17 @@ class UploadFileRepository extends BaseRepository implements UploadFileRepositor
         $file = $request->hasFile('file') ? $request->file('file') : '';
         if($file) {
             $fileName = md5(Carbon::now()->format('YmdHis')) . $file->getClientOriginalName();
+            $filePath = $file->storeAs('rds', $fileName);
+
+            $storagePath = str_replace('\\', '/', storage_path('app/' . $filePath));
+            chmod($storagePath, 0600);
+
             return UploadFile::create([
-                'file_path' => 'storage/app/' . $file->storeAs('rds', $fileName),
+                'file_path' => $storagePath,
                 'file_name' => $file->getClientOriginalName(),
                 "file_extension" => $file->getClientOriginalExtension(),
                 "file_size" => $file->getSize(),
             ]);
         }
-    }
-
-    public function downloadFidelity($id){
-        $file = UploadFile::find($id);
-        if (!$file) return ResponseService::responseData(CODE_NO_ACCESS, 'error', trans('messages.data_does_not_exist'));
-//        $convertNameFile = Str::replace('storage/','',$file->file_path);
-        return response()->download($file->file_path);
     }
 }
