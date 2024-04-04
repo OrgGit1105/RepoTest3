@@ -732,6 +732,8 @@ export default {
     async submitCreate() {
       this.checkNumImage();
       const isValid = await this.$refs.obsAddEmployee.validate();
+      console.log('isValid===>', isValid);
+      console.log('submitCreate this.$refs.obsAddEmployee===>', this.$refs.obsAddEmployee);
       if (!isValid && this.validateFile) {
         return;
       } else {

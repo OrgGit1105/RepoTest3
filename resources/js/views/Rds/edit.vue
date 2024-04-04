@@ -146,19 +146,19 @@
                       <p class="header-employee-edit fw-5">EC2 IP address</p>
                       <ValidationProvider
                         v-slot="{ errors }"
-                        name="name"
+                        name="ec2_ip_address"
                         rules="required"
                       >
                         <b-input-group>
                           <b-form-input
-                            id="ssh_public"
+                            id="ec2_ip_address"
                             v-model="formEdit.ec2_ip_address"
                             class="p-1"
                           />
-                          <div class="text-error">
-                            {{ errors[0] }}
-                          </div>
                         </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
                       </ValidationProvider>
 
                     </div>
@@ -168,19 +168,19 @@
                       <p class="header-employee-edit fw-5">EC2 Username</p>
                       <ValidationProvider
                         v-slot="{ errors }"
-                        name="name"
+                        name="ec2_username"
                         rules="required"
                       >
                         <b-input-group>
                           <b-form-input
-                            id="ssh_public"
+                            id="ec2_username"
                             v-model="formEdit.ec2_username"
                             class="p-1"
                           />
-                          <div class="text-error">
-                            {{ errors[0] }}
-                          </div>
                         </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
                       </ValidationProvider>
 
                     </div>
@@ -358,22 +358,24 @@ export default {
         return 0;
       }
       formData.append('file', file); // Make the request to the POST /single-file URL
-      try {
-        await uploadFileHandler(formData).then(async(response) => {
-          if (response.code === 200) {
-            this.formEdit.file_id = response.data.id;
-            this.checkUploadFileSuccess = true;
-          }
-        }).catch((error) => {
+      await uploadFileHandler(formData).then(async(response) => {
+        if (response.code === 200) {
+          this.formEdit.file_id = response.data.id;
+          this.checkUploadFileSuccess = true;
+        } else {
           MakeToast({
             variant: 'warning',
             title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
-            content: error.message,
+            content: response.message,
           });
+        }
+      }).catch((error) => {
+        MakeToast({
+          variant: 'warning',
+          title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+          content: error.message,
         });
-      } catch (error) {
-        console.log('error===>', error);
-      }
+      });
     },
 
     openFileInput() {
