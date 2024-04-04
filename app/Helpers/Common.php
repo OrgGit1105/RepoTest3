@@ -257,7 +257,10 @@ class Common
                 $remoteFile = "/var/www/html/connect.php";
                 $scpCommand = "scp -o StrictHostKeyChecking=no -i $filePath $localFile $ec2Username@$ec2IpAddress:$remoteFile 2>&1";
                 exec($scpCommand, $scpOutput, $scpReturnVar);
-                $command = "ssh -i $filePath $ec2Username@$ec2IpAddress \"php $remoteFile $host $username $password '$query'\"";
+                $dataFile = compact("host", "username", "password", "query");
+                $serialized = serialize($dataFile);
+                $encoded = escapeshellarg(base64_encode($serialized));
+                $command = "ssh -i $filePath $ec2Username@$ec2IpAddress \"php $remoteFile $encoded\"";
                 exec($command, $output, $code);
                 return json_decode($output[0], true);
             }
@@ -288,8 +291,7 @@ class Common
                 ];
             }
         } catch (\Exception $e) {
-            Log::error('err_scp: ', $scpOutput);
-            Log::error('err_ssh:', $output);
+            Log::error($e->getMessage());
             return [
                 'code' => CODE_ERROR_SERVER,
                 'message' => trans('api.rds_manager.connect_failed'),

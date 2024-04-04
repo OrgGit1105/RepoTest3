@@ -197,6 +197,9 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 return $connect;
             }
             $databaseNames = array_map('current', $connect['data']);
+            $databaseNames = array_filter($databaseNames, function($value) {
+                return $value !== "mysql";
+            });
             return ResponseService::responseJson(CODE_SUCCESS, $databaseNames);
         } catch (\PDOException $e) {
             return ResponseService::responseJsonError(CODE_ERROR_SERVER, $e->getMessage());
