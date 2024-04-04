@@ -261,11 +261,11 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
             $queryGetUser = "SELECT User FROM mysql.user";
             $result = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryGetUser);
-            $usernames = array_map('current', $result);
+            $usernames = array_map('current', $result['data']);
             $name = $this->model->find($user_id)->name;
 
             if (!in_array($name, $usernames)) {
-                $queryCreateUser = "CREATE USER '{$name}'@'localhost' IDENTIFIED BY '12345678';";
+                $queryCreateUser = "CREATE USER '{$name}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '4649Veho!12345678';";
                 Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
             }
 
