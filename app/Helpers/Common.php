@@ -274,12 +274,17 @@ class Common
             ];
 
             $pdo = new \PDO($dsn, $username, $password, $option);
-            if ($query != null) {
+            if ($query) {
                 $query = $pdo->query($query);
                 $result = $query->fetchAll(\PDO::FETCH_ASSOC);
                 return [
                     'code' => CODE_SUCCESS,
                     'data' => $result
+                ];
+            } else {
+                return  [
+                    'code' => 200,
+                    'data' => null
                 ];
             }
         } catch (\Exception $e) {
@@ -287,7 +292,8 @@ class Common
             Log::error('err_ssh:', $output);
             return [
                 'code' => CODE_ERROR_SERVER,
-                'data' => trans('api.rds_manager.connect_failed')
+                'message' => trans('api.rds_manager.connect_failed'),
+                'data' => null
             ];
         }
     }

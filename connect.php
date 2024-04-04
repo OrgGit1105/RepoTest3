@@ -13,7 +13,8 @@ $conn = mysqli_connect($host, $username, $password);
 if ($conn->connect_errno) {
     $data = [
         'code' => 500,
-        'data' => "Connect Fail: " . $conn->connect_error
+        'message' => "Connect Fail: " . $conn->connect_error,
+        'data' => null
     ];
     echo json_encode($data);
     exit();
@@ -21,7 +22,8 @@ if ($conn->connect_errno) {
     if($query == null) {
         $data = [
             'code' => 200,
-            'data' => "Connect Success!"
+            'message' => "Connect Success",
+            'data' => null
         ];
         echo json_encode($data);
         $conn->close();
