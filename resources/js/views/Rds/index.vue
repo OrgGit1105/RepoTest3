@@ -160,23 +160,20 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
-            <ValidationProvider
-              v-slot="{ errors }"
-              name="file_id"
-              rules="required"
-            >
+            <div>
               <label for="file_id" class="mt-3">Upload file</label>
               <div>
                 <input
+                  id="file_id"
                   ref="fileInput"
                   type="file"
                   @change="handleFileSelect"
                 >
               </div>
               <div v-if="!formCreate.file_id" class="text-error">
-                {{ errors[0] }}
+                {{ fileError }}
               </div>
-            </ValidationProvider>
+            </div>
             <ValidationProvider
               v-slot="{ errors }"
               name="ec2_ip_address"
@@ -282,6 +279,7 @@ export default {
       displayBoxSearch: 'd-none',
       displaySearch: 'd-block',
       listRds: [],
+      fileError: '',
     };
   },
   computed: {
@@ -384,7 +382,11 @@ export default {
     },
     async submitCreate() {
       const isValid = await this.$refs.obsAddRds.validate();
-      if (!isValid) {
+      if (!this.formCreate.file_id) {
+        this.fileError = 'The file_id field is required';
+        return;
+      }
+      if (!isValid && !this.formCreate.file_id) {
         return;
       } else {
         this.waitCreate = true;
