@@ -62,16 +62,4 @@ class UploadFileController extends Controller
             return $this->responseJsonError(500, $e->getMessage());
         }
     }
-
-    /**
-     * @param $id
-     * @return array|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
-    public function downloadFile($id){
-        try {
-            return $this->repository->downloadFile($id);
-        } catch (\Exception $e) {
-            return $this->responseJsonError(500, $e->getMessage());
-        }
-    }
 }

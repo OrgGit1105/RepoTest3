@@ -17,7 +17,6 @@ class RDSManager extends Model
     const URL_END_POINT = 'url_end_point';
     const USERNAME = 'username';
     const PASSWORD = 'password';
-    const PORT = 'port';
     const FILE_ID = 'file_id';
     const EC2_IP_ADDRESS = 'ec2_ip_address';
     const EC2_USERNAME = 'ec2_username';
@@ -27,7 +26,6 @@ class RDSManager extends Model
         self::URL_END_POINT,
         self::USERNAME,
         self::PASSWORD,
-        self::PORT,
         self::FILE_ID,
         self::EC2_IP_ADDRESS,
         self::EC2_USERNAME,
