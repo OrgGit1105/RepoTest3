@@ -3,7 +3,6 @@
 
 namespace Helper;
 
-use App\Jobs\SSHTunnelJob;
 use App\Jobs\StopSSHTunnelJob;
 use App\Models\RDSManager;
 use App\Models\VIAMUser;
@@ -13,11 +12,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Common
 {
@@ -65,7 +61,8 @@ class Common
         return $param;
     }
 
-    public function checkUserExist(SsmClient $ssmClient, $parameters, $instanceId, array $username) {
+    public function checkUserExist(SsmClient $ssmClient, $parameters, $instanceId, array $username)
+    {
         $parameters['Parameters']['commands'] = ["ls /home"];
         $response = $ssmClient->sendCommand($parameters);
         $commandId = $response['Command']['CommandId'];
@@ -80,7 +77,7 @@ class Common
                 'InstanceId' => $instanceId,
             ]);
             $status = $output['Status'];
-            if($status == 'Success') {
+            if ($status == 'Success') {
                 $names = explode("\n", $output['StandardOutputContent']);
                 return array_diff($username, $names); //return [] if user existed
             }
@@ -147,10 +144,10 @@ class Common
                     $isCreateAccount = true;
                     $command[] = "sudo adduser $username";
                     $command[] = "sudo -u $username mkdir -p /home/$username/.ssh";
-                    $command[] =  "sudo -u $username ssh-keygen -t rsa -b 4096 -C \"$gmailGithub\" -N \"\" -f \"/home/$username/.ssh/id_rsa\" > /dev/null";
+                    $command[] = "sudo -u $username ssh-keygen -t rsa -b 4096 -C \"$gmailGithub\" -N \"\" -f \"/home/$username/.ssh/id_rsa\" > /dev/null";
 
                     $nodePath = self::getNodePath($instanceId); //thêm đường dẫn đến thư mục chứa tệp thực thi Node.js vào biến PATH
-                    if($nodePath) {
+                    if ($nodePath) {
                         $command[] = "grep -qxF 'export PATH=\"$nodePath:\$PATH\"' /home/$username/.bashrc || echo 'export PATH=\"$nodePath:\$PATH\"' | sudo tee -a /home/$username/.bashrc";
                     }
                 }
@@ -165,7 +162,7 @@ class Common
                         $command [] = "sudo usermod -aG $groupName $username";
                     }
                 }
-                if($isCreateAccount && $isUserDeploy) {
+                if ($isCreateAccount && $isUserDeploy) {
                     $commandSudo = self::addCommandSudo($username);
                     $command = array_merge($command, $commandSudo);
                 }
@@ -199,7 +196,7 @@ class Common
                     'DocumentName' => 'AWS-RunShellScript'
                 ];
 
-                if(!self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
+                if (!self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                     $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD:/d' /etc/sudoers";
                     $command[] = "sudo pkill -u $username";
@@ -246,19 +243,29 @@ class Common
         $ssmClient->sendCommand($parameters);
     }
 
-    public function connectRDS(array $data, $filePath, $openConnect = true)
+    public function connectRDS(array $data, $filePath, $openConnect = true, $query = null)
     {
         try {
-            if($openConnect) {
-                dispatch(new SSHTunnelJob($data, $filePath));
-                sleep(10);
+            if ($openConnect) {
+                $host = $data[RDSManager::URL_END_POINT];
+                $username = $data[RDSManager::USERNAME];
+                $password = $data[RDSManager::PASSWORD];
+                $ec2Username = $data[RDSManager::EC2_USERNAME];
+                $ec2IpAddress = $data[RDSManager::EC2_IP_ADDRESS];
+
+                $localFile = base_path("connect.php");
+                $remoteFile = "/var/www/html/connect.php";
+                $scpCommand = "scp -i $filePath $localFile $ec2Username@$ec2IpAddress:$remoteFile";
+                exec($scpCommand, $scpOutput, $scpReturnVar);
+                $command = "ssh -i $filePath $ec2Username@$ec2IpAddress \"php $remoteFile $host $username $password '$query'\"";
+                exec($command, $output);
+                return json_decode($output[0], true);
             }
 
-            $host = config('database.connections.mysql.host');
+            $host = $data[RDSManager::URL_END_POINT];
             $username = $data[RDSManager::USERNAME];
             $password = $data[RDSManager::PASSWORD];
             $database = '';
-
             $port = $data[RDSManager::PORT];
             $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
             $option = [
@@ -267,21 +274,19 @@ class Common
             ];
 
             $pdo = new \PDO($dsn, $username, $password, $option);
-            return ResponseService::responseJson(CODE_SUCCESS, $pdo);
-        } catch (\PDOException $e) {
-            self::stopJobSSHTunnel();
-            return ResponseService::responseJsonError(
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-                trans('api.rds_manager.connect_failed'),
-                trans('api.rds_manager.connect_failed'));
-        }
-    }
-
-    public function stopJobSSHTunnel($closeConnect = true)
-    {
-        if(config('app.env') != 'local' && $closeConnect) {
-            DB::table('jobs')->whereNotNull('reserved_at')->delete();
-            dispatch(new StopSSHTunnelJob());
+            if ($query != null) {
+                $query = $pdo->query($query);
+                $result = $query->fetchAll(\PDO::FETCH_ASSOC);
+                return [
+                    'code' => CODE_SUCCESS,
+                    'data' => $result
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'code' => CODE_ERROR_SERVER,
+                'data' => $e->getMessage()
+            ];
         }
     }
 }

@@ -74,11 +74,24 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         $attributes[RDSManager::PORT] = $this->random_port();
 
         $connect = Common::connectRDS($attributes, $filePath);
-        if ($connect->original['code'] != CODE_SUCCESS) {
+
+        if ($connect['code'] != CODE_SUCCESS) {
             return $connect;
         }
-        Common::stopJobSSHTunnel();
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
+    }
+
+    private function getRDSLocal($id)
+    {
+        $rdsManagerLocal = RDSManager::query()
+            ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
+            ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
+            ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
+            ->where(RDSManager::PORT, config('database.connections.mysql.port'))
+            ->first();
+        if($rdsManagerLocal->id == $id)
+            return false;
+        return true;
     }
 
     public function update(array $attributes, $id)
@@ -93,6 +106,14 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
                 trans('messages.mes.data_not_found'));
         }
 
+        //don't update rds local
+        if($this->getRDSLocal($id)) {
+            return ResponseService::responseJsonError(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                trans('messages.mes.update_fail'),
+                trans('messages.mes.update_fail'));
+        }
+
         $data = $rdsManager->whereHas('users', function ($query) use ($id) {
             $query->where('rds_manager_id', $id);
         })->exists();
@@ -103,10 +124,9 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
 
         $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
         $connect = Common::connectRDS($attributes, $filePath);
-        if ($connect->original['code'] != CODE_SUCCESS) {
+        if ($connect['code'] != CODE_SUCCESS) {
             return $connect;
         }
-        Common::stopJobSSHTunnel();
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
 
@@ -117,6 +137,14 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
             return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND,
                 trans('messages.mes.data_not_found'),
                 trans('messages.mes.data_not_found'));
+        }
+
+        //don't delete rds local
+        if($this->getRDSLocal($id)) {
+            return ResponseService::responseJsonError(
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                trans('messages.mes.delete_fail'),
+                trans('messages.mes.delete_fail'));
         }
 
         $data = $rdsManager->whereHas('users', function ($query) use ($id) {
