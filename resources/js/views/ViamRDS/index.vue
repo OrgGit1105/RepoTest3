@@ -156,7 +156,6 @@
                 </div>
               </el-col>
             </el-row>
-            <el-button type="danger" @click="showModalDelete= true">Delete RDS</el-button>
           </div>
         </el-dialog>
       </div>
@@ -252,6 +251,7 @@ export default {
       const databaseSelectedId = this.$store.getters.databaseSelectedId;
       if (newVal) {
         if (userId && rdsSelectedId && databaseSelectedId){
+          this.listDatabases = [];
           this.getListDatabases();
           this.listViamRDS = [];
         } else {
@@ -259,11 +259,15 @@ export default {
           this.database_name = '';
           this.listViamRDS = [];
         }
+      } else {
+        this.database_name = '';
       }
     },
     database_name(newVal) {
       if (newVal) {
         this.getListViamRds();
+      } else {
+        this.database_name = '';
       }
     },
   },
@@ -507,9 +511,15 @@ export default {
       this.getListViamRds(this.rds_id, this.database_name);
     },
     handleResetFormData(){
+      this.checkAllDataTab = false;
       this.checkedDataTab = [];
+      this.isIndeterminateDataTab = true;
+      this.checkAllStructureTab = false;
       this.checkedStructureTab = [];
+      this.isIndeterminateStructureTab = true;
+      this.checkAllAdministratorTab = false;
       this.checkedAdministratorTab = [];
+      this.isIndeterminateAdministratorTab = true;
       this.flag = false;
     },
   },
