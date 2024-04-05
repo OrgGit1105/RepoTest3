@@ -111,6 +111,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $updateGithubGmail = @$attributes['github_gmail'];
         $publicKey = @$attributes['ssh_public_key'];
 
+        $deleteRDS = false;
         if(config('app.env') === ENVIRONMENT_UPDATE) {
             if($oldRetirementDate != $updateRetirementDate || ($oldName != $updateName)
                 || ($oldViamUserId != $updateViamUserId) || $oldGithubGmail != $updateGithubGmail) {
@@ -119,6 +120,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     if($delete->original['code'] != CODE_SUCCESS) {
                         return $delete;
                     }
+                    $deleteRDS = true;
                 } else {
                     $delete = Common::deleteUserEc2($user);
                     if($delete->original['code'] != CODE_SUCCESS) {
@@ -135,6 +137,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.user.ssh_key_and_gmail_github'));
                 }
             }
+        }
+
+        if($deleteRDS) {
+            Common::deleteAccountRDS($id);
         }
 
         $attributes['updated_at'] = Carbon::now();
@@ -225,6 +231,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     return $delete;
                 }
             }
+
+            Common::deleteAccountRDS($id);
             parent::delete($id);
             return ResponseService::responseJson(CODE_SUCCESS, null, trans('messages.mes.delete_success'));
         } catch (AwsException $e) {

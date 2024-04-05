@@ -3,8 +3,8 @@
 
 namespace Helper;
 
-use App\Jobs\StopSSHTunnelJob;
 use App\Models\RDSManager;
+use App\Models\User;
 use App\Models\VIAMUser;
 use Aws\Ssm\SsmClient;
 use Illuminate\Http\Response;
@@ -298,5 +298,51 @@ class Common
                 'data' => null
             ];
         }
+    }
+
+    public function getData($rds_manager_id)
+    {
+        $rdsManager = RDSManager::query()->find($rds_manager_id);
+        $rdsManagerLocal = RDSManager::query()
+            ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
+            ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
+            ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
+            ->first();
+        $openConnect = ($rds_manager_id != $rdsManagerLocal->id);
+        $filePath = @$rdsManager->file->file_path;
+        $data = [
+            RDSManager::USERNAME => $rdsManager->username,
+            RDSManager::PASSWORD => $rdsManager->password,
+            RDSManager::URL_END_POINT => $rdsManager->url_end_point,
+            RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
+            RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,
+        ];
+        return compact('data', 'filePath', 'openConnect');
+    }
+
+    public function deleteAccountRDS($user_id)
+    {
+        $userData = User::query()
+            ->where('id', $user_id)
+            ->select('id', 'name')
+            ->with(['rdsManagers', 'databases'])
+            ->first();
+        if(config('app.env') === ENVIRONMENT_UPDATE_RDS) {
+            foreach ($userData->rdsManagers as $rdsManager) {
+                $dataConnect = self::getData($rdsManager->id);
+                Common::connectRDS(
+                    $dataConnect['data'],
+                    $dataConnect['filePath'],
+                    $dataConnect['openConnect'],
+                    "DROP USER '{$userData->name}'@'localhost'"
+                );
+            }
+        }
+
+        foreach ($userData->databases as $database) {
+            $database->rdsPermissions()->detach();
+            $database->delete();
+        }
+        $userData->rdsManagers()->detach();
     }
 }

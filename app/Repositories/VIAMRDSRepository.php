@@ -160,26 +160,6 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         return (new Common)->myPaginate($arrayData);
     }
 
-    private function getData($rds_manager_id)
-    {
-        $rdsManager = RDSManager::query()->find($rds_manager_id);
-        $rdsManagerLocal = RDSManager::query()
-            ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
-            ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
-            ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
-            ->first();
-        $openConnect = ($rds_manager_id != $rdsManagerLocal->id);
-        $filePath = @$rdsManager->file->file_path;
-        $data = [
-            RDSManager::USERNAME => $rdsManager->username,
-            RDSManager::PASSWORD => $rdsManager->password,
-            RDSManager::URL_END_POINT => $rdsManager->url_end_point,
-            RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
-            RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,
-        ];
-        return compact('data', 'filePath', 'openConnect');
-    }
-
     public function getListDatabase($rds_manager_id)
     {
         try {
@@ -191,7 +171,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                     trans('messages.mes.data_not_found'));
             }
 
-            $data = $this->getData($rds_manager_id);
+            $data = Common::getData($rds_manager_id);
             $connect = Common::connectRDS($data['data'], $data['filePath'], $data['openConnect'], 'SHOW DATABASES');
             if ($connect['code'] != CODE_SUCCESS) {
                 return $connect;
@@ -212,15 +192,16 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_name = $attributes['database_name'];
             $user_id = $attributes['user_id'];
-            $permission = $attributes['permission'];
 
-            $dataConnect = $this->getData($rds_manager_id);
+            $dataConnect = Common::getData($rds_manager_id);
             $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
             if ($connect['code'] != CODE_SUCCESS) {
                 return $connect;
             }
 
             $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
+            $permission = (count($attributes['permission']) == count($permissionList) -1) ? [array_search(PERMISSION_ALL_PRIVILEGES, $permissionList)] : $attributes['permission'];
+
             $rds_info = RDSInfo::query()->firstOrCreate([
                 RDSInfo::USER_ID => $user_id,
                 RDSInfo::RDS_MANAGER_ID => $rds_manager_id
@@ -262,21 +243,23 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $permissionText = trim($permissionText, ', ');
             DatabasePermission::query()->insert($dataInsert);
 
-            $queryGetUser = "SELECT User FROM mysql.user";
-            $result = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryGetUser);
-            $usernames = array_map('current', $result['data']);
-            $name = $this->model->find($user_id)->name;
+            if(config('app.env') === ENVIRONMENT_UPDATE_RDS) {
+                $queryGetUser = "SELECT User FROM mysql.user";
+                $result = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryGetUser);
+                $usernames = array_map('current', $result['data']);
+                $name = $this->model->find($user_id)->name;
 
-            if (!in_array($name, $usernames)) {
-                $queryCreateUser = "CREATE USER '{$name}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '4649Veho!12345678';";
-                Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
-            }
+                if (!in_array($name, $usernames)) {
+                    $queryCreateUser = "CREATE USER '{$name}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '4649Veho!12345678';";
+                    Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
+                }
 
-            if ($isGrantPermission) {
-                $permissionText = 'USAGE';
+                if ($isGrantPermission) {
+                    $permissionText = 'USAGE';
+                }
+                $queryAddPermission = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};";
+                Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryAddPermission);
             }
-            $queryAddPermission = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};";
-            Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryAddPermission);
 
             return ResponseService::responseJson(CODE_SUCCESS,
                 trans('messages.mes.create_success'),
@@ -293,7 +276,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
 
-            $dataConnect = $this->getData($rds_manager_id);
+            $dataConnect = Common::getData($rds_manager_id);
             $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
             if ($connect['code'] != CODE_SUCCESS) {
                 return $connect;
@@ -310,8 +293,8 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 );
             }
 
-            $permission = $attributes['permission'];
             $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
+            $permission = (count($attributes['permission']) == count($permissionList) -1) ? [array_search(PERMISSION_ALL_PRIVILEGES, $permissionList)] : $attributes['permission'];
             $permissionGrant = array_search(PERMISSION_GRANT, $permissionList);
             $permissionAllPrivileges = array_search(PERMISSION_ALL_PRIVILEGES, $permissionList);
 
@@ -343,23 +326,25 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
             if (!$permission) { // permission = null => delete RDS
                 $isDeleteAccount = $this->deleteAccountRDS($database_id, $user_id, $rds_manager_id);
-                if($isDeleteAccount) {
+                if($isDeleteAccount && config('app.env') === ENVIRONMENT_UPDATE_RDS) {
                     $query = "DROP USER '{$username}'@'localhost'";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $query);
                 }
             } else {
-                $queryDelAll = "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';";
-                Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelAll);
+                if(config('app.env') === ENVIRONMENT_UPDATE_RDS) {
+                    $queryDelAll = "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';";
+                    Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelAll);
 
-                if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
-                    $queryDelGrant = "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';";
-                    Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelGrant);
+                    if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                        $queryDelGrant = "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';";
+                        Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelGrant);
+                    }
+                    if ($isGrantPermission) {
+                        $permissionText = 'USAGE';
+                    }
+                    $query = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};";
+                    Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $query);
                 }
-                if ($isGrantPermission) {
-                    $permissionText = 'USAGE';
-                }
-                $query = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};";
-                Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $query);
             }
 
             return ResponseService::responseJson(CODE_SUCCESS,
@@ -374,7 +359,8 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
     public function deleteAccountRDS($database_id, $user_id, $rds_manager_id)
     {
         Database::query()->find($database_id)->delete();
-        $dbOtherOfAccountExist = $this->model->where('id', $user_id)
+        $dbOtherOfAccountExist = RDSInfo::query()->where(RDSInfo::USER_ID, $user_id)
+            ->where(RDSInfo::RDS_MANAGER_ID, $rds_manager_id)
             ->whereHas('databases', function ($e) use ($database_id) {
                 $e->where('database.id', '!=', $database_id);
             })->exists();
@@ -393,7 +379,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $rds_manager_id = $attributes['rds_manager_id'];
             $database_id = $attributes['database_id'];
 
-            $dataConnect = $this->getData($rds_manager_id);
+            $dataConnect = Common::getData($rds_manager_id);
             $connect = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect']);
             if ($connect['code'] != CODE_SUCCESS) {
                 return $connect;
@@ -419,7 +405,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             $databasePermission->delete();
 
             $isDeleteRDS = $this->deleteAccountRDS($database_id, $user_id, $rds_manager_id);
-            if ($isDeleteRDS) {
+            if ($isDeleteRDS && config('app.env') === ENVIRONMENT_UPDATE_RDS) {
                 Common::connectRDS(
                     $dataConnect['data'],
                     $dataConnect['filePath'],
@@ -431,19 +417,21 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $permissionGrant = array_search(PERMISSION_GRANT, $permissionList);
                 $permissionAllPrivileges = array_search(PERMISSION_ALL_PRIVILEGES, $permissionList);
 
-                Common::connectRDS(
-                    $dataConnect['data'],
-                    $dataConnect['filePath'],
-                    $dataConnect['openConnect'],
-                    "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';"
-                );
-                if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                if(config('app.env') === ENVIRONMENT_UPDATE_RDS) {
                     Common::connectRDS(
                         $dataConnect['data'],
                         $dataConnect['filePath'],
                         $dataConnect['openConnect'],
-                        "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';"
+                        "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';"
                     );
+                    if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
+                        Common::connectRDS(
+                            $dataConnect['data'],
+                            $dataConnect['filePath'],
+                            $dataConnect['openConnect'],
+                            "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';"
+                        );
+                    }
                 }
             }
             return ResponseService::responseJson(CODE_SUCCESS,
