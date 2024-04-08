@@ -92,7 +92,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         $data = $rdsManager->whereHas('users', function ($query) use ($id) {
             $query->where('rds_manager_id', $id);
         })->exists();
-        if ($attributes['url_end_point'] != $rdsManager->url_end_point && $data) {
+        if ($data) {
             $msg = trans('api.rds_manager.action_error', ['action' => 'update']);
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
