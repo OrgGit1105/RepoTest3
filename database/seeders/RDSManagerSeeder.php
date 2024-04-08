@@ -18,9 +18,6 @@ class RDSManagerSeeder extends Seeder
             RDSManager::URL_END_POINT => config('database.connections.mysql.host'),
             RDSManager::USERNAME => config('database.connections.mysql.username'),
             RDSManager::PASSWORD => config('database.connections.mysql.password'),
-            RDSManager::PHPMYADMIN_URL => 'http://phpmyadmin2.vw-dev.com/',
-            RDSManager::EC2_IP_ADDRESS => '18.180.33.240',
-            RDSManager::TYPE => 0 //server local
         ], [
             RDSManager::NAME => 'Server Dev',
         ]);

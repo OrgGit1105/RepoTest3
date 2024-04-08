@@ -16,7 +16,6 @@ class ChangeColumnToRdsManagerTable extends Migration
         Schema::table('rds_manager', function (Blueprint $table) {
             $table->string('phpmyadmin_url')->after('ec2_username');
             $table->integer('type')->default(1)->comment('0:server_local|1:server_other')->after('phpmyadmin_url');
-            $table->dropColumn('url_end_point');
         });
     }
 
@@ -30,7 +29,6 @@ class ChangeColumnToRdsManagerTable extends Migration
         Schema::table('rds_manager', function (Blueprint $table) {
             $table->dropColumn('phpmyadmin_url');
             $table->dropColumn('type');
-            $table->string('url_end_point');
         });
     }
 }
