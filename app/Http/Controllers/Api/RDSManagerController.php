@@ -124,7 +124,7 @@ class RDSManagerController extends Controller
      *     @OA\MediaType(
      *        mediaType="multipart/form-data",
      *        @OA\Schema(
-     *          required={"name", "url_end_point", "username", "password", "port", "file_id", "ec2_ip_address", "ec2_username"},
+     *          required={"name", "url_end_point", "username", "password", "port", "file_id", "ec2_ip_address", "ec2_username", "phpmyadmin_url"},
      *            @OA\Property(
      *                property="name",
      *                type="string",
@@ -153,6 +153,10 @@ class RDSManagerController extends Controller
      *           ),
      *           @OA\Property(
      *                property="ec2_username",
+     *                type="string",
+     *           ),
+     *          @OA\Property(
+     *                property="phpmyadmin_url",
      *                type="string",
      *           ),
      *         ),
@@ -195,7 +199,7 @@ class RDSManagerController extends Controller
      *       @OA\MediaType(
      *        mediaType="application/json",
      *          @OA\Schema(
-     *            required={"name", "url_end_point", "username", "password", "port", "ec2_ip_address", "ec2_username", "file_id"},
+     *            required={"name", "url_end_point", "username", "password", "port", "ec2_ip_address", "ec2_username", "file_id", "phpmyadmin_url"},
      *            @OA\Property(
      *                property="name",
      *                format="string",
@@ -225,6 +229,10 @@ class RDSManagerController extends Controller
      *           ),
      *          @OA\Property(
      *                property="ec2_username",
+     *                format="string",
+     *           ),
+     *          @OA\Property(
+     *                property="phpmyadmin_url",
      *                format="string",
      *           ),
      *         ),
