@@ -14,23 +14,23 @@ class RDSManager extends Model
     protected $table = 'rds_manager';
 
     const NAME = 'name';
+    const URL_END_POINT = 'url_end_point';
     const USERNAME = 'username';
     const PASSWORD = 'password';
     const FILE_ID = 'file_id';
     const EC2_IP_ADDRESS = 'ec2_ip_address';
     const EC2_USERNAME = 'ec2_username';
     const PHPMYADMIN_URL = 'phpmyadmin_url';
-    const TYPE = 'type';
 
     protected $fillable = [
         self::NAME,
+        self::URL_END_POINT,
         self::USERNAME,
         self::PASSWORD,
         self::FILE_ID,
         self::EC2_IP_ADDRESS,
         self::EC2_USERNAME,
-        self::PHPMYADMIN_URL,
-        self::TYPE
+        self::PHPMYADMIN_URL
     ];
 
     protected $hidden = [];

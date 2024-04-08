@@ -47,6 +47,7 @@ class RDSManagerRequest extends FormRequest
         if (Route::getCurrentRoute()->getActionMethod() == 'store') {
             return [
                 'name' => 'required|unique:rds_manager,name,NULL,id,deleted_at,NULL|max:255',
+                'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
                 'file_id' => 'required|exists:files,id',
@@ -58,6 +59,7 @@ class RDSManagerRequest extends FormRequest
         if (Route::getCurrentRoute()->getActionMethod() == 'update') {
             return [
                 'name' => 'required|unique:rds_manager,name,' . $this->route('rds_manager'). ',id,deleted_at,NULL|max:255',
+                'url_end_point' => 'required|string',
                 'username' => 'required|string',
                 'password' => 'required|string',
                 'file_id' => 'required|exists:files,id',

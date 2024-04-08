@@ -247,6 +247,7 @@ class Common
     {
         try {
             if ($openConnect) {
+                $host = $data[RDSManager::URL_END_POINT];
                 $username = $data[RDSManager::USERNAME];
                 $password = $data[RDSManager::PASSWORD];
                 $ec2Username = $data[RDSManager::EC2_USERNAME];
@@ -256,7 +257,7 @@ class Common
                 $remoteFile = "/var/www/html/connect.php";
                 $scpCommand = "scp -o StrictHostKeyChecking=no -i $filePath $localFile $ec2Username@$ec2IpAddress:$remoteFile 2>&1";
                 exec($scpCommand, $scpOutput, $scpReturnVar);
-                $dataFile = compact("username", "password", "query");
+                $dataFile = compact("host", "username", "password", "query");
                 $serialized = serialize($dataFile);
                 $encoded = escapeshellarg(base64_encode($serialized));
                 $command = "ssh -i $filePath $ec2Username@$ec2IpAddress \"php $remoteFile $encoded\"";
@@ -264,11 +265,12 @@ class Common
                 return json_decode($output[0], true);
             }
 
+            $host = $data[RDSManager::URL_END_POINT];
             $username = $data[RDSManager::USERNAME];
             $password = $data[RDSManager::PASSWORD];
             $database = '';
             $port = config('database.connections.mysql.port');
-            $dsn = "mysql:host=localhost;port=$port;dbname=$database;charset=utf8mb4";
+            $dsn = "mysql:host=$host;port=$port;dbname=$database;charset=utf8mb4";
             $option = [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_EMULATE_PREPARES => false,
@@ -302,18 +304,18 @@ class Common
     {
         $rdsManager = RDSManager::query()->find($rds_manager_id);
         $rdsManagerLocal = RDSManager::query()
+            ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
             ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
             ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
-            ->where(RDSManager::TYPE, RDS_LOCAL)
             ->first();
         $openConnect = ($rds_manager_id != $rdsManagerLocal->id);
         $filePath = @$rdsManager->file->file_path;
         $data = [
             RDSManager::USERNAME => $rdsManager->username,
             RDSManager::PASSWORD => $rdsManager->password,
+            RDSManager::URL_END_POINT => $rdsManager->url_end_point,
             RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
             RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,
-            RDSManager::PHPMYADMIN_URL => @$rdsManager->phpmyadmin_url
         ];
         return compact('data', 'filePath', 'openConnect');
     }

@@ -40,8 +40,7 @@ const TYPE_DATE = [
 ];
 
 const ENVIRONMENT_UPDATE = 'production';
-const ENVIRONMENT_UPDATE_RDS = 'staging';
-const RDS_LOCAL = 0;
+const ENVIRONMENT_UPDATE_RDS = 'stage';
 
 const INSTANCE_ID_240 = 'i-0553d99830b279164';
 
