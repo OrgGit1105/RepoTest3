@@ -20,6 +20,7 @@ class RDSManager extends Model
     const FILE_ID = 'file_id';
     const EC2_IP_ADDRESS = 'ec2_ip_address';
     const EC2_USERNAME = 'ec2_username';
+    const PHPMYADMIN_URL = 'phpmyadmin_url';
 
     protected $fillable = [
         self::NAME,
@@ -29,6 +30,7 @@ class RDSManager extends Model
         self::FILE_ID,
         self::EC2_IP_ADDRESS,
         self::EC2_USERNAME,
+        self::PHPMYADMIN_URL
     ];
 
     protected $hidden = [];

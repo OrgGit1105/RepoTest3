@@ -53,6 +53,7 @@ class RDSManagerRequest extends FormRequest
                 'file_id' => 'required|exists:files,id',
                 'ec2_ip_address' => 'required|string|max:255',
                 'ec2_username' => 'required|string|max:255',
+                'phpmyadmin_url' => 'required|string',
             ];
         }
         if (Route::getCurrentRoute()->getActionMethod() == 'update') {
@@ -64,6 +65,7 @@ class RDSManagerRequest extends FormRequest
                 'file_id' => 'required|exists:files,id',
                 'ec2_ip_address' => 'required|string|max:255',
                 'ec2_username' => 'required|string|max:255',
+                'phpmyadmin_url' => 'required|string',
             ];
         }
     }
