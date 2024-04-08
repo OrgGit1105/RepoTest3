@@ -182,7 +182,27 @@
                           {{ errors[0] }}
                         </div>
                       </ValidationProvider>
-
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">PHPAdmin URL</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="phpmyadmin_url"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="phpmyadmin_url"
+                            v-model="formEdit.phpmyadmin_url"
+                            class="p-1"
+                          />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
                     </div>
                   </div>
                 </div>
@@ -230,6 +250,7 @@ export default {
         file_id: '',
         ec2_ip_address: '',
         ec2_username: '',
+        phpmyadmin_url: '',
       },
       id: this.$route.params.id,
       showModalDelete: false,
@@ -265,6 +286,7 @@ export default {
           file_id: response.data.file_id,
           ec2_ip_address: response.data.ec2_ip_address,
           ec2_username: response.data.ec2_username,
+          phpmyadmin_url: response.data.phpmyadmin_url,
         };
         this.fileName = response.data.file.file_name;
         this.closeLoading();

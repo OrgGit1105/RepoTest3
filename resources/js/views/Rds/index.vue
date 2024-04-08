@@ -196,6 +196,17 @@
                 {{ errors[0] }}
               </div>
             </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="phpmyadmin_url"
+              rules="required"
+            >
+              <label for="phpmyadmin_url" class="mt-3">PHPMyadmin URL</label>
+              <el-input id="phpmyadmin_url" v-model="formCreate.phpmyadmin_url" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
           </ValidationObserver>
           <span slot="footer" class="dialog-footer mt-3">
             <el-button class="btn-cancle-custom" @click="hideCreateModal()">Cancel</el-button>
@@ -273,6 +284,7 @@ export default {
         file_id: '',
         ec2_ip_address: '',
         ec2_username: '',
+        phpmyadmin_url: '',
       },
       openModalAdd: false,
       waitCreate: false,
@@ -320,6 +332,7 @@ export default {
                 username: item.username,
                 ec2_ip_address: item.ec2_ip_address,
                 ec2_username: item.ec2_username,
+                phpmyadmin_url: item.phpmyadmin_url,
               };
             });
             // this.$store.dispatch('app/savelistRds', listRds);
@@ -358,6 +371,7 @@ export default {
         file_id: '',
         ec2_ip_address: '',
         ec2_username: '',
+        phpmyadmin_url: '',
       };
       this.openModalAdd = false;
     },
@@ -402,6 +416,7 @@ export default {
               file_id: '',
               ec2_ip_address: '',
               ec2_username: '',
+              phpmyadmin_url: '',
             };
             this.waitCreate = false;
             this.openModalAdd = false;
