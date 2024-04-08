@@ -650,7 +650,6 @@ export default {
     },
     handleChangeForm(event, field) {
       // const newValue = event;
-      // console.log('Gia tri b vua chon', newValue);
       // console.log('O ban vua chon', field);
       switch (field) {
         case 'start_date':
