@@ -72,6 +72,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
             ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
             ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
             ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
+            ->where(RDSManager::TYPE, RDS_LOCAL)
             ->first()->id;
     }
 
@@ -87,15 +88,6 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         }
 
         $openConnect = $this->getIdRDSLocal($id) != $id; // connect rds only when not local rds
-
-        $data = $rdsManager->whereHas('users', function ($query) use ($id) {
-            $query->where('rds_manager_id', $id);
-        })->exists();
-        if ($attributes['url_end_point'] != $rdsManager->url_end_point && $data) {
-            $msg = trans('api.rds_manager.action_error', ['action' => 'update']);
-            return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
-        }
-
         $filePath = UploadFile::query()->find($attributes['file_id'])->file_path;
         $connect = Common::connectRDS($attributes, $filePath, $openConnect);
         if ($connect['code'] != CODE_SUCCESS) {
