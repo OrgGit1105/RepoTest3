@@ -314,6 +314,7 @@ class Common
         $data = [
             RDSManager::USERNAME => $rdsManager->username,
             RDSManager::PASSWORD => $rdsManager->password,
+            RDSManager::URL_END_POINT => $rdsManager->url_end_point,
             RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
             RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,
             RDSManager::PHPMYADMIN_URL => @$rdsManager->phpmyadmin_url
