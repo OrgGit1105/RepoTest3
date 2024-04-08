@@ -58,6 +58,28 @@
                   </div>
                   <div class="employee-edit" style="justify-content: start">
                     <div style="flex: 1">
+                      <p class="header-employee-edit fw-5">URL enpoint</p>
+                      <ValidationProvider
+                        v-slot="{ errors }"
+                        name="url_end_point"
+                        rules="required"
+                      >
+                        <b-input-group>
+                          <b-form-input
+                            id="url_end_point"
+                            v-model="formEdit.url_end_point"
+                            class="p-1"
+                          />
+                        </b-input-group>
+                        <div class="text-error">
+                          {{ errors[0] }}
+                        </div>
+                      </ValidationProvider>
+
+                    </div>
+                  </div>
+                  <div class="employee-edit" style="justify-content: start">
+                    <div style="flex: 1">
                       <p class="header-employee-edit fw-5">Username</p>
                       <ValidationProvider
                         v-slot="{ errors }"
@@ -222,6 +244,7 @@ export default {
     return {
       formEdit: {
         name: '',
+        url_end_point: '',
         username: '',
         password: '',
         file_id: '',
@@ -257,6 +280,7 @@ export default {
         const response = await getOneRds(this.id);
         this.formEdit = {
           name: response.data.name,
+          url_end_point: response.data.url_end_point,
           username: response.data.username,
           password: response.data.password,
           file_id: response.data.file_id,

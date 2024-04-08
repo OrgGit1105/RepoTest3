@@ -50,6 +50,15 @@
                 </template>
               </el-table-column>
               <el-table-column
+                prop="endpoint"
+                label="URL endpoint"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.url_end_point }}
+                </template>
+              </el-table-column>
+              <el-table-column
                 prop="username"
                 label="Username"
                 align="center"
@@ -113,6 +122,17 @@
             >
               <label for="name">Server name</label>
               <el-input id="name" v-model="formCreate.name" />
+              <div class="text-error">
+                {{ errors[0] }}
+              </div>
+            </ValidationProvider>
+            <ValidationProvider
+              v-slot="{ errors }"
+              name="url_end_point"
+              rules="required"
+            >
+              <label for="url_end_point" class="mt-3">URL endpoint</label>
+              <el-input id="url_end_point" v-model="formCreate.url_end_point" />
               <div class="text-error">
                 {{ errors[0] }}
               </div>
@@ -258,6 +278,7 @@ export default {
       name_search: null,
       formCreate: {
         name: '',
+        url_end_point: '',
         username: '',
         password: '',
         file_id: '',
@@ -307,6 +328,7 @@ export default {
               return {
                 id: item.id,
                 name: item.name,
+                url_end_point: item.url_end_point,
                 username: item.username,
                 ec2_ip_address: item.ec2_ip_address,
                 ec2_username: item.ec2_username,
@@ -343,6 +365,7 @@ export default {
     hideCreateModal() {
       this.formCreate = {
         name: '',
+        url_end_point: '',
         username: '',
         password: '',
         file_id: '',
@@ -387,6 +410,7 @@ export default {
           if (response.code === 200) {
             this.formCreate = {
               name: '',
+              url_end_point: '',
               username: '',
               password: '',
               file_id: '',
