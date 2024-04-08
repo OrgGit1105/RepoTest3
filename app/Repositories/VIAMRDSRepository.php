@@ -7,6 +7,7 @@
 
 namespace Repository;
 
+use App\Mail\RDSInfoMail;
 use App\Models\Database;
 use App\Models\DatabasePermission;
 use App\Models\RDSInfo;
@@ -18,6 +19,7 @@ use Helper\Common;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 
@@ -186,6 +188,26 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
         }
     }
 
+    private function generateRandomPassword($length) {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+
+        $characterCount = strlen($characters);
+        $randomString = '';
+
+        $randomString .= $characters[rand(26, 51)];
+        $randomString .= $characters[rand(0, 25)];
+        $randomString .= $characters[rand(52, 61)];
+        $randomString .= $characters[rand(62,68)];
+
+        for ($i = 0; $i < $length - 3; $i++) {
+            $randomString .= $characters[rand(0, $characterCount - 1)];
+        }
+
+        $randomString = str_shuffle($randomString);
+
+        return $randomString;
+    }
+
     public function create(array $attributes)
     {
         try {
@@ -247,11 +269,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $queryGetUser = "SELECT User FROM mysql.user";
                 $result = Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryGetUser);
                 $usernames = array_map('current', $result['data']);
-                $name = $this->model->find($user_id)->name;
+                $user = $this->model->find($user_id);
+                $name = $user->name;
+                $email = $user->email;
 
                 if (!in_array($name, $usernames)) {
-                    $queryCreateUser = "CREATE USER '{$name}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '4649Veho!12345678';";
+                    $passwd = $this->generateRandomPassword(10);
+                    if(ENVIRONMENT_UPDATE_RDS == 'local')
+                        $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED BY '$passwd';";
+                    else
+                        $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED WITH caching_sha2_password BY '$passwd';";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
+                    Mail::to($email)->send(new RDSInfoMail($dataConnect['data']['ec2_ip_address'], $dataConnect['data']['phpmyadmin_url'], $name, $passwd));
                 }
 
                 if ($isGrantPermission) {

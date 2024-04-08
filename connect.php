@@ -8,7 +8,7 @@ $arrayData = $argv[1];
 $decoded = base64_decode($arrayData);
 $data = unserialize($decoded);
 
-$host = $data['host'];
+$host = 'localhost';
 $username = $data['username'];
 $password = $data['password'];
 $port = 3306;
