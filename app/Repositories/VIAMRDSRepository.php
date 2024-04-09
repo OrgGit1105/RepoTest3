@@ -275,10 +275,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
                 if (!in_array($name, $usernames)) {
                     $passwd = $this->generateRandomPassword(10);
-                    if(ENVIRONMENT_UPDATE_RDS == 'local')
-                        $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED BY '$passwd';";
-                    else
-                        $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED WITH caching_sha2_password BY '$passwd';";
+                    $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED WITH caching_sha2_password BY '$passwd';";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
                     Mail::to($email)->send(new RDSInfoMail($dataConnect['data']['ec2_ip_address'], $dataConnect['data']['phpmyadmin_url'], $name, $passwd));
                 }
@@ -286,7 +283,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 if ($isGrantPermission) {
                     $permissionText = 'USAGE';
                 }
-                $queryAddPermission = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'localhost' {$grantOption};";
+                $queryAddPermission = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$name}'@'%' {$grantOption};";
                 Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryAddPermission);
             }
 
@@ -356,22 +353,22 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
             if (!$permission) { // permission = null => delete RDS
                 $isDeleteAccount = $this->deleteAccountRDS($database_id, $user_id, $rds_manager_id);
                 if($isDeleteAccount && config('app.env') === ENVIRONMENT_UPDATE_RDS) {
-                    $query = "DROP USER '{$username}'@'localhost'";
+                    $query = "DROP USER '{$username}'@'%'";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $query);
                 }
             } else {
                 if(config('app.env') === ENVIRONMENT_UPDATE_RDS) {
-                    $queryDelAll = "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';";
+                    $queryDelAll = "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'%';";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelAll);
 
                     if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
-                        $queryDelGrant = "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';";
+                        $queryDelGrant = "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'%';";
                         Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryDelGrant);
                     }
                     if ($isGrantPermission) {
                         $permissionText = 'USAGE';
                     }
-                    $query = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'localhost' {$grantOption};";
+                    $query = "GRANT {$permissionText} ON `{$database_name}`.* TO '{$username}'@'%' {$grantOption};";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $query);
                 }
             }
@@ -439,7 +436,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                     $dataConnect['data'],
                     $dataConnect['filePath'],
                     $dataConnect['openConnect'],
-                    "DROP USER '{$username}'@'localhost'"
+                    "DROP USER '{$username}'@'%'"
                 );
             } else {
                 $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
@@ -451,14 +448,14 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                         $dataConnect['data'],
                         $dataConnect['filePath'],
                         $dataConnect['openConnect'],
-                        "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'localhost';"
+                        "REVOKE ALL PRIVILEGES ON `{$database_name}`.* FROM '{$username}'@'%';"
                     );
                     if (array_intersect([$permissionGrant, $permissionAllPrivileges], $listPermissionOld)) {
                         Common::connectRDS(
                             $dataConnect['data'],
                             $dataConnect['filePath'],
                             $dataConnect['openConnect'],
-                            "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'localhost';"
+                            "REVOKE GRANT OPTION ON `{$database_name}`.* FROM '{$username}'@'%';"
                         );
                     }
                 }
