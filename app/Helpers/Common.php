@@ -292,6 +292,7 @@ class Common
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            Log::info('query: '. $query);
             return [
                 'code' => CODE_ERROR_SERVER,
                 'message' => trans('api.rds_manager.connect_failed'),
