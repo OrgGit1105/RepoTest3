@@ -130,13 +130,13 @@
                     align="center"
                   />
                   <el-table-column
-                    prop="go_into_time"
-                    label="Go into time"
+                    prop="go_out_time"
+                    label="Go out time"
                     align="center"
                   />
                   <el-table-column
-                    prop="go_out_time"
-                    label="Go out time"
+                    prop="go_into_time"
+                    label="Go into time"
                     align="center"
                   />
                 </el-table>
