@@ -38,6 +38,8 @@ return [
         'time_must_today' => 'Please time_in must today',
         'in_time_exist' => 'This in time data already exists',
         'out_time_exist' => 'This out time data already exists',
+        'go_out' => 'Start calculating break time',
+        'go_into' => 'End of break time'
     ],
     'viam_user' => [
         'policy_id_v-face' => 'V-face admin and V-face normal cannot be selected at the same time',

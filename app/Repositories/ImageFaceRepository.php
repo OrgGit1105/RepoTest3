@@ -11,6 +11,7 @@ use App\Helpers\UserSystemInfoHelper;
 use App\Http\Resources\UserResource;
 use App\Mail\NegativeStaffMail;
 use App\Models\ArrivingReport;
+use App\Models\BreakTime;
 use App\Models\Emotion;
 use App\Models\ImageFace;
 use App\Models\User;
@@ -184,11 +185,8 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         }
     }
 
-    public function compareFace(array $attributes)
+    private function getInfoImage(array $attributes)
     {
-        $timeNow = Carbon::now()->format('H:i:s');
-        $now = Carbon::now();
-
         $rekognitionClient = $this->configRekognitionClient();
         $createEmotions = [];
         if (request()->hasFile('file')) {
@@ -200,10 +198,10 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                     ],
                     'Attributes' => ['EMOTIONS'],
                 ]
-        );
+            );
             // Ảnh chỉ được phép một người
             if (count($checkImageMustOne['FaceDetails']) != 1) {
-                ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+                return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
             }
             $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
             $result = [];
@@ -252,7 +250,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         );
             // Ảnh chỉ được phép một người
             if (count($checkImageMustOne['FaceDetails']) != 1) {
-                ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+                return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
             }
             $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
             $result = [];
@@ -298,6 +296,22 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         if (!$user->getRoleVFace($user)) {
             return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login_not_granted'));
         }
+        return ResponseService::responseJson(CODE_SUCCESS, compact('user', 'image', 'createEmotions'));
+    }
+
+    public function compareFace(array $attributes)
+    {
+        $timeNow = Carbon::now()->format('H:i:s');
+        $now = Carbon::now();
+
+        $dataImage = $this->getInfoImage($attributes);
+        if($dataImage->original['code'] != CODE_SUCCESS) {
+            return $dataImage;
+        }
+        $dataImage = $dataImage->original['data'];
+        $user = $dataImage['user'];
+        $image = $dataImage['image'];
+        $createEmotions = $dataImage['createEmotions'];
 
         $dateNow = Carbon::now()->format('Y-m-d');
         $morning = Carbon::parse('12:00')->format('H:i:s');
@@ -542,5 +556,47 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 }
             }
         }
+    }
+
+    public function breakTime(array $attributes)
+    {
+        $time = Carbon::now()->format('H:i:s');
+        $date = Carbon::now()->format('Y-m-d');
+
+        $dataImage = $this->getInfoImage($attributes);
+        if($dataImage->original['code'] != CODE_SUCCESS) {
+            return $dataImage;
+        }
+        $dataImage = $dataImage->original['data'];
+        $user = $dataImage['user'];
+        $msg = '';
+        switch ($attributes['time']) {
+            case 'go_out':
+                BreakTime::query()->create([
+                    BreakTime::USER_ID => $user->id,
+                    BreakTime::DATE => $date,
+                    BreakTime::GO_OUT_TIME => $time
+                ]);
+                $msg = trans('api.arriving_report.go_out');
+                break;
+            case 'go_into':
+                $breakTime = BreakTime::query()->where(BreakTime::USER_ID, $user->id)
+                    ->where(BreakTime::DATE, $date)
+                    ->orderByDesc('id')
+                    ->first();
+                if($breakTime) {
+                    $breakTime->go_into_time = $time;
+                    $breakTime->save();
+                } else {
+                    BreakTime::query()->create([
+                        BreakTime::USER_ID => $user->id,
+                        BreakTime::DATE => $date,
+                        BreakTime::GO_INTO_TIME => $time
+                    ]);
+                }
+                $msg = trans('api.arriving_report.go_into');
+                break;
+        }
+        return ResponseService::responseJson(CODE_SUCCESS, $msg);
     }
 }
