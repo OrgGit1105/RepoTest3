@@ -69,7 +69,7 @@
               <el-table-column
                 prop="warning"
                 label=""
-                width="150"
+                width="130"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -81,8 +81,8 @@
               </el-table-column>
               <el-table-column
                 prop="late"
-                label=""
-                width="150"
+                label="Late"
+                width="130"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -107,7 +107,7 @@
               <el-table-column
                 prop="user_name"
                 label="Employee name"
-                width="250"
+                width="230"
                 align="center"
               />
               <el-table-column
@@ -117,17 +117,22 @@
               />
               <el-table-column
                 prop="in_time"
-                label="IN"
+                label="Check in"
                 align="center"
               />
               <el-table-column
                 prop="out_time"
-                label="OUT"
+                label="Check out"
                 align="center"
               />
               <el-table-column
                 prop="registration_type"
                 label="Input type"
+                align="center"
+              />
+              <el-table-column
+                prop="sum_break_time"
+                label="Sum of breaks"
                 align="center"
               />
             </el-table>
