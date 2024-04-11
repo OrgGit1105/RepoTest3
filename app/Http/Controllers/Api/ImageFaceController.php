@@ -333,4 +333,45 @@ class ImageFaceController extends Controller
 
     return $this->repository->sendMailNegative();
   }
+
+    /**
+     * @OA\Post(
+     *   path="/api/image_face/breakTime",
+     *   tags={"ImageFace"},
+     *   summary="break time manager",
+     *   operationId="break_time_manager",
+     *   @OA\RequestBody(
+     *       @OA\MediaType(
+     *          mediaType="multipart/form-data",
+     *          @OA\Schema(
+     *            required={"file","time"},
+     *            @OA\Property(
+     *              property="file",
+     *              type="file",
+     *            ),
+     *            @OA\Property(
+     *              property="time",
+     *              format="string",
+     *              enum={"go_out", "go_into"},
+     *            ),
+     *         )
+     *      )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Send request success",
+     *     @OA\MediaType(
+     *      mediaType="application/json",
+     *      example={"code":200,"data":{"id":7,"file":"WithoutMask\/1687151741BachImage.jpg","user_id":1,"type":"WithoutMask","created_at":"2023-06-19 12:15:38","updated_at":null,"deleted_at":null,"face_rekognition_id":"2ad7c68b-68cb-4c55-a0d4-b2ca39b3c65b"}}
+     *     )
+     *   ),
+     * )
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function breakTime(ImageFaceRequest $request)
+    {
+        return $this->repository->breakTime($request->all());
+    }
 }

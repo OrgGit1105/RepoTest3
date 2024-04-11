@@ -9,6 +9,7 @@ namespace Repository;
 
 use App\Http\Resources\BaseResource;
 use App\Models\ArrivingReport;
+use App\Models\BreakTime;
 use App\Models\HistoryEditReport;
 use App\Models\User;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
@@ -52,12 +53,16 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $endDate = Arr::get($request, 'end_date', $defaulEndWeek);
         $startDate = date("Y-m-d 00:00", strtotime($startDate));
         $endDate = date("Y-m-d 23:59", strtotime($endDate));
+        $startDateBreak = date("Y-m-d", strtotime($startDate));
+        $endDateBreak = date("Y-m-d", strtotime($endDate));
         $userId = Arr::get($request, 'user_id', []);
         $keySearch = Arr::get($request, 'key_search', []);
 
         $arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
+
         if (!empty($userId)) {
             $arrivings = $arrivings->where('user_id', $userId);
+            $breakTimes = $breakTimes->where(BreakTime::USER_ID, $userId);
         }
         if (!empty($keySearch)) {
             $arrivings = $arrivings->where(function ($query) use ($keySearch) {
@@ -70,6 +75,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $data = [];
         $arrivings = $arrivings->orderBy('in_time', 'desc')->orderBy('id', 'desc');
         $arrivings = $arrivings->get();
+        $breakTimes = BreakTime::query()->get();
+
         foreach ($arrivings as $key => $value) {
             $data[$key]['id'] = $value->id;
             $data[$key]['user_name'] = $value->user ? $value->user->name : '';
@@ -80,6 +87,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
             $data[$key]['out_time'] = empty($value['out_time']) ? '' : date("H:i:s", strtotime($value->out_time));
             $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
+            $data[$key]['sum_break_time'] = $breakTimes
+                ->where(BreakTime::USER_ID, $value->user->id)
+                ->where(BreakTime::DATE, $data[$key]['date'])
+                ->count();
             if ($value->in_time == null || $value->out_time == null) {
                 $data[$key]['warning'] = 'Warning';
             } else {
@@ -188,7 +199,15 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     {
         $arriving = $this->model->with('user')->find($id);
         $type_date_text = $arriving->type_date ? __('analytic.type.' . $arriving->type_date) : __('analytic.type.1');
+        $break_time = BreakTime::query()
+            ->select('id', BreakTime::DATE, BreakTime::GO_OUT_TIME, BreakTime::GO_INTO_TIME)
+            ->where(BreakTime::DATE, Carbon::parse($arriving->in_time)->format('Y-m-d'))
+            ->where(BreakTime::USER_ID, $arriving->user->id)
+            ->get();
+
         $arriving->setAttribute('type_date_text', $type_date_text);
+        $arriving->setAttribute('break_time', $break_time);
+        $arriving->setAttribute('break_time_sum', $break_time->count());
         return $arriving;
     }
 

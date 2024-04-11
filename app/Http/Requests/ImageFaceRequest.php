@@ -30,54 +30,62 @@ class ImageFaceRequest extends FormRequest
      */
     public function rules()
     {
-          switch (Route::getCurrentRoute()->getActionMethod()){
-                case 'update':
-                    return $this->getCustomRule();
-                case 'create':
-                    return $this->getCustomRule();
-                case 'index':
-                  return $this->getCustomRule();
-                case 'compareFace':
-                  return $this->getCustomRule();
-                case 'checkImage':
-                  return $this->getCustomRule();
-                default:
-                    return [];
-          }
+        switch (Route::getCurrentRoute()->getActionMethod()) {
+            case 'update':
+                return $this->getCustomRule();
+            case 'create':
+                return $this->getCustomRule();
+            case 'index':
+                return $this->getCustomRule();
+            case 'compareFace':
+            case 'breakTime':
+                return $this->getCustomRule();
+            case 'checkImage':
+                return $this->getCustomRule();
+            default:
+                return [];
+        }
     }
 
-     public function getCustomRule(){
-        if(Route::getCurrentRoute()->getActionMethod() == 'update'){
+    public function getCustomRule()
+    {
+        if (Route::getCurrentRoute()->getActionMethod() == 'update') {
             return [
 
             ];
         }
-        if(Route::getCurrentRoute()->getActionMethod() == 'create'){
-            return  [
-              'file'     => 'required|array',
-              'file.*'     => 'required|mimes:jpg,jpeg,png',
-              'user_id'     => 'required|numeric',
-              'type' => 'required|in:WithoutMask,WithMask',
+        if (Route::getCurrentRoute()->getActionMethod() == 'create') {
+            return [
+                'file' => 'required|array',
+                'file.*' => 'required|mimes:jpg,jpeg,png',
+                'user_id' => 'required|numeric',
+                'type' => 'required|in:WithoutMask,WithMask',
             ];
         }
-       if(Route::getCurrentRoute()->getActionMethod() == 'index'){
-         return  [
-           'user_id'     => 'required|numeric',
-         ];
-       }
-       if(Route::getCurrentRoute()->getActionMethod() == 'compareFace'){
-         return [
-           'time' => 'required|in:in,out',
+        if (Route::getCurrentRoute()->getActionMethod() == 'index') {
+            return [
+                'user_id' => 'required|numeric',
+            ];
+        }
+        if (Route::getCurrentRoute()->getActionMethod() == 'compareFace') {
+            return [
+                'time' => 'required|in:in,out',
 //           'type' => 'required|in:WithoutMask,WithMask',
-           'file' => 'required'
-         ];
-       }
-       if(Route::getCurrentRoute()->getActionMethod() == 'checkImage'){
-         return [
-           'file' => 'required|mimes:jpg,jpeg,png'
-         ];
-       }
-     }
+                'file' => 'required'
+            ];
+        }
+        if (Route::getCurrentRoute()->getActionMethod() == 'breakTime') {
+            return [
+                'time' => 'required|in:go_out,go_into',
+                'file' => 'required'
+            ];
+        }
+        if (Route::getCurrentRoute()->getActionMethod() == 'checkImage') {
+            return [
+                'file' => 'required|mimes:jpg,jpeg,png'
+            ];
+        }
+    }
 
     public function messages()
     {

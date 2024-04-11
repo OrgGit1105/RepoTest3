@@ -62,44 +62,85 @@
                 <div class="basic" />
               </div>
               <hr class="line">
-              <div>
-                <p class="title-time">Date</p>
-                <div class="d-flex justify-content-start align-items-center">
-                  <el-form-item prop="date">
-                    <el-date-picker
-                      v-model="dataWorkingTimeRecord.date"
-                      type="date"
-                      format="yyyy-MM-dd"
-                      value-format="yyyy-MM-dd"
-                    />
-                  </el-form-item>
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="title-time">Date</p>
+                  <div class="d-flex justify-content-start align-items-center">
+                    <el-form-item prop="date">
+                      <el-date-picker
+                        v-model="dataWorkingTimeRecord.date"
+                        type="date"
+                        format="yyyy-MM-dd"
+                        value-format="yyyy-MM-dd"
+                      />
+                    </el-form-item>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p class="title-time">In Time</p>
-                <div class="d-flex justify-content-start align-items-center">
-                  <el-form-item prop="in_time">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.in_time"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
-                    />
-                  </el-form-item>
+                <div>
+                  <p class="title-time">In Time</p>
+                  <div class="d-flex justify-content-start align-items-center">
+                    <el-form-item prop="in_time">
+                      <el-time-picker
+                        v-model="dataWorkingTimeRecord.in_time"
+                        format="HH:mm:ss"
+                        value-format="HH:mm:ss"
+                      />
+                    </el-form-item>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p class="title-time">Out Time</p>
-                <div class="d-flex justify-content-start align-items-center">
-                  <el-form-item prop="out_time">
-                    <el-time-picker
-                      v-model="dataWorkingTimeRecord.out_time"
-                      format="HH:mm:ss"
-                      value-format="HH:mm:ss"
-                    />
-                  </el-form-item>
+                <div>
+                  <p class="title-time">Out Time</p>
+                  <div class="d-flex justify-content-start align-items-center">
+                    <el-form-item prop="out_time">
+                      <el-time-picker
+                        v-model="dataWorkingTimeRecord.out_time"
+                        format="HH:mm:ss"
+                        value-format="HH:mm:ss"
+                      />
+                    </el-form-item>
+                  </div>
                 </div>
               </div>
 
+              <!-- Break Time -->
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="basic">
+                  <h1 class="title-record">Break Time</h1>
+                </div>
+                <div class="basic" />
+              </div>
+              <hr class="line">
+              <div class="">
+                <el-table
+                  :data="dataWorkingTimeRecord.break_time ? dataWorkingTimeRecord.break_time : []"
+                  style="width: 100%"
+                  :row-style="rowWorkingStyle"
+                >
+                  <el-table-column
+                    label="No"
+                    align="center"
+                  >
+                    <template slot-scope="{ $index }">
+                      {{ $index + 1 }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="date"
+                    label="Date"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="go_into_time"
+                    label="Go into time"
+                    align="center"
+                  />
+                  <el-table-column
+                    prop="go_out_time"
+                    label="Go out time"
+                    align="center"
+                  />
+                </el-table>
+              </div>
               <!-- Remark -->
               <div class="d-flex justify-content-between align-items-center mt-2">
                 <div class="basic">
@@ -200,6 +241,9 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields();
     },
+    rowWorkingStyle({ row, rowIndex }) {
+      return { 'cursor': 'pointer' };
+    },
     listWorkingRecord() {
       this.$router.push({ path: `/working-time/index` });
     },
@@ -239,7 +283,7 @@ export default {
               title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
               content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_EDIT_SUCCESSFULLY'),
             });
-            this.getWorkingRecordById();
+            this.$router.push({ path: `/working-time/index` });
           } else {
             MakeToast({
               variant: 'danger',
