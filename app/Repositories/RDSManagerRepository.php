@@ -23,6 +23,7 @@ use http\Env\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Namshi\JOSE\Signer\SecLib\RSA;
 use phpseclib3\Net\SSH2;
 use Repository\BaseRepository;
@@ -66,7 +67,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
     }
 
-    private function getIdRDSLocal($id)
+    private function getIdRDSLocal()
     {
         return RDSManager::query()
             ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
@@ -87,12 +88,12 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
                 trans('messages.mes.data_not_found'));
         }
 
-        $openConnect = $this->getIdRDSLocal($id) != $id; // connect rds only when not local rds
+        $openConnect = $this->getIdRDSLocal() != $id; // connect rds only when not local rds
 
         $data = $rdsManager->whereHas('users', function ($query) use ($id) {
             $query->where('rds_manager_id', $id);
         })->exists();
-        if ($data) {
+        if (($attributes['url_end_point'] != $rdsManager->url_end_point || $attributes['ec2_ip_address'] != $rdsManager->ec2_ip_address) && $data) {
             $msg = trans('api.rds_manager.action_error', ['action' => 'update']);
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $msg, $msg);
         }
@@ -115,7 +116,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         }
 
         //don't delete rds local
-        if ($this->getRDSLocal($id) == $id) {
+        if ($this->getRDSLocal() == $id) {
             return ResponseService::responseJsonError(
                 Response::HTTP_UNPROCESSABLE_ENTITY,
                 trans('messages.mes.delete_fail'),
