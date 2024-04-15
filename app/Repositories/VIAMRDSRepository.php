@@ -223,6 +223,7 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
             $permissionList = RDSPermission::query()->pluck('name', 'id')->toArray();
             $permission = (count($attributes['permission']) == count($permissionList) -1) ? [array_search(PERMISSION_ALL_PRIVILEGES, $permissionList)] : $attributes['permission'];
+            $isSendMail = RDSInfo::query()->where(RDSInfo::USER_ID, $user_id)->exists() ? false : true;
 
             $rds_info = RDSInfo::query()->firstOrCreate([
                 RDSInfo::USER_ID => $user_id,
@@ -274,10 +275,18 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
                 $email = $user->email;
 
                 if (!in_array($name, $usernames)) {
-                    $passwd = $this->generateRandomPassword(10);
+                    if($user->passwd_rds) {
+                        $passwd = base64_decode($user->passwd_rds);
+                    } else {
+                        $passwd = $this->generateRandomPassword(10);
+                        $user->passwd_rds = base64_encode($passwd);
+                        $user->save();
+                    }
+
                     $queryCreateUser = "CREATE USER '{$name}'@'%' IDENTIFIED WITH caching_sha2_password BY '$passwd';";
                     Common::connectRDS($dataConnect['data'], $dataConnect['filePath'], $dataConnect['openConnect'], $queryCreateUser);
-                    Mail::to($email)->send(new RDSInfoMail($dataConnect['data']['ec2_ip_address'], $dataConnect['data']['phpmyadmin_url'], $name, $passwd));
+                    if($isSendMail)
+                        Mail::to($email)->send(new RDSInfoMail($dataConnect['data']['ec2_ip_address'], $dataConnect['data']['phpmyadmin_url'], $name, $passwd));
                 }
 
                 if ($isGrantPermission) {

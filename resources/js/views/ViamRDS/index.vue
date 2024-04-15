@@ -101,7 +101,7 @@
           </b-table>
         </div>
 
-        <!-- <div class="use-management-pagianation">
+        <div class="use-management-pagianation">
           <div class="card-body pagianation">
             <el-pagination
               background
@@ -110,10 +110,10 @@
               :page-size="pagination.per_page"
               :total="pagination.total_records"
               :current-page.sync="pagination.current_page"
-              @current-change="getListAllUser"
+              @current-change="getListViamRds"
             />
           </div>
-        </div> -->
+        </div>
         <el-dialog
           title=""
           :visible.sync="openModalAdd"
@@ -293,14 +293,16 @@ export default {
     },
     async getListViamRds(param1, param2) {
       this.openLoading();
-      //   this.pagination.isDisable = true;
-      //   const PARAMS = {
-      //     page: this.pagination.current_page,
-      //     per_page: this.pagination.per_page,
-      //   };
+      // this.pagination.isDisable = true;
+      // const PARAMS = {
+      //   page: this.pagination.current_page,
+      //   per_page: this.pagination.per_page,
+      // };
       const newParam1 = param1 ?? this.rds_id;
       const newParam2 = param2 ?? this.database_name;
-      await getListViamRds(newParam1, newParam2)
+      const page = this.pagination.current_page;
+      const per_page = this.pagination.per_page;
+      await getListViamRds(newParam1, newParam2, page, per_page)
         .then((response) => {
           if (response.code === 200) {
             this.listViamRDS = response.data.result.map((item) => {
@@ -315,8 +317,8 @@ export default {
 
             // console.log('this.listViamRDS ==>', this.listViamRDS);
             // this.$store.dispatch('app/saveListUSer', listUser);
-            // this.pagination.total_records = response.data.pagination.total_records;
-            // this.pagination.current_page = response.data.pagination.current_page;
+            this.pagination.total_records = response.data.pagination.total_records;
+            this.pagination.current_page = response.data.pagination.current_page;
             // this.pagination.isDisable = false;
           }
           this.closeLoading();

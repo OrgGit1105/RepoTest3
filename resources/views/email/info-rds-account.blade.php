@@ -16,10 +16,17 @@
                 <li>Username: {{$name}}</li>
                 <li>Password: {{$password}}</li>
             </ul>
-            Please log in at <a href="{{$phpmyadmin_url}}">here</a>
+            The above account can be used to access databases belonging to the company's RDS (PhpMyAdmin) with the form <a href="{{$phpmyadmin_url}}">{{$phpmyadmin_url}}</a>.
         </div>
         <div style="margin-top: 20px;">
-            <b>Note:</b><i> This account will be revoked when you leave your job. So please do not use it to configure projects</i>
+            <ul> <b>Note:</b>
+                <li>
+                    The username and password will be the same on other RDS (PhpMyAdmin).
+                        If you cannot access other RDS (PhpMyAdmin) using the above login information,
+                        please contact V-face admin to learn more about your access rights.
+                </li>
+                <li>This account will be revoked when you leave your job. So please do not use it to configure projects</li>
+            </ul>
         </div>
     </div>
 </div>

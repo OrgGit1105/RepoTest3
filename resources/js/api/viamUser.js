@@ -8,7 +8,7 @@ const urlAPI = {
   urlPUTOneUser: template`/viam_user/${'id'}`,
   urlDELETEOneUser: template`/viam_user/${'id'}`,
   urlGETDatabasesByRdsId: template`/viam_rds/${'id'}`,
-  urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}`,
+  urlGETViamRds: template`/viam_rds?rds_manager_id=${'rds_id'}&database_name=${'database_name'}&page=${'page'}&per_page=${'per_page'}`,
   urlPOSTConfigRole: template`/viam_rds`,
   urlGETListRDS: template`/rds_manager`,
   urlPostRds: template`/rds_manager`,
@@ -61,8 +61,8 @@ export function getListDatabases(id, data) {
   return request.getRequest(urlAPI.urlGETDatabasesByRdsId({ id: id }), data);
 }
 
-export function getListViamRds(rds_id, database_name) {
-  return request.getRequest(urlAPI.urlGETViamRds({ rds_id, database_name }));
+export function getListViamRds(rds_id, database_name, page, per_page) {
+  return request.getRequest(urlAPI.urlGETViamRds({ rds_id, database_name, page, per_page }));
 }
 
 export function createRdsRole(params) {
