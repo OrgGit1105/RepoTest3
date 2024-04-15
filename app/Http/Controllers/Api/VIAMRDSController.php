@@ -53,7 +53,7 @@ class VIAMRDSController extends Controller
      *     ),
      *   ),
      *   @OA\Parameter(
-     *     name="per_page",
+     *     name="page",
      *     in="query",
      *     @OA\Schema(
      *      type="integer",

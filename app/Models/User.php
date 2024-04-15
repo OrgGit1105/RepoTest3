@@ -40,6 +40,7 @@ class User extends Authenticatable implements JWTSubject
     const GITHUB_ID = 'github_id';
     const SSH_PUBLIC_KEY = 'ssh_public_key';
     const GITHUB_GMAIL = 'github_gmail';
+    const PASSWD_RDS = 'passwd_rds';
 
     protected $fillable = [
         self::NAME,
@@ -62,7 +63,8 @@ class User extends Authenticatable implements JWTSubject
         self::GITHUB_GMAIL,
         self::CREATED_AT,
         self::UPDATED_AT,
-        'jwt_active'
+        'jwt_active',
+        self::PASSWD_RDS,
     ];
 
     /**
@@ -71,7 +73,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'jwt_active',
+        'password', 'jwt_active', self::PASSWD_RDS
     ];
 
     public $timestamps = false;
