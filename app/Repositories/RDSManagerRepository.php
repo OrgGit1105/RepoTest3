@@ -64,6 +64,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         if ($connect['code'] != CODE_SUCCESS) {
             return $connect;
         }
+        $attributes['password'] = base64_encode($attributes['password']);
         return ResponseService::responseJson(CODE_SUCCESS, parent::create($attributes));
     }
 
@@ -103,6 +104,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         if ($connect['code'] != CODE_SUCCESS) {
             return $connect;
         }
+        $attributes['password'] = base64_encode($attributes['password']);
         return ResponseService::responseJson(CODE_SUCCESS, parent::update($attributes, $id));
     }
 
