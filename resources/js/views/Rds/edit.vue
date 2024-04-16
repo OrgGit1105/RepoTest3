@@ -360,14 +360,23 @@ export default {
 
     async submitDelete() {
       if (this.id) {
-        await deleteOneRds(this.id).then(() => {
-          MakeToast({
-            variant: 'success',
-            title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
-            content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_USER_SUCCESSFULLY'),
-          });
-          this.$router.push('/rds/index');
+        await deleteOneRds(this.id).then((response) => {
+          if (response.code === 200){
+            MakeToast({
+              variant: 'success',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_SUCCESS'),
+              content: this.$t('LANGUAGES.TEXT_TOAST_CONTENT_DELETE_RDS_SUCCESSFULLY'),
+            });
+            this.$router.push('/rds/index');
+          } else {
+            MakeToast({
+              variant: 'warning',
+              title: this.$t('LANGUAGES.TEXT_TOAST_TITLE_WARNING'),
+              content: response.message,
+            });
+          }
         });
+        this.showModalDelete = false;
       }
     },
 
