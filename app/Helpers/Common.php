@@ -307,7 +307,7 @@ class Common
         $rdsManagerLocal = RDSManager::query()
             ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
             ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
-            ->where(RDSManager::PASSWORD, config('database.connections.mysql.password'))
+            ->where(RDSManager::PASSWORD, base64_decode(config('database.connections.mysql.password')))
             ->where(RDSManager::TYPE, RDS_LOCAL)
             ->first();
         $openConnect = ($rds_manager_id != $rdsManagerLocal->id);
