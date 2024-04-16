@@ -116,7 +116,7 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         }
 
         //don't delete rds local
-        if ($this->getRDSLocal() == $id) {
+        if ($this->getIdRDSLocal() == $id) {
             return ResponseService::responseJsonError(
                 Response::HTTP_UNPROCESSABLE_ENTITY,
                 trans('messages.mes.delete_fail'),
