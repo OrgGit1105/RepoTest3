@@ -73,7 +73,6 @@ class RDSManagerRepository extends BaseRepository implements RDSManagerRepositor
         return RDSManager::query()
             ->where(RDSManager::URL_END_POINT, config('database.connections.mysql.host'))
             ->where(RDSManager::USERNAME, config('database.connections.mysql.username'))
-            ->where(RDSManager::PASSWORD, base64_decode(config('database.connections.mysql.password')))
             ->where(RDSManager::TYPE, RDS_LOCAL)
             ->first()->id;
     }
