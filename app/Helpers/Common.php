@@ -313,7 +313,7 @@ class Common
         $filePath = @$rdsManager->file->file_path;
         $data = [
             RDSManager::USERNAME => $rdsManager->username,
-            RDSManager::PASSWORD => base64_decode($rdsManager->password),
+            RDSManager::PASSWORD => $rdsManager->password,
             RDSManager::URL_END_POINT => $rdsManager->url_end_point,
             RDSManager::EC2_USERNAME => $rdsManager->ec2_username,
             RDSManager::EC2_IP_ADDRESS => $rdsManager->ec2_ip_address,

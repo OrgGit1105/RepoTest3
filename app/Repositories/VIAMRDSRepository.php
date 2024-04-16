@@ -276,10 +276,10 @@ class VIAMRDSRepository extends BaseRepository implements VIAMRDSRepositoryInter
 
                 if (!in_array($name, $usernames)) {
                     if($user->passwd_rds) {
-                        $passwd = base64_decode($user->passwd_rds);
+                        $passwd = $user->passwd_rds;
                     } else {
                         $passwd = $this->generateRandomPassword(10);
-                        $user->passwd_rds = base64_encode($passwd);
+                        $user->passwd_rds = $passwd;
                         $user->save();
                     }
 
