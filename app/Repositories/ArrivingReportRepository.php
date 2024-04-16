@@ -58,6 +58,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $userId = Arr::get($request, 'user_id', []);
         $keySearch = Arr::get($request, 'key_search', []);
 
+        $breakTimes = BreakTime::query()->get();
         $arrivings = ArrivingReport::whereBetween('in_time', [$startDate, $endDate])->with('user');
 
         if (!empty($userId)) {
@@ -151,12 +152,14 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
                     $e->whereTime("out_time", "<=", $afternoon);
                 }, function ($e) use ($morning, $afternoon, $in_time) {
-                    $e->whereTime('out_time', '>=', $afternoon)
+                    $e->where(function ($e) use($afternoon, $morning, $in_time){
+                        $e->whereTime('out_time', '>=', $afternoon)
                         ->orWhere(function ($query) use ($morning, $in_time) {
                             $query->whereNull('out_time')
                                 ->whereDate('in_time', $in_time)
                                 ->whereTime('in_time', '>=', $morning);
                         });
+                    });
                 })
                 ->first();
             if ($checkPeriodAfternoon) {
