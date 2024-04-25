@@ -16,8 +16,8 @@ class CreateArrivingReportsTable extends Migration
         Schema::create('arriving_reports', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->timestamp('in_time');
-            $table->timestamp('out_time')->nullable();
+            $table->dateTime('in_time');
+            $table->dateTime('out_time')->nullable();
             $table->text('remark')->nullable();
             $table->string('registration_type')->nullable();
             $table->string('link_face_in')->nullable();
