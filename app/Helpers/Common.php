@@ -336,7 +336,7 @@ class Common
                     $dataConnect['data'],
                     $dataConnect['filePath'],
                     $dataConnect['openConnect'],
-                    "DROP USER '{$userData->name}'@'localhost'"
+                    "DROP USER '{$userData->name}'@'%'"
                 );
             }
         }
