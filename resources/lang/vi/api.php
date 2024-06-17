@@ -39,7 +39,8 @@ return [
         'in_time_exist' => 'This in time data already exists',
         'out_time_exist' => 'This out time data already exists',
         'go_out' => 'Start calculating break time',
-        'go_into' => 'End of break time'
+        'go_into' => 'End of break time',
+        'need_check_out' => 'Today you checked in, please select checkout',
     ],
     'viam_user' => [
         'policy_id_v-face' => 'V-face admin and V-face normal cannot be selected at the same time',

@@ -318,6 +318,12 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         $afternoon = Carbon::parse('13:30')->format('H:i:s');
         $isCheckIn = false;
         $isCheckOut = false;
+        $checkInInfo = ArrivingReport::query()
+            ->whereDate("in_time", $dateNow)
+            ->where("user_id", $user->id)
+            ->whereNotNull('in_time')
+            ->whereNull('out_time')
+            ->first();
         switch ($attributes['time']) {
             case 'in':
                 // Kiểm tra nhân viên này hôm nay đã check in chưa?
@@ -333,6 +339,10 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 if ($arrivingIn_time) {
                     $isCheckIn = true;
                 } else {
+                    if($checkInInfo) {
+                        return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_out'), trans('api.arriving_report.need_check_out'));
+                    }
+
                     $arrivingIn_time = new ArrivingReport();
                     $arrivingIn_time->in_time = $now;
                     $late = 0;
@@ -371,16 +381,10 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 if ($arrivingOut_time) {
                     $isCheckOut = true;
                 } else {
-                    $arrivingIn_time = ArrivingReport::query()
-                        ->whereDate("in_time", $dateNow)
-                        ->where("user_id", $user->id)
-                        ->whereNotNull('in_time')
-                        ->whereNull('out_time')
-                        ->first();
-                    if ($arrivingIn_time) {
+                    if ($checkInInfo) {
                         $isCheckIn = true;
                         // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
-                        $arrivingOut_time = $arrivingIn_time;
+                        $arrivingOut_time = $checkInInfo;
                         $arrivingOut_time->user_id = $user->id;
                         $arrivingOut_time->out_time = $now;
                         $arrivingOut_time->link_face_out = $image->file;

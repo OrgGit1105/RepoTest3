@@ -423,7 +423,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 return __('analytic.date_err');
             }
 
-            if (!$this->holiday($messages['1']) && !$this->holiday($messages['2'])) {
+            if (!$this->holiday($messages['1']) || !$this->holiday($messages['2'])) {
                 return __('analytic.holiday');
             }
 
