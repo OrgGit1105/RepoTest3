@@ -321,6 +321,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         $checkInInfo = ArrivingReport::query()
             ->whereDate("in_time", $dateNow)
             ->where("user_id", $user->id)
+            ->where("type_date", config('analytic.type.work'))
             ->whereNotNull('in_time')
             ->whereNull('out_time')
             ->first();
