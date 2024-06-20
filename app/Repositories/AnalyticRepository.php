@@ -119,18 +119,14 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
     public function getEmotions($request)
     {
         $typeCheck = $request->get('type_check', 'in');
-        $userId     = $request->get('user_id', null);
-        $page = (int)$request->get('page', 1);
-        $perPage = (int)$request->get('per_page', 20);
-        $yearMonth = $request->get('year_month', null);
-
-        $getEmotions   = Emotion::query()->where('user_id', $userId)->where('type_check', $typeCheck);
-
-        if($yearMonth) {
-            $getEmotions = $getEmotions->whereRaw("DATE_FORMAT(time, '%Y-%m') = ?", [$yearMonth]);
-        }
-        $getEmotions = $getEmotions->orderByDesc('id');
-        return $getEmotions->paginate($perPage);
+        $userId = $request->get('user_id', null);
+        $yearMonth = $request->get('year_month', Carbon::now()->format('Y-m'));
+        $getEmotions = Emotion::query()->where('user_id', $userId)
+            ->where('type_check', $typeCheck)
+            ->whereRaw("DATE_FORMAT(time, '%Y-%m') = ?", [$yearMonth])
+            ->orderByDesc('id')
+            ->get();
+        return $getEmotions;
     }
 
     public function exportEmotions($request)
