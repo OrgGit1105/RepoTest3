@@ -100,10 +100,10 @@
 </template>
 <script>
 import { getEmotions } from '../../api/analytic';
-import * as UserApi from '../../api/user';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import { getToken } from '../../utils/getToken';
+import moment from 'moment';
+
 export default {
   name: 'AnalyticsManagement',
   data() {
@@ -122,7 +122,7 @@ export default {
   },
   created() {
     this.getEmmotionStatistics();
-    this.getUser();
+    // this.getUser();
   },
   methods: {
     async getEmmotionStatistics() {
@@ -134,25 +134,27 @@ export default {
       };
       await getEmotions(PARAMS).then((response) => {
         if (response.code === 200) {
-          this.emmotionStatistics = response.data.result;
+          this.emmotionStatistics = response.data.emotions['result'];
+          this.nameEmployee = response.data.user['name'];
+          this.paidOffRemain = response.data.user['paid_off'];
         }
       }).catch(() => {
         this.getEmmotionStatistics = [];
       });
     },
-    async getUser() {
-      const id = this.$route.params.id;
-      await UserApi.getOneUser(id)
-        .then((response) => {
-          this.nameEmployee = response.data.name;
-          this.paidOffRemain = response.data.paid_off;
-        })
-        .catch(() => {
-          let userInfo = Cookies.get('userInfo');
-          userInfo = JSON.parse(userInfo);
-          this.nameEmployee = userInfo.role_id === 2 ? userInfo.name : '';
-        });
-    },
+    // async getUser() {
+    //   const id = this.$route.params.id;
+    //   await UserApi.getOneUser(id)
+    //     .then((response) => {
+    //       this.nameEmployee = response.data.name;
+    //       this.paidOffRemain = response.data.paid_off;
+    //     })
+    //     .catch(() => {
+    //       let userInfo = Cookies.get('userInfo');
+    //       userInfo = JSON.parse(userInfo);
+    //       this.nameEmployee = userInfo.role_id === 2 ? userInfo.name : '';
+    //     });
+    // },
     formatDate(row, column) {
       const date = new Date(row.time);
       const year = date.getFullYear();
@@ -188,8 +190,7 @@ export default {
       });
     },
     getDateToday() {
-      const dateNow = new Date();
-      return dateNow.getFullYear() + '-' + (dateNow.getMonth() + 1) + '-' + dateNow.getDate();
+      return moment().format('YYYY-MM-DD');
     },
   },
 };
