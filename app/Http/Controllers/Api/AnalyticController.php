@@ -238,7 +238,15 @@ class AnalyticController extends Controller
      *     ),
      *   ),
      *   @OA\Parameter(
-     *     name="search",
+     *     name="year_month",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="type_check",
      *     in="query",
      *     required=false,
      *     @OA\Schema(

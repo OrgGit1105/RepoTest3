@@ -36,6 +36,11 @@ class AnalyticRequest extends FormRequest
             case 'index':
                 return $this->getCustomRule();
             case 'getEmotions':
+                return [
+                    'user_id' => ['required', 'exists:users,id', new checkUserIdRule()],
+                    'year_month' => 'nullable|date_format:Y-m',
+                    'type_check' => 'nullable|string|in:in,out'
+                ];
             case 'exportEmotions':
                 return [
                     'user_id' => ['required', 'exists:users,id', new checkUserIdRule()]
