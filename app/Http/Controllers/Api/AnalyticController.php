@@ -284,7 +284,11 @@ class AnalyticController extends Controller
     public function getEmotions(AnalyticRequest $request)
     {
         $data = $this->repository->getEmotions($request);
-        return $this->responseJson(200, AnalyticResource::collection($data));
+        $user = User::query()->select('id', 'name', 'paid_off')->find($request->user_id);
+        return $this->responseJson(200, [
+            'emotions' => AnalyticResource::collection($data),
+            'user' => $user
+        ]);
     }
 
     /**
