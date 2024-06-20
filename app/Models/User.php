@@ -130,7 +130,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(VIAMUser::class, 'viam_user_id', 'id');
     }
 
-    public function getRoleVFace($user)
+    public static function getRoleVFace($user)
     {
         $policies = $user->viam_user->policies;
         $policy_v_face = '';
