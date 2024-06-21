@@ -16,6 +16,7 @@ import { WebCam } from 'vue-web-cam';
 import 'bootstrap/dist/css/bootstrap.css';
 import VeeValidate from 'vee-validate';
 import { ValidationProvider } from 'vee-validate';
+import HighchartsVue from 'highcharts-vue';
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
@@ -30,6 +31,8 @@ Vue.use(VeeValidate, {
 Vue.component('ValidationProvider', ValidationProvider);
 Vue.config.productionTip = false;
 Vue.component('Apexchart', VueApexCharts);
+Vue.use(HighchartsVue);
+
 new Vue({
   el: '#app',
   i18n,
