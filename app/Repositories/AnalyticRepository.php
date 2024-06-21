@@ -128,11 +128,4 @@ class AnalyticRepository extends BaseRepository implements AnalyticRepositoryInt
             ->get();
         return $getEmotions;
     }
-
-    public function exportEmotions($request)
-    {
-        $userId     = $request->get('user_id', null);
-        $typeCheck = 'in';
-        return  Emotion::where('user_id', $userId)->where('type_check', $typeCheck)->get();
-    }
 }

@@ -253,20 +253,6 @@ class AnalyticController extends Controller
      *      type="string",
      *     ),
      *   ),
-     *   @OA\Parameter(
-     *     name="page",
-     *     in="query",
-     *     @OA\Schema(
-     *      type="integer",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="per_page",
-     *     in="query",
-     *     @OA\Schema(
-     *      type="integer",
-     *     ),
-     *   ),
      *   @OA\Response(
      *     response=401,
      *     description="Login false",
@@ -360,6 +346,22 @@ class AnalyticController extends Controller
      *      type="integer",
      *     ),
      *   ),
+     *     @OA\Parameter(
+     *     name="year_month",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="type_check",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *      type="string",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Send request success",
@@ -379,7 +381,7 @@ class AnalyticController extends Controller
     {
         $param = $request->except([]);
         $userName = User::where('id', $param['user_id'])->first();
-        $data = $this->repository->exportEmotions($request);
+        $data = $this->repository->getEmotions($request);
         $fileName = 'emotions.xlsx';
         return Excel::download(
             new EmotionsExport($data, $userName->name),
