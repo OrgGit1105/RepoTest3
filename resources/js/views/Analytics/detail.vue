@@ -156,6 +156,7 @@ export default {
           },
           min: 0,
           max: 100,
+          tickInterval: 10,
         },
 
         legend: {
