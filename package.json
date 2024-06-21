@@ -56,6 +56,8 @@
         "eslint-loader": "^4.0.2",
         "eslint-plugin-vue": "^7.5.0",
         "eslint-webpack-plugin": "^2.5.0",
+        "highcharts": "^8.1.0",
+        "highcharts-vue": "^1.3.5",
         "html2canvas": "^1.0.0",
         "jest": "^27.0.3",
         "jest-serializer-vue": "^2.0.2",

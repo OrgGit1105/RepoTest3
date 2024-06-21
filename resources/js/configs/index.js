@@ -212,3 +212,5 @@ export const DATABASES = {
     },
   ],
 };
+
+export const TYPE_EMOTION = ['happy', 'sad', 'angry', 'confused', 'disgusted', 'surprised', 'calm', 'fear'];
