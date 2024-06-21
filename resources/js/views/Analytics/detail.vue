@@ -10,12 +10,12 @@
               </div>
             </div>
             <hr class="line">
-            <p
+            <span
               class="back-list cursor-pointer all-analytics"
               @click="listAllAnalytic()"
             >
               <i class="el-icon-arrow-left icon-back-list" /> All Analytics
-            </p>
+            </span>
             <div class="use-management-title-table mt-3">
               <div class="employee-name">
                 <div>
@@ -31,66 +31,68 @@
               </div>
               <div class="fill mt-5">
                 <!-- <h1 class="titel-emotion">Emotion Statistics</h1> -->
-                <div
-                  class="d-flex justify-content-end align-items-center all-date"
-                >
-                  <p class="back-list cursor-pointer" @click="getAllEmmotions">
+                <div class="d-flex justify-content-end align-items-center all-date">
+                  <!-- <p class="back-list cursor-pointer" @click="getAllEmmotions">
                     All date
                     <i class="el-icon-arrow-down icon-back-list ml-1" />
-                  </p>
-                  <p class="back-list cursor-pointer">
+                  </p> -->
+                  <el-date-picker
+                    v-model="year_month"
+                    type="month"
+                    placeholder="Pick a month"
+                    @change="getAllEmmotions"
+                  />
+                  <p class="back-list cursor-pointer mb-0 ml-3">
                     <i
-                      class="el-icon-download custom-icon-down cursor-pointer ml-3"
+                      class="el-icon-download custom-icon-down cursor-pointer"
                       @click="exportDataEmotions"
                     />
                   </p>
                 </div>
               </div>
               <hr class="line">
-              <div class="chart">
+              <div class="chart mb-5">
                 <highcharts
                   ref="chart"
                   class="hc"
                   :options="chartOptionsConfig"
                 />
               </div>
-
-              <div>
-                <el-table :data="emmotionStatistics" style="width: 100%">
-                  <el-table-column
-                    prop="time"
-                    label="Date"
-                    width="350"
-                    align="center"
-                    :formatter="formatDate"
-                  />
-                  <el-table-column
-                    prop="happy"
-                    label="Happy"
-                    width="250"
-                    align="center"
-                  />
-                  <el-table-column prop="sad" label="Sad" align="center" />
-                  <el-table-column prop="angry" label="Angry" align="center" />
-                  <el-table-column
-                    prop="confused"
-                    label="Confused"
-                    align="center"
-                  />
-                  <el-table-column
-                    prop="disgusted"
-                    label="Disgusted"
-                    align="center"
-                  />
-                  <el-table-column
-                    prop="surprised"
-                    label="Surprised"
-                    align="center"
-                  />
-                  <el-table-column prop="calm" label="Calm" align="center" />
-                  <el-table-column prop="fear" label="Fear" align="center" />
-                </el-table>
-              </div>
+              <span :style="{color: '#333', fontSize: '18px', fill: '#333', paddingLeft: '10px'}">Emotion Statistics Table</span>
+              <el-table :data="emmotionStatistics" style="width: 100%">
+                <el-table-column
+                  prop="time"
+                  label="Date"
+                  width="350"
+                  align="center"
+                  :formatter="formatDate"
+                />
+                <el-table-column
+                  prop="happy"
+                  label="Happy"
+                  width="250"
+                  align="center"
+                />
+                <el-table-column prop="sad" label="Sad" align="center" />
+                <el-table-column prop="angry" label="Angry" align="center" />
+                <el-table-column
+                  prop="confused"
+                  label="Confused"
+                  align="center"
+                />
+                <el-table-column
+                  prop="disgusted"
+                  label="Disgusted"
+                  align="center"
+                />
+                <el-table-column
+                  prop="surprised"
+                  label="Surprised"
+                  align="center"
+                />
+                <el-table-column prop="calm" label="Calm" align="center" />
+                <el-table-column prop="fear" label="Fear" align="center" />
+              </el-table>
             </div>
           </div>
         </div>
@@ -114,7 +116,6 @@ export default {
     return {
       emmotionStatistics: [],
       nameEmployee: '',
-      search: '',
       paidOffRemain: '',
       pagination: {
         // current_page: 1,
@@ -122,7 +123,7 @@ export default {
         total_records: 0,
         isDisable: false,
       },
-
+      year_month: moment().format('YYYY-MM'),
       TYPE_EMOTION: [],
 
       chartOptionsConfig: {
@@ -130,8 +131,11 @@ export default {
           type: 'line',
         },
         title: {
-          text: 'Emotion Statistics',
+          text: 'Emotion Chart',
           align: 'left',
+        },
+        credits: {
+          enabled: false,
         },
 
         subtitle: {
@@ -262,21 +266,19 @@ export default {
     async getEmmotionStatistics() {
       const PARAMS = {
         user_id: this.$route.params.id,
-        search: this.search,
+        year_month: this.year_month,
         // per_page: this.pagination.per_page,
         // page: this.pagination.current_page,
       };
-      await getEmotions(PARAMS)
-        .then((response) => {
-          if (response.code === 200) {
-            this.emmotionStatistics = response.data.emotions;
-            this.nameEmployee = response.data.user['name'];
-            this.paidOffRemain = response.data.user['paid_off'];
-          }
-        })
-        .catch(() => {
-          this.getEmmotionStatistics = [];
-        });
+      await getEmotions(PARAMS).then((response) => {
+        if (response.code === 200) {
+          this.emmotionStatistics = response.data.emotions;
+          this.nameEmployee = response.data.user['name'];
+          this.paidOffRemain = response.data.user['paid_off'];
+        }
+      }).catch(() => {
+        this.getEmmotionStatistics = [];
+      });
     },
     formatDate(row, column) {
       const date = new Date(row.time);
@@ -288,7 +290,7 @@ export default {
         .padStart(2, '0')}`;
     },
     getAllEmmotions() {
-      this.search = 'all';
+      this.year_month = moment(this.year_month).format('YYYY-MM');
       this.getEmmotionStatistics();
     },
     listAllAnalytic() {
