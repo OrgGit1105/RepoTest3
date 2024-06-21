@@ -100,6 +100,7 @@
 </template>
 <script>
 import { getEmotions } from '../../api/analytic';
+import * as CONFIGS from '../../configs/index';
 import axios from 'axios';
 import { getToken } from '../../utils/getToken';
 import moment from 'moment';
@@ -121,6 +122,8 @@ export default {
         total_records: 0,
         isDisable: false,
       },
+
+      TYPE_EMOTION: [],
 
       chartOptionsConfig: {
         chart: {
@@ -173,49 +176,50 @@ export default {
           },
         },
 
-        series: [{
-          name: 'Happy',
-          data: [
+        series: [
+          {
+            name: 'Happy',
+            data: [
             // [Date.UTC(2020, 10, 23), 19.83],
             // [Date.UTC(2020, 10, 24), 11.02],
             // [Date.UTC(2020, 10, 25), 27.21],
             // [Date.UTC(2020, 10, 26), 27.21],
-          ],
-        },
-        {
-          name: 'Sad',
-          data: [],
-        },
-        {
-          name: 'Angry',
-          data: [],
-        },
-        {
-          name: 'Confused',
-          data: [],
-        },
-        {
-          name: 'Disgusted',
-          data: [],
-        },
-        {
-          name: 'Surprised',
-          data: [],
-        },
-        {
-          name: 'Calm',
-          data: [],
-        },
-        {
-          name: 'Fear',
-          data: [],
-        },
+            ],
+          },
+          {
+            name: 'Sad',
+            data: [],
+          },
+          {
+            name: 'Angry',
+            data: [],
+          },
+          {
+            name: 'Confused',
+            data: [],
+          },
+          {
+            name: 'Disgusted',
+            data: [],
+          },
+          {
+            name: 'Surprised',
+            data: [],
+          },
+          {
+            name: 'Calm',
+            data: [],
+          },
+          {
+            name: 'Fear',
+            data: [],
+          },
         ],
 
         responsive: {
           rules: [{
             condition: {
-              maxWidth: 1000,
+              maxWidth: 500,
             },
             chartOptions: {
               plotOptions: {
@@ -235,87 +239,25 @@ export default {
   watch: {
     emmotionStatistics(newValue){
       if (newValue){
-        // thực hiện custome lại các mảng
-        this.handleGetHappyEmotions(newValue);
-        this.handleGetSadEmotions(newValue);
-        this.handleGetAngryEmotions(newValue);
-        this.handleGetConfusedEmotions(newValue);
-        this.handleGetDisgustedEmotions(newValue);
-        this.handleGetSurprisedEmotions(newValue);
-        this.handleGetCalmEmotions(newValue);
-        this.handleGetFearEmotions(newValue);
+        this.TYPE_EMOTION.map((typeEmotion, index) => {
+          this.handleGetEmotions(newValue, typeEmotion, index);
+        });
       }
     },
   },
   created() {
+    this.TYPE_EMOTION = CONFIGS.TYPE_EMOTION;
     this.getEmmotionStatistics();
-    // this.getUser();
   },
 
   methods: {
-    handleGetHappyEmotions(newValue){
-      const happyArray = newValue.map(item => {
+    handleGetEmotions(emotionArray, typeEmotion, index){
+      const customeArray = emotionArray.map(item => {
         const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.happy;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
+        const typeValue = item[typeEmotion];
+        return [Date.UTC(year, month - 1, day), typeValue];
       });
-      this.chartOptionsConfig['series'][0]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetSadEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.sad;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][1]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetAngryEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.angry;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][2]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetConfusedEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.confused;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][3]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetDisgustedEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.disgusted;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][4]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetSurprisedEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.surprised;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][5]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetCalmEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.calm;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][6]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
-    },
-    handleGetFearEmotions(newValue){
-      const happyArray = newValue.map(item => {
-        const [year, month, day] = moment(item.time).format('YYYY-MM-DD').split('-').map(Number);
-        const happyValue = item.fear;
-        return [Date.UTC(year, month - 1, day), happyValue]; // Tạo mảng mới với Date.UTC và giá trị happy
-      });
-      this.chartOptionsConfig['series'][7]['data'] = happyArray.sort((a, b) => a[0] - b[0]);
+      this.chartOptionsConfig['series'][index]['data'] = customeArray.sort((a, b) => a[0] - b[0]);
     },
     async getEmmotionStatistics() {
       const PARAMS = {
@@ -336,19 +278,6 @@ export default {
           this.getEmmotionStatistics = [];
         });
     },
-    // async getUser() {
-    //   const id = this.$route.params.id;
-    //   await UserApi.getOneUser(id)
-    //     .then((response) => {
-    //       this.nameEmployee = response.data.name;
-    //       this.paidOffRemain = response.data.paid_off;
-    //     })
-    //     .catch(() => {
-    //       let userInfo = Cookies.get('userInfo');
-    //       userInfo = JSON.parse(userInfo);
-    //       this.nameEmployee = userInfo.role_id === 2 ? userInfo.name : '';
-    //     });
-    // },
     formatDate(row, column) {
       const date = new Date(row.time);
       const year = date.getFullYear();
