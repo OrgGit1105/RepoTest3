@@ -30,7 +30,7 @@
                 </div>
               </div>
               <div class="fill mt-5">
-                <h1 class="titel-emotion">Emotion Statistics</h1>
+                <!-- <h1 class="titel-emotion">Emotion Statistics</h1> -->
                 <div
                   class="d-flex justify-content-end align-items-center all-date"
                 >
@@ -48,7 +48,6 @@
               </div>
               <hr class="line">
               <div class="chart">
-                <h1>highcharts</h1>
                 <highcharts
                   ref="chart"
                   class="hc"
@@ -128,12 +127,12 @@ export default {
           type: 'line',
         },
         title: {
-          text: 'Temperature Example',
+          text: 'Emotion Statistics',
           align: 'left',
         },
 
         subtitle: {
-          text: 'Irregular time data',
+          text: '',
           align: 'left',
         },
 
@@ -153,7 +152,7 @@ export default {
 
         yAxis: {
           title: {
-            text: 'Temperature (°C)',
+            text: '',
           },
           min: 0,
           max: 100,
