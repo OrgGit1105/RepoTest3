@@ -30,24 +30,30 @@
                 </div>
               </div>
               <div class="fill mt-5">
-                <!-- <h1 class="titel-emotion">Emotion Statistics</h1> -->
-                <div class="d-flex justify-content-end align-items-center all-date">
-                  <!-- <p class="back-list cursor-pointer" @click="getAllEmmotions">
-                    All date
-                    <i class="el-icon-arrow-down icon-back-list ml-1" />
-                  </p> -->
-                  <el-date-picker
-                    v-model="year_month"
-                    type="month"
-                    placeholder="Pick a month"
-                    @change="getAllEmmotions"
-                  />
-                  <p class="back-list cursor-pointer mb-0 ml-3">
-                    <i
-                      class="el-icon-download custom-icon-down cursor-pointer"
-                      @click="exportDataEmotions"
+                <div class="d-flex justify-content-between align-items-center all-date">
+                  <div class="checkout-type">
+                    <el-radio-group v-model="typeAction" size="small" placeholder="" @change="changeTypeAction">
+                      <el-radio v-for="item in listTypeAction" :key="item.key" :label="item.key">
+                        {{ item.value }}
+                      </el-radio>
+                    </el-radio-group>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <el-date-picker
+                      v-model="year_month"
+                      size="small"
+                      type="month"
+                      placeholder="Pick a month"
+                      @change="getAllEmmotions"
                     />
-                  </p>
+                    <p class="back-list cursor-pointer mb-0 ml-3">
+                      <i
+                        class="el-icon-download custom-icon-down cursor-pointer"
+                        @click="exportDataEmotions"
+                      />
+                    </p>
+                  </div>
+
                 </div>
               </div>
               <hr class="line">
@@ -116,6 +122,7 @@ export default {
     return {
       emmotionStatistics: [],
       nameEmployee: '',
+      type_check: 'in',
       paidOffRemain: '',
       pagination: {
         // current_page: 1,
@@ -125,6 +132,17 @@ export default {
       },
       year_month: moment().format('YYYY-MM'),
       TYPE_EMOTION: [],
+      listTypeAction: [
+        {
+          key: 'in',
+          value: 'Checkin',
+        },
+        {
+          key: 'out',
+          value: 'Checkout',
+        },
+      ],
+      typeAction: 'in',
 
       chartOptionsConfig: {
         chart: {
@@ -267,6 +285,7 @@ export default {
       const PARAMS = {
         user_id: this.$route.params.id,
         year_month: this.year_month,
+        type_check: this.type_check,
         // per_page: this.pagination.per_page,
         // page: this.pagination.current_page,
       };
@@ -322,6 +341,12 @@ export default {
     },
     getDateToday() {
       return moment().format('YYYY-MM-DD');
+    },
+
+    changeTypeAction(){
+      console.log('here===>');
+      this.type_check = this.typeAction;
+      this.getEmmotionStatistics();
     },
   },
 };
