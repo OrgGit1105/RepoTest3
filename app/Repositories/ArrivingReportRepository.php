@@ -485,20 +485,20 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     private function holiday($date)
     {
 //    Use when you need to create records with holidays
-        if (Carbon::parse($date)->isSaturday()) {
-            return true;
-        }
-        if (Carbon::parse($date)->isSunday()) {
-            return true;
-        }
-
-//    Use when you need to create records without holidays
 //        if (Carbon::parse($date)->isSaturday()) {
-//            return false;
+//            return true;
 //        }
 //        if (Carbon::parse($date)->isSunday()) {
-//            return false;
+//            return true;
 //        }
+
+//    Use when you need to create records without holidays
+        if (Carbon::parse($date)->isSaturday()) {
+            return false;
+        }
+        if (Carbon::parse($date)->isSunday()) {
+            return false;
+        }
 
         return true;
     }
