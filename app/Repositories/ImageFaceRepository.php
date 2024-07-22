@@ -331,6 +331,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 $arrivingIn_time = ArrivingReport::query()
                     ->whereDate("in_time", $dateNow)
                     ->where("user_id", $user->id)
+                    ->where("type_date", config('analytic.type.work'))
                     ->when($timeNow < $morning, function ($e) use($morning){
                         $e->whereTime("in_time", "<", $morning);
                     }, function ($e) use ($morning) {
@@ -373,6 +374,7 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 $arrivingOut_time = ArrivingReport::query()
                     ->whereDate("out_time", $dateNow)
                     ->where("user_id", $user->id)
+                    ->where("type_date", config('analytic.type.work'))
                     ->when($timeNow <= $afternoon, function ($e) use ($afternoon) {
                         $e->whereTime("out_time", "<=", $afternoon);
                     }, function ($e) use ($afternoon) {
