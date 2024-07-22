@@ -18,6 +18,7 @@ use DateTime;
 use DateTimeZone;
 use Helper\ResponseService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -351,116 +352,145 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
     public function createArriving($input = [])
     {
-        // check channel
-        if ($input['channel_name'] != config('app.channel')) {
-            return __('analytic.not_found_bot');
-        }
+        try {
+            // check channel
+            if ($input['channel_name'] != config('app.channel')) {
+                return __('analytic.not_found_bot');
+            }
 
-        $messages = explode(',', str_replace(', ', ',', $input['text']));
+            $messages = explode(',', str_replace(', ', ',', $input['text']));
 
-        $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
-        if (!$user) {
-            return __('analytic.no_user');
-        }
+            $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
+            if (!$user) {
+                return __('analytic.no_user');
+            }
 
-        if (count($messages) != 3 && count($messages) != 4) {
-            return __('analytic.err_format');
-        }
+            if (count($messages) != 3 && count($messages) != 4) {
+                return __('analytic.err_format');
+            }
 
-        if (!$this->validateDate($messages['1'])) {
-            return __('analytic.err_format_one_date');
-        }
+            if (!$this->validateDate($messages['1'])) {
+                return __('analytic.err_format_one_date');
+            }
 
-        if (Carbon::parse($messages['1'])->format('Y-m-d') < Carbon::now()->format('Y-m-d')) {
-            return __('analytic.check_date');
-        }
+            if (Carbon::parse($messages['1'])->format('Y-m-d') < Carbon::now()->format('Y-m-d')) {
+                return __('analytic.check_date');
+            }
 
-        $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
-        $dateOff = Carbon::parse($messages['1']);
-        if (count($messages) == 3) {
+            $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
+            $dateOff = Carbon::parse($messages['1']);
+            if (count($messages) == 3) {
 //             if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
 //                 return __('analytic.check_date');
 //             }
-            if (!$this->holiday($messages['1'])) {
-                return __('analytic.holiday');
-            } else {
+                if (!$this->holiday($messages['1'])) {
+                    return __('analytic.holiday');
+                } else {
+                    $type_date = $this->getTypeDate($messages[0]);
+                    $arrivingReport = ArrivingReport::query()
+                        ->where('user_id', $user->id)
+                        ->where('in_time', $this->inTimeDate($messages['0'], $messages['1']))
+                        ->where('out_time', $this->inTimeDate($messages['0'], $messages['1']))
+                        ->where('type_date', $type_date)
+                        ->first();
+
+                    if($arrivingReport) {
+                        $arrivingReport->remark = $messages[2];
+                        $arrivingReport->status = 1;
+                        $arrivingReport->save();
+                    }
+                    else {
+                        ArrivingReport::create([
+                            'user_id' => $user->id,
+                            'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
+                            'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
+                            'type_date' => $type_date,
+                            'remark' => $messages[2],
+                            'status' => 1,
+                        ]);
+                        if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
+                            if (Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
+                                $paid_off = 0.5;
+                            } else {
+                                $paid_off = 1;
+                            }
+                            $user->paid_off = $user->paid_off - $paid_off;
+                            $user->save();
+                        }
+                    }
+                    return response()->json([
+                        'response_type' => 'in_channel',
+                        'text' => $user->name . ' ' . __('analytic.success'),
+                    ]);
+                }
+            }
+
+            if (count($messages) == 4) {
+                if (!$this->validateDate($messages[1]) || !$this->validateDate($messages[2])) {
+                    return __('analytic.err_format_two_date');
+                }
+
+                // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
+                //     return __('analytic.check_date');
+                // }
+
+                if ($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
+                    return __('analytic.date_err');
+                }
+
+                if (!$this->holiday($messages['1']) || !$this->holiday($messages['2'])) {
+                    return __('analytic.holiday');
+                }
+
+                $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
+                $index = 0;
+                $dataInsert = [];
+                $paid_off = 0;
                 $type_date = $this->getTypeDate($messages[0]);
-                ArrivingReport::create([
-                    'user_id' => $user->id,
-                    'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
-                    'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
-                    'type_date' => $type_date,
-                    'remark' => $messages[2],
-                    'status' => 1,
+
+                for ($i = 0; $i < $diffInDays; $i++) {
+                    $dateOff = Carbon::parse($messages['1'])->addDays($index);
+                    if ($this->holiday($dateOff)) {
+                        $dataInsert = [
+                            'user_id' => $user->id,
+                            'in_time' => $dateOff->format('Y-m-d 08:30:00'),
+                            'out_time' => $dateOff->format('Y-m-d 18:00:00'),
+                            'type_date' => $type_date,
+                            'remark' => $messages[3],
+                            'status' => 1,
+                        ];
+                        $arrivingReport = ArrivingReport::query()
+                            ->where('user_id', $dataInsert['user_id'])
+                            ->where('in_time', $dataInsert['in_time'])
+                            ->where('out_time', $dataInsert['out_time'])
+                            ->where('type_date', $dataInsert['type_date'])
+                            ->first();
+                        if($arrivingReport) {
+                            $arrivingReport->remark = $dataInsert['remark'];
+                            $arrivingReport->status = $dataInsert['status'];
+                            $arrivingReport->save();
+                        } else {
+                            ArrivingReport::create($dataInsert);
+
+                            if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
+                                $paid_off++;
+                            }
+                        }
+                    }
+
+                    $index++;
+                }
+                $user->paid_off = $user->paid_off - $paid_off;
+                $user->save();
+                return response()->json([
+                    'response_type' => 'in_channel',
+                    'text' => $user->name . ' ' . __('analytic.success'),
                 ]);
-                if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
-                    if (Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
-                        $paid_off = 0.5;
-                    } else {
-                        $paid_off = 1;
-                    }
-                    $user->paid_off = $user->paid_off - $paid_off;
-                    $user->save();
-                }
             }
-
-            return response()->json([
-                'response_type' => 'in_channel',
-                'text' => $user->name . ' ' . __('analytic.success'),
-            ]);
+        } catch (\Exception $exception) {
+            Log::info($exception->getMessage());
+            return $exception->getMessage();
         }
-
-        if (count($messages) == 4) {
-            if (!$this->validateDate($messages[1]) || !$this->validateDate($messages[2])) {
-                return __('analytic.err_format_two_date');
-            }
-
-            // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-            //     return __('analytic.check_date');
-            // }
-
-            if ($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
-                return __('analytic.date_err');
-            }
-
-            if (!$this->holiday($messages['1']) || !$this->holiday($messages['2'])) {
-                return __('analytic.holiday');
-            }
-
-            $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
-            $index = 0;
-            $dataInsert = [];
-            $paid_off = 0;
-            $type_date = $this->getTypeDate($messages[0]);
-
-            for ($i = 0; $i < $diffInDays; $i++) {
-                $dateOff = Carbon::parse($messages['1'])->addDays($index);
-                if ($this->holiday($dateOff)) {
-                    $dataInsert = [
-                        'user_id' => $user->id,
-                        'in_time' => $dateOff->format('Y-m-d 08:30:00'),
-                        'out_time' => $dateOff->format('Y-m-d 18:00:00'),
-                        'type_date' => $type_date,
-                        'remark' => $messages[3],
-                        'status' => 1,
-                    ];
-                    ArrivingReport::create($dataInsert);
-
-                    if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
-                        $paid_off++;
-                    }
-                }
-
-                $index++;
-            }
-            $user->paid_off = $user->paid_off - $paid_off;
-            $user->save();
-        }
-
-        return response()->json([
-            'response_type' => 'in_channel',
-            'text' => $user->name . ' ' . __('analytic.success'),
-        ]);
     }
 
     private function getTypeDate($messages)
