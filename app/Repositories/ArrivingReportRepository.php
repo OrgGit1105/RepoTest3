@@ -417,10 +417,11 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                             $user->save();
                         }
                     }
-                    return response()->json([
-                        'response_type' => 'in_channel',
-                        'text' => $user->name . ' ' . __('analytic.success'),
-                    ]);
+//                    return response()->json([
+//                        'response_type' => 'in_channel',
+//                        'text' => $user->name . ' ' . __('analytic.success'),
+//                    ]);
+                    return $user->name . ' ' . __('analytic.success');
                 }
             }
 
@@ -481,10 +482,11 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 }
                 $user->paid_off = $user->paid_off - $paid_off;
                 $user->save();
-                return response()->json([
-                    'response_type' => 'in_channel',
-                    'text' => $user->name . ' ' . __('analytic.success'),
-                ]);
+//                return response()->json([
+//                    'response_type' => 'in_channel',
+//                    'text' => $user->name . ' ' . __('analytic.success'),
+//                ]);
+                return $user->name . ' ' . __('analytic.success');
             }
         } catch (\Exception $exception) {
             Log::info($exception->getMessage());
