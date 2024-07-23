@@ -390,7 +390,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                     $arrivingReport = ArrivingReport::query()
                         ->where('user_id', $user->id)
                         ->where('in_time', $this->inTimeDate($messages['0'], $messages['1']))
-                        ->where('out_time', $this->inTimeDate($messages['0'], $messages['1']))
+                        ->where('out_time', $this->outTimeDate($messages['0'], $messages['1']))
                         ->where('type_date', $type_date)
                         ->first();
 
@@ -398,8 +398,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                         $arrivingReport->remark = $messages[2];
                         $arrivingReport->status = 1;
                         $arrivingReport->save();
-                    }
-                    else {
+                    } else {
                         ArrivingReport::create([
                             'user_id' => $user->id,
                             'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
