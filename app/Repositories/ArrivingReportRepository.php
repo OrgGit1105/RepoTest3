@@ -89,10 +89,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $data[$key]['in_time'] = date("H:i:s", strtotime($value->in_time));
             $data[$key]['out_time'] = empty($value['out_time']) ? '' : date("H:i:s", strtotime($value->out_time));
             $data[$key]['date'] = date("Y-m-d", strtotime($value->in_time));
-            $data[$key]['sum_break_time'] = $breakTimes
+            $data[$key]['sum_break_time'] = $value->user ? $breakTimes
                 ->where(BreakTime::USER_ID, $value->user->id)
                 ->where(BreakTime::DATE, $data[$key]['date'])
-                ->count();
+                ->count() : 0;
             if ($value->in_time == null || $value->out_time == null) {
                 $data[$key]['warning'] = 'Warning';
             } else {
