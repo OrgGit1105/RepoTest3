@@ -31,8 +31,28 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
     }
 
     public function createIssues(Request $request){
-        Log::info('CloudWatch log alarm: ', $request->toArray());
+        // Lấy dữ liệu từ SNS
+        $data = $request->all();
 
+        // Ghi log dữ liệu nhận được để kiểm tra
+        Log::info('Received SNS Notification:', $data);
+
+        // Kiểm tra nếu đây là yêu cầu xác thực
+        if (isset($data['Type']) && $data['Type'] === 'SubscriptionConfirmation') {
+            $subscribeUrl = $data['SubscribeURL'];
+
+            // Thực hiện yêu cầu GET tới SubscribeURL để xác nhận
+            $response = Http::get($subscribeUrl);
+
+            // Ghi log kết quả xác nhận
+            Log::info('Subscription confirmation response:', ['status' => $response->status(), 'body' => $response->body()]);
+
+            return response()->json(['message' => 'Subscription confirmed'], 200);
+        }
+
+        // Xử lý các loại thông báo khác ở đây
+
+        return response()->json(['message' => 'Notification received'], 200);
 //        $alarmName = $request->input('alarmName');
 //        $alarmDescription = $request->input('description', 'No description provided.');
 //
