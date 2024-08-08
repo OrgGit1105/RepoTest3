@@ -64,6 +64,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
 //                'body' => $response->body()
 //            ], $response->status());
 //        }
-        return ResponseService::responseJson(Response::HTTP_OK, 'add issue success');
+        return response()->json(['message' => 'Notification received'], 200);
+//        return ResponseService::responseJson(Response::HTTP_OK, 'add issue success');
     }
 }
