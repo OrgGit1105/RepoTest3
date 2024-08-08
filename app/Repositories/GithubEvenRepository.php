@@ -11,6 +11,7 @@ use App\Repositories\Contracts\GithubEvenRepositoryInterface;
 use Helper\ResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Repository\BaseRepository;
 use Illuminate\Foundation\Application;
