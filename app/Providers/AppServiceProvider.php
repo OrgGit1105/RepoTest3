@@ -7,6 +7,7 @@ use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\EmotionRepositoryInterface;
+use App\Repositories\Contracts\GithubEvenRepositoryInterface;
 use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
@@ -24,6 +25,7 @@ use Repository\AuthRepository;
 use Laravel\Dusk\DuskServiceProvider;
 use Repository\AnalyticRepository;
 use Repository\EmotionRepository;
+use Repository\GithubEvenRepository;
 use Repository\HistoryEditReportRepository;
 use Repository\ImageFaceRepository;
 use Repository\PolicyRepository;
@@ -59,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(RDSManagerRepositoryInterface::class, RDSManagerRepository::class);
     $this->app->bind(VIAMRDSRepositoryInterface::class, VIAMRDSRepository::class);
     $this->app->bind(UploadFileRepositoryInterface::class, UploadFileRepository::class);
+    $this->app->bind(GithubEvenRepositoryInterface::class, GithubEvenRepository::class);
 
       //Customer
     if ($this->app->environment('local', 'testing')) {
