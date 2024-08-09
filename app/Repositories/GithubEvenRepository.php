@@ -32,16 +32,12 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
     }
 
     public function createIssues(Request $request){
-        // Ghi log thông tin ban đầu nhận được
-        Log::info('Cloudwatch Alarm:', $request->all());
         $data = $request->getContent();
 
         // Ghi log dữ liệu nhận được để kiểm tra
-        Log::info('Received SNS Notification:', ['data' => $data]);
-
+        Log::info('Cloudwatch Alarm:', ['data' => $data]);
         // Giả sử dữ liệu nhận được là JSON và chuyển đổi nó thành mảng
         $dataArray = json_decode($data, true);
-
         // Kiểm tra nếu đây là yêu cầu xác thực
         if (isset($dataArray['Type']) && $dataArray['Type'] === 'SubscriptionConfirmation') {
             $subscribeUrl = $dataArray['SubscribeURL'];
@@ -60,6 +56,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
 
         // Kiểm tra nếu đây là thông báo loại Notification
         if (isset($dataArray['Type']) && $dataArray['Type'] === 'Notification') {
+            Log::info('Cloudwatch Alarm:', $dataArray);
             // Giải mã JSON bên trong
             $decodedJson = json_decode($dataArray['Message'], true);
 
@@ -73,13 +70,23 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
             $metricName = $decodedJson['Trigger']['MetricName'];
             $namespace = $decodedJson['Trigger']['Namespace'];
             $dimensions = $decodedJson['Trigger']['Dimensions'];
-
+            $unsubscribeURL = $dataArray['UnsubscribeURL'];
+            $period = $decodedJson['Trigger']['Period'];
+            $statistic = ucwords(strtolower($decodedJson['Trigger']['Statistic']));
+            $treatMissingData = $decodedJson['Trigger']['TreatMissingData'];
+            $topicArn = $dataArray['TopicArn'];
+            $comparisonOperator = $decodedJson['Trigger']['ComparisonOperator'];
+            $threshold = $decodedJson['Trigger']['Threshold'];
+            $datapointsToAlarm = $decodedJson['Trigger']['DatapointsToAlarm'];
+            $instance = $decodedJson['Trigger']['Dimensions'][0]['value'];
+            $region = $decodedJson['Region'];
             // Chuẩn bị nội dung chi tiết của issue
             $issueBody = "
-                You are receiving this email because your Amazon CloudWatch Alarm \"{$alarmName}\" in the Asia Pacific (Tokyo) region has entered the ALARM state, because \"{$stateChangeReason}\" at \"{$timestamp}\".
+                You are receiving this email because your Amazon CloudWatch Alarm \"{$alarmName}\" in the {$region} region has entered the ALARM state, because \"{$stateChangeReason}\" at \"{$timestamp}\".
 
                 View this alarm in the AWS Management Console:
-                https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/CloudWatch_Alarms_Atmtc_MSJ_%E3%83%A1%E3%83%A2%E3%83%AA%E4%BD%BF%E7%94%A8%E7%8E%87
+                <a href=\"https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/{$alarmName}\">https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/{$alarmName}</a>
+
 
                 Alarm Details:
                 - Name:                       {$alarmName}
@@ -91,29 +98,29 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
                 - Alarm Arn:                  {$alarmArn}
 
                 Threshold:
-                - The alarm is in the ALARM state when the metric is GreaterThanThreshold 18.0 for at least 1 of the last 1 period(s) of 60 seconds.
+                - The alarm is in the ALARM state when the metric is {$comparisonOperator} {$threshold} for at least {$datapointsToAlarm} of the last {$datapointsToAlarm} period(s) of {$period} seconds.
 
                 Monitored Metric:
                 - MetricNamespace:                     {$namespace}
                 - MetricName:                          {$metricName}
                 - Dimensions:                          " . $this->formatDimensions($dimensions) . "
-                - Period:                              60 seconds
-                - Statistic:                           Average
+                - Period:                              {$period} seconds
+                - Statistic:                           {$statistic}
                 - Unit:                                not specified
-                - TreatMissingData:                    missing
+                - TreatMissingData:                    {$treatMissingData}
 
 
                 State Change Actions:
                 - OK:
-                - ALARM: [arn:aws:lambda:ap-northeast-1:291498043065:function:Add_Issue_Github_Cloudwatch] [arn:aws:sns:ap-northeast-1:291498043065:GuardDutyAlert]
+                - ALARM: [{$topicArn}]
                 - INSUFFICIENT_DATA:
 
 
                 --
                 If you wish to stop receiving notifications from this topic, please click or visit the link below to unsubscribe:
-                https://sns.ap-northeast-1.amazonaws.com/unsubscribe.html?SubscriptionArn=arn:aws:sns:ap-northeast-1:291498043065:GuardDutyAlert:32841b82-547b-4e1a-b6a2-f2ebb2b4540f&Endpoint=tuancuongth88@gmail.com
+                <a href=\"{$unsubscribeURL}\">{$unsubscribeURL}&Endpoint=tuancuongth88@gmail.com</a>
 
-                Please do not reply directly to this email. If you have any questions or comments regarding this email, please contact us at https://aws.amazon.com/support
+                Please do not reply directly to this email. If you have any questions or comments regarding this email, please contact us at <a href=\"https://aws.amazon.com/support\"> https://aws.amazon.com/support</a>
             ";
 
             // Thay đổi URL và Token với thông tin GitHub của bạn
@@ -125,11 +132,15 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
                 'Authorization' => "token {$githubToken}",
                 'Accept' => 'application/vnd.github.v3+json'
             ];
-
+            // check instance  i-0d8bc9faee44b0f2b => assigness phuong
+            $assigness = 'tuancuongth88';
+            if($instance == 'i-0d8bc9faee44b0f2b'){
+                $assigness = 'phuongcodeunited';
+            }
             $issueData = [
                 'title' => "ALARM: {$alarmName}",
                 'body' => $issueBody,
-                'assignees' => ['tuancuongth88'],
+                'assignees' => [$assigness],
                 'milestone' => 1,
                 'labels' => ['low priority']
             ];
