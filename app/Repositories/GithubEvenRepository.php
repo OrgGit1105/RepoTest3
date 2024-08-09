@@ -127,7 +127,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
             ];
 
             $issueData = [
-                'title' => "CloudWatch Alarm Triggered: {$alarmName}",
+                'title' => "ALARM: {$alarmName}",
                 'body' => $issueBody,
                 'assignees' => ['tuancuongth88'],
                 'milestone' => 1,
