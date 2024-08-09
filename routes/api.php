@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AnalyticController;
 use App\Http\Controllers\Api\SlackEventModeController;
+use App\Http\Controllers\Api\GithubEvenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\VIAMRDSController;
@@ -86,3 +87,5 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
 });
 
 Route::post('/slack/events', [SlackEventModeController::class, 'handleVerification']);
+
+Route::post('github/issues', [GithubEvenController::class, 'createIssues']);
