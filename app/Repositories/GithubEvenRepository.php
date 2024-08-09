@@ -85,7 +85,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
                 You are receiving this email because your Amazon CloudWatch Alarm \"{$alarmName}\" in the {$region} region has entered the ALARM state, because \"{$stateChangeReason}\" at \"{$timestamp}\".
 
                 View this alarm in the AWS Management Console:
-                <a href=\"https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/{$alarmName}\">https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/{$alarmName}</a>
+                https://ap-northeast-1.console.aws.amazon.com/cloudwatch/deeplink.js?region=ap-northeast-1#alarmsV2:alarm/{$alarmName}
 
 
                 Alarm Details:
@@ -118,7 +118,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
 
                 --
                 If you wish to stop receiving notifications from this topic, please click or visit the link below to unsubscribe:
-                <a href=\"{$unsubscribeURL}\">{$unsubscribeURL}&Endpoint=tuancuongth88@gmail.com</a>
+                {$unsubscribeURL}&Endpoint=tuancuongth88@gmail.com
 
                 Please do not reply directly to this email. If you have any questions or comments regarding this email, please contact us at <a href=\"https://aws.amazon.com/support\"> https://aws.amazon.com/support</a>
             ";
