@@ -367,7 +367,11 @@ class PolicyController extends Controller
     public function getProject(PolicyRequest $request)
     {
         try {
-            return $this->repository->getListData($request->input('instance_id'), 'project');
+            $data = $this->repository->getListData($request->input('instance_id'), 'project');
+            if(isset($data['code']) && $data['code'] != CODE_SUCCESS) {
+                return $this->responseJsonError($data['code'], $data['msg']);
+            }
+            return $this->responseJson(CODE_SUCCESS, new BaseResource($data));
         } catch (\Exception $e) {
             throw $e;
         }
