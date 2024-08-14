@@ -52,15 +52,15 @@ class Common
             ];
 
             if($instanceId) { // case: access a server other than server 240
-                $arnRole = Policy::query()->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                $assumeRole = Policy::query()->where(Policy::TYPE, POLICY_TYPE['AWS'])
                     ->where(Policy::INSTANCE_ID, $instanceId)
                     ->first();
-                if($arnRole) {
+                if($assumeRole) {
                     $stsClient = new StsClient($param);
 
                     // Assume IAM role atmtc để lấy temporary credentials
                     $assumeRoleResult = $stsClient->assumeRole([
-                        'RoleArn' => $arnRole,
+                        'RoleArn' => $assumeRole->arn_role,
                         'RoleSessionName' => 'VFaceSession'
                     ]);
 
