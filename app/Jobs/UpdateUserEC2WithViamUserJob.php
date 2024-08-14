@@ -43,13 +43,11 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
      */
     public function handle()
     {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
         if ($this->action === 'create') {
             foreach ($this->policies as $addPolicy) {
                 $policy = Policy::query()->find($addPolicy);
                 if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-                    $this->createUser($ssmClient, $policy);
+                    $this->createUser($policy);
                 }
             }
         }
@@ -57,17 +55,25 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
             foreach ($this->policies as $removePolicy) {
                 $policy = Policy::query()->find($removePolicy);
                 if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-                    $this->deleteUser($ssmClient, $policy);
+                    $this->deleteUser($policy);
                 }
             }
         }
     }
 
-    private function createUser(SsmClient $ssmClient, $policy)
+    private function createUser($policy)
     {
         $type = $policy->type;
         $groupName = $policy->name;
         $instanceId = $policy->instance_id;
+
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $param = Common::configAwsSDK($instanceId);
+        }
+        $ssmClient = new SsmClient($param);
+
         $parameters = [
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript'
@@ -112,9 +118,16 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         sleep(count($userNotExists));
     }
 
-    private function deleteUser(SsmClient $ssmClient, $policy)
+    private function deleteUser($policy)
     {
         $instanceId = $policy->instance_id;
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $param = Common::configAwsSDK($instanceId);
+        }
+        $ssmClient = new SsmClient($param);
+
         $usernames = [];
         foreach ($this->viamUser->users as $user) {
             $usernames[] = $user->name;
@@ -154,6 +167,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         if ($command) {
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);
+            sleep(2);
         }
     }
 }

@@ -55,7 +55,8 @@ return [
         'project_do_not_existed' => 'The project name does not exist',
         'policy_existed' => 'On an EC2 instance, only one admin policy can be created and only one deploy policy can be created for each project',
         'instance_id_not_found' => 'Error accessing EC2 instance',
-        'aws_existed' => 'This AWS already exists'
+        'aws_existed' => 'This AWS already exists',
+        'assume_role_not_exist' => 'To connect to this server, please provide assume role information for this Instance ID with AWS policy type.',
     ],
     'working_time.out_time' => 'The out time field is required when type field other value working',
     'rds_manager' => [
