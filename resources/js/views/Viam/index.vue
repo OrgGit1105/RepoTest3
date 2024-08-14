@@ -113,7 +113,7 @@
               >
                 <label class="mt-3">Instance Id</label>
                 <div class="header-employee-edit">
-                  <el-input id="instance_id" v-model="form.instance_id" @focus="focusInput" @blur="form.type === 3 || form.type === 4 ? blurInput : null" />
+                  <el-input id="instance_id" v-model="form.instance_id" @focus="focusInput" @blur="blurInput" />
                   <div class="text-error">
                     {{ errors[0] }}
                   </div>
@@ -245,7 +245,7 @@ export default {
       this.checkInstance = true;
     },
     async blurInput(){
-      if (this.form.instance_id){
+      if (this.form.instance_id && (this.form.type === 3 || this.form.type === 4)){
         const OPTION = [];
         const PARAMS = {
           instance_id: this.form.instance_id,
@@ -271,6 +271,8 @@ export default {
           this.msg_intance_err = response.message;
           this.OptionName = [];
         }
+      } else {
+        this.msg_intance_err = null;
       }
     },
     async getListAllUser() {
