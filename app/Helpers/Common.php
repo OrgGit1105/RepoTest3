@@ -3,6 +3,7 @@
 
 namespace Helper;
 
+use App\Models\Policy;
 use App\Models\RDSManager;
 use App\Models\User;
 use App\Models\VIAMUser;
@@ -41,13 +42,40 @@ class Common
         return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 
-    public function configAwsSDK()
+    public function configAwsSDK($instanceId = null)
     {
         if (!App::environment('local')) {
             $param = [
                 'version' => 'latest',
                 'region' => config('services.aws.AWS_DEFAULT_REGION')
             ];
+
+            if($instanceId) { // case: access a server other than server 240
+                $arnRole = Policy::query()->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                    ->where(Policy::INSTANCE_ID, $instanceId)
+                    ->first();
+                if($arnRole) {
+                    $stsClient = new StsClient($param);
+
+                    // Assume IAM role atmtc để lấy temporary credentials
+                    $assumeRoleResult = $stsClient->assumeRole([
+                        'RoleArn' => $arnRole,
+                        'RoleSessionName' => 'VFaceSession'
+                    ]);
+
+                    // Lấy temporary credentials từ AssumeRoleResult
+                    $credentials = $assumeRoleResult['Credentials'];
+                    $param = [
+                        'version' => 'latest',
+                        'region' => config('services.aws.AWS_DEFAULT_REGION'),
+                        'credentials' => [
+                            'key' => $credentials['AccessKeyId'],
+                            'secret' => $credentials['SecretAccessKey'],
+                            'token' => $credentials['SessionToken']
+                        ]
+                    ];
+                }
+            }
         } else {
             $param = [
                 'version' => 'latest',
@@ -91,8 +119,10 @@ class Common
         switch ($instanceId) {
             case INSTANCE_ID_240:
                 $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin'; //node của 240
-//            case INSTANCE_ID_240:
-//                $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin';
+                break;
+            case INSTANCE_ID_142:
+                $path = '/usr/bin/node';
+                break;
         }
 
         return $path;
@@ -114,8 +144,6 @@ class Common
 
     public function createUserEc2($username, $publicKey, $viam_user_id, $gmailGithub)
     {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
         try {
             $policies = VIAMUser::query()->find($viam_user_id)->policies;
             $instanceData = [];
@@ -132,6 +160,13 @@ class Common
                 }
             }
             foreach ($instanceData as $instanceId => $instance) {
+                if($instanceId != INSTANCE_ID_240) {
+                    $param = Common::configAwsSDK($instanceId);
+                } else {
+                    $param = Common::configAwsSDK();
+                }
+
+                $ssmClient = new SsmClient($param);
                 $parameters = [
                     'InstanceIds' => [$instanceId],
                     'DocumentName' => 'AWS-RunShellScript'
@@ -168,6 +203,7 @@ class Common
                 }
                 $parameters['Parameters']['commands'] = $command;
                 $ssmClient->sendCommand($parameters);
+                sleep(5);
             }
             return ResponseService::responseJson(CODE_SUCCESS);
         } catch (AwsException $e) {
@@ -178,8 +214,6 @@ class Common
 
     public function deleteUserEc2($user)
     {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
         try {
             $policies = $user->viam_user->policies;
             $instanceIds = [];
@@ -195,6 +229,12 @@ class Common
                     'InstanceIds' => [$instanceId],
                     'DocumentName' => 'AWS-RunShellScript'
                 ];
+                if($instanceId != INSTANCE_ID_240) {
+                    $param = Common::configAwsSDK($instanceId);
+                } else {
+                    $param = Common::configAwsSDK();
+                }
+                $ssmClient = new SsmClient($param);
 
                 if (!self::checkUserExist($ssmClient, $parameters, $instanceId, [$username])) {
                     $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
@@ -203,6 +243,7 @@ class Common
                     $command[] = "sudo userdel -r $username";
                     $parameters['Parameters']['commands'] = $command;
                     $ssmClient->sendCommand($parameters);
+                    sleep(3);
                 }
             }
             return ResponseService::responseJson(CODE_SUCCESS);
@@ -214,16 +255,14 @@ class Common
 
     public function createGroupEc2($instanceId, $groupName, $projectName)
     {
-        $param = Common::configAwsSDK();
-        $ssmClient = new SsmClient($param);
-
         $groupOldOfProject = 'apache';
-        switch ($instanceId) {
-            case INSTANCE_ID_240:
-                $groupOldOfProject = 'apache'; //group ban đầu của các dự án trên 240 là apache
-//            case INSTANCE_ID_240:
-//                $groupOldOfProject = '';
+        if($instanceId != INSTANCE_ID_240) {
+            $param = Common::configAwsSDK($instanceId);
+        } else {
+            $param = Common::configAwsSDK();
         }
+
+        $ssmClient = new SsmClient($param);
         $parameters = [
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript',
@@ -236,6 +275,7 @@ class Common
                     "find /var/www/$projectName -type d -path \"*/public/js\" -exec chmod -R 775 {} \;",
                     "sudo chmod -R g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
                     "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
+                    "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
                     "for user in \$(getent group $groupOldOfProject | cut -d: -f4 | tr ',' ' '); do sudo usermod -aG $groupName \$user; done", // thêm tk ec2-user, apache, deploy vào nhóm
                 ],
             ],

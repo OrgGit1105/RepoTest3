@@ -155,8 +155,6 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     private function updateSshKey(User $user, $publicKey)
     {
         if($user->ssh_public_key != $publicKey) {
-            $param = Common::configAwsSDK();
-            $ssmClient = new SsmClient($param);
             $policies = $user->viam_user->policies;
             $username = $user->name;
             $gmailGithub = $user->github_gmail;
@@ -176,6 +174,14 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                     'InstanceIds' => [$instanceId],
                     'DocumentName' => 'AWS-RunShellScript'
                 ];
+
+                if($instanceId != INSTANCE_ID_240) {
+                    $param = Common::configAwsSDK();
+                } else {
+                    $param = Common::configAwsSDK($instanceId);
+                }
+                $ssmClient = new SsmClient($param);
+
                 $userNotExists = Common::checkUserExist($ssmClient, $parameters, $instanceId, [$username]);
                 $command = [];
                 if (!empty($userNotExists)) {

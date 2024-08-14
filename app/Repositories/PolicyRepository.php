@@ -71,6 +71,14 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
                 }
 
+                if($instanceId != INSTANCE_ID_240) {
+                    $assumeRole = $this->model
+                        ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                        ->where(Policy::INSTANCE_ID, $instanceId)
+                        ->firt();
+                    if(!$assumeRole)
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
+                }
                 if ($type == POLICY_TYPE['EC2_admin']) {
                     $attributes['project_name'] = null;
                 }
@@ -106,7 +114,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             if ($type != POLICY_TYPE['EC2_deploy']) {
                 $attributes['project_name'] = null;
             }
-            if (!in_array($type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+            if (!in_array($type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy'], POLICY_TYPE['AWS']])) {
                 $attributes['instance_id'] = null;
             }
             if ($type != POLICY_TYPE['AWS']) {
@@ -194,6 +202,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $typeEC2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
         $policyTypeOld = $policy->type;
         $policyTypeNew = $attributes['type'];
+
         if (in_array($policyTypeOld, $typeEC2) || in_array($policyTypeNew, $typeEC2)) {
             $updateEc2 = $this->updatePolicyEc2($id, $policy, $attributes);
             if ($updateEc2->original['code'] != CODE_SUCCESS) {
@@ -214,7 +223,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         if ($attributes['type'] != POLICY_TYPE['EC2_deploy']) {
             $attributes['project_name'] = null;
         }
-        if (!in_array($attributes['type'], [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+        if (!in_array($attributes['type'], [POLICY_TYPE['AWS'], POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
             $attributes['instance_id'] = null;
         }
         if ($attributes['type'] != POLICY_TYPE['AWS']) {
@@ -248,6 +257,15 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     ->exists();
                 if ($isExisted) {
                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.policy_existed'));
+                }
+
+                if($instanceNew != INSTANCE_ID_240) {
+                    $assumeRole = $this->model
+                        ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                        ->where(Policy::INSTANCE_ID, $instanceNew)
+                        ->firt();
+                    if(!$assumeRole)
+                        return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
                 }
 
                 if($policyTypeOld != $policyTypeNew) {
@@ -396,7 +414,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        if (in_array($id, POLICY_V_FACE_ID)) {
+        if (in_array($id, POLICY_V_FACE_ID) || $policy->type == POLICY_TYPE['AWS']) {
             return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
         if (config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
@@ -414,7 +432,17 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     public function getListData($instanceId, $typeList = 'project')
     {
-        $param = Common::configAwsSDK();
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $assumeRole = $this->model
+                ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                ->where(Policy::INSTANCE_ID, $instanceId)
+                ->firt();
+            if(!$assumeRole)
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
+            $param = Common::configAwsSDK($instanceId);
+        }
         $ssmClient = new SsmClient($param);
 
         if ($typeList == 'project') {
@@ -465,7 +493,11 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     private function updateGroupEc2($instanceId, $projectOld, $projectNew, $groupOld, $groupNew)
     {
-        $param = Common::configAwsSDK();
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $param = Common::configAwsSDK($instanceId);
+        }
         $ssmClient = new SsmClient($param);
         $commands = [];
         if ($projectOld == $projectNew) {
@@ -499,7 +531,11 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     private function deleteUserAdminOrDeployWithPolicy(Policy $policy, string $instanceId, $deleteAccountUser = false, int $typeAccount)
     {
-        $param = Common::configAwsSDK();
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $param = Common::configAwsSDK($instanceId);
+        }
         $ssmClient = new SsmClient($param);
         $parameters = [
             'InstanceIds' => [$instanceId],
@@ -576,7 +612,11 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
 
     private function createUserAdminOrDeployWithPolicy($policy, $instanceId, $type, $groupName = null, $projectName = null)
     {
-        $param = Common::configAwsSDK();
+        if($instanceId == INSTANCE_ID_240) {
+            $param = Common::configAwsSDK();
+        } else {
+            $param = Common::configAwsSDK($instanceId);
+        }
         $ssmClient = new SsmClient($param);
 
         $parameters = [
@@ -618,12 +658,14 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 $commandSudo = $isUserDeploy ? Common::addCommandSudo($userNotExist) : [];
                 $parameters['Parameters']['commands'] = array_merge($commands, $commandNode, $commandSudo);
                 $ssmClient->sendCommand($parameters);
+                sleep(2);
             }
         }
 
         if($command) {
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);
+            sleep(2);
         }
     }
 
