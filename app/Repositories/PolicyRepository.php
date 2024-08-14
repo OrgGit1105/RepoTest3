@@ -439,8 +439,14 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 ->where(Policy::TYPE, POLICY_TYPE['AWS'])
                 ->where(Policy::INSTANCE_ID, $instanceId)
                 ->first();
-            if(!$assumeRole)
-                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
+            if(!$assumeRole) {
+                if($typeList == 'project')
+                    return [
+                        'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'msg' => trans('api.policy.assume_role_not_exist')
+                    ];
+            }
+
             $param = Common::configAwsSDK($instanceId);
         }
         $ssmClient = new SsmClient($param);
