@@ -113,7 +113,7 @@
               >
                 <label class="mt-3">Instance Id</label>
                 <div class="header-employee-edit">
-                  <el-input id="instance_id" v-model="form.instance_id" @focus="focusInput" @blur="blurInput" />
+                  <el-input id="instance_id" v-model="form.instance_id" @focus="focusInput" @blur="form.type === 3 || form.type === 4 ? blurInput : null" />
                   <div class="text-error">
                     {{ errors[0] }}
                   </div>
