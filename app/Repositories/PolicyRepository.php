@@ -75,7 +75,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     $assumeRole = $this->model
                         ->where(Policy::TYPE, POLICY_TYPE['AWS'])
                         ->where(Policy::INSTANCE_ID, $instanceId)
-                        ->firt();
+                        ->first();
                     if(!$assumeRole)
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
                 }
@@ -263,7 +263,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                     $assumeRole = $this->model
                         ->where(Policy::TYPE, POLICY_TYPE['AWS'])
                         ->where(Policy::INSTANCE_ID, $instanceNew)
-                        ->firt();
+                        ->first();
                     if(!$assumeRole)
                         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
                 }
@@ -438,7 +438,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             $assumeRole = $this->model
                 ->where(Policy::TYPE, POLICY_TYPE['AWS'])
                 ->where(Policy::INSTANCE_ID, $instanceId)
-                ->firt();
+                ->first();
             if(!$assumeRole)
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.assume_role_not_exist'));
             $param = Common::configAwsSDK($instanceId);
