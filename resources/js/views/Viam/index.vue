@@ -118,7 +118,7 @@
                     {{ errors[0] }}
                   </div>
                   <div v-if="form.instance_id && mesage_istance_err" class="text-error">
-                    Instance does not exist
+                    {{ msg_intance_err }}
                   </div>
                 </div>
               </ValidationProvider>
@@ -212,6 +212,7 @@ export default {
       checkInstance: false,
       OptionName: [],
       mesage_istance_err: false,
+      msg_intance_err: '',
     };
   },
   computed: {
@@ -249,10 +250,10 @@ export default {
         const PARAMS = {
           instance_id: this.form.instance_id,
         };
-        const { code, data } = await getIstance(PARAMS);
-        if (code === 200){
-          console.log('data istance', data);
+        const response = await getIstance(PARAMS);
+        if (response.code === 200){
           this.mesage_istance_err = false;
+          const data = response.data;
           this.OptionName = [];
           if (data){
             data.map(item => {
@@ -267,10 +268,10 @@ export default {
           this.checkInstance = true;
         } else {
           this.mesage_istance_err = true;
+          this.msg_intance_err = response.message;
           this.OptionName = [];
         }
       }
-      console.log('first', this.form.instance_id);
     },
     async getListAllUser() {
       const url = `/policy`;
