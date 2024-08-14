@@ -488,7 +488,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             }
             $attempts++;
         } while ($status != 'Success' && $attempts <= $maxAttempts);
-        return ResponseService::responseJson(Response::HTTP_OK, $data);
+        return $data;
     }
 
     private function updateGroupEc2($instanceId, $projectOld, $projectNew, $groupOld, $groupNew)
