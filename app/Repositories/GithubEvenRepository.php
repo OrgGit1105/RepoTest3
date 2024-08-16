@@ -124,9 +124,8 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
             ";
 
             // Thay đổi URL và Token với thông tin GitHub của bạn
-            $githubRepo = 'VEHO-Develop';
-            $githubToken = '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';
-            $githubUrl = "https://api.github.com/repos/TeckVeho/{$githubRepo}/issues";
+            $githubToken = config('common.github.github_token');
+            $githubUrl = config('common.github.veho_develop.api_issues');
 
             $headers = [
                 'Authorization' => "token {$githubToken}",
