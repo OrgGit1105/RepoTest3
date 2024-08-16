@@ -85,7 +85,7 @@
                         </div>
                       </ValidationProvider>
                     </div>
-                    <div v-if="formEdit.type === 3 || formEdit.type === 4">
+                    <div v-if="formEdit.type === 2 ||formEdit.type === 3 || formEdit.type === 4">
                       <ValidationProvider
                         v-slot="{ errors }"
                         name="Instance"
