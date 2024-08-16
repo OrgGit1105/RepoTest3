@@ -50,23 +50,23 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         foreach ($policies as $policy) {
             $instanceData[$policy->instance_id][] = $policy;
         }
-        foreach ($instanceData as $instance) {
-            if ($instance == INSTANCE_ID_240) {
+        foreach ($instanceData as $instanceId => $policyList) {
+            if ($instanceId == INSTANCE_ID_240) {
                 $param = Common::configAwsSDK();
             } else {
-                $param = Common::configAwsSDK($instance);
+                $param = Common::configAwsSDK($instanceId);
             }
             $ssmClient = new SsmClient($param);
 
-            foreach ($instance as $policy) {
+            foreach ($policyList as $policy) {
                 if ($this->action === 'create') {
                     $this->createUser($policy, $ssmClient);
                 }
 
                 if ($this->action === 'delete') {
                     $policyEc2Update = VIAMUser::query()->where('id', $this->viamUser->id)
-                        ->whereHas('policies', function ($e) use ($instance) {
-                            $e->where(Policy::INSTANCE_ID, $instance)
+                        ->whereHas('policies', function ($e) use ($instanceId) {
+                            $e->where(Policy::INSTANCE_ID, $instanceId)
                                 ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
                         })->exists();
                     $deleteAccountUser = $this->policyViamUserOld && !$policyEc2Update; //delete account when ViamUser Before update has Policy EC2 but after update is not has
