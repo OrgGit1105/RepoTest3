@@ -134,7 +134,11 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
             ];
             // check instance  i-0d8bc9faee44b0f2b => assigness phuong
             $assigness = 'tuancuongth88';
-            if($instance == 'i-0d8bc9faee44b0f2b'){
+            $instanceIzumi = [
+                'i-0d8bc9faee44b0f2b',
+                'izumi'
+            ];
+            if(in_array($instance, $instanceIzumi)){
                 $assigness = 'phuongcodeunited';
             }
             $issueData = [
