@@ -128,7 +128,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
             }
 
             UpdateUserEC2WithViamUserJob::dispatch($viamUser, $removePolicies, 'delete', $policyEc2Old);
-            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $addPolicies, 'create');
+            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $addPolicies, 'create', $policyEc2Old);
         } else {
             $model = parent::update($attributes, $id);
             VIAMUserPolicy::query()->where(VIAMUserPolicy::VIAM_USER_ID, $id)->delete();

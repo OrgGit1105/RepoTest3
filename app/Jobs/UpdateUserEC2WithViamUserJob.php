@@ -28,7 +28,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
      * @param array $policies
      * @param string $action
      */
-    public function __construct(VIAMUser $viamUser, array $policies, string $action, $policyViamUserOld)
+    public function __construct(VIAMUser $viamUser, array $policies, string $action, $policyViamUserOld = false)
     {
         $this->viamUser = $viamUser;
         $this->policies = $policies;
@@ -43,34 +43,34 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
      */
     public function handle()
     {
-        $policyInstance = Policy::query()->whereIn('id', $this->policies)
-            ->get()
-            ->keyBy(Policy::INSTANCE_ID);
-
-        foreach ($policyInstance as $instanceId => $listPolicy) {
-            if ($instanceId == INSTANCE_ID_240) {
+        $policies = Policy::query()->whereIn('id', $this->policies)
+            ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])
+            ->get();
+        $instanceData = [];
+        foreach ($policies as $policy) {
+            $instanceData[$policy->instance_id][] = $policy;
+        }
+        foreach ($instanceData as $instance) {
+            if ($instance == INSTANCE_ID_240) {
                 $param = Common::configAwsSDK();
             } else {
-                $param = Common::configAwsSDK($instanceId);
+                $param = Common::configAwsSDK($instance);
             }
             $ssmClient = new SsmClient($param);
 
-            foreach ($listPolicy as $addPolicy) {
-                $policy = Policy::query()->find($addPolicy);
-                if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-                    if ($this->action === 'create') {
-                        $this->createUser($policy, $ssmClient);
-                    }
+            foreach ($instance as $policy) {
+                if ($this->action === 'create') {
+                    $this->createUser($policy, $ssmClient);
+                }
 
-                    if ($this->action === 'delete') {
-                        $policyEc2Update = VIAMUser::query()->where('id', $this->viamUser->id)
-                            ->whereHas('policies', function ($e) use ($instanceId){
-                                $e->where(Policy::INSTANCE_ID, $instanceId)
-                                    ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
-                            })->exists();
-                        $deleteAccountUser = $this->policyViamUserOld && !$policyEc2Update; //delete account when ViamUser Before update has Policy EC2 but after update is not has
-                        $this->deleteUser($policy, $ssmClient, $deleteAccountUser);
-                    }
+                if ($this->action === 'delete') {
+                    $policyEc2Update = VIAMUser::query()->where('id', $this->viamUser->id)
+                        ->whereHas('policies', function ($e) use ($instance) {
+                            $e->where(Policy::INSTANCE_ID, $instance)
+                                ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                        })->exists();
+                    $deleteAccountUser = $this->policyViamUserOld && !$policyEc2Update; //delete account when ViamUser Before update has Policy EC2 but after update is not has
+                    $this->deleteUser($policy, $ssmClient, $deleteAccountUser);
                 }
             }
         }
