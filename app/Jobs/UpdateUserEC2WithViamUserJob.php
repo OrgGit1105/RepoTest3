@@ -19,7 +19,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 300;
-    private $viamUser, $policies, $action, $deleteAccountUser;
+    private $viamUser, $policies, $action, $policyViamUserOld;
 
     /**
      * Create a new job instance.
@@ -28,12 +28,12 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
      * @param array $policies
      * @param string $action
      */
-    public function __construct(VIAMUser $viamUser, array $policies, string $action, $deleteAccountUser = false)
+    public function __construct(VIAMUser $viamUser, array $policies, string $action, $policyViamUserOld)
     {
         $this->viamUser = $viamUser;
         $this->policies = $policies;
         $this->action = $action;
-        $this->deleteAccountUser = $deleteAccountUser;
+        $this->policyViamUserOld = $policyViamUserOld;
     }
 
     /**
@@ -43,36 +43,44 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->action === 'create') {
-            foreach ($this->policies as $addPolicy) {
+        $policyInstance = Policy::query()->whereIn('id', $this->policies)
+            ->get()
+            ->keyBy(Policy::INSTANCE_ID);
+
+        foreach ($policyInstance as $instanceId => $listPolicy) {
+            if ($instanceId == INSTANCE_ID_240) {
+                $param = Common::configAwsSDK();
+            } else {
+                $param = Common::configAwsSDK($instanceId);
+            }
+            $ssmClient = new SsmClient($param);
+
+            foreach ($listPolicy as $addPolicy) {
                 $policy = Policy::query()->find($addPolicy);
                 if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-                    $this->createUser($policy);
-                }
-            }
-        }
-        if ($this->action === 'delete') {
-            foreach ($this->policies as $removePolicy) {
-                $policy = Policy::query()->find($removePolicy);
-                if (in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
-                    $this->deleteUser($policy);
+                    if ($this->action === 'create') {
+                        $this->createUser($policy, $ssmClient);
+                    }
+
+                    if ($this->action === 'delete') {
+                        $policyEc2Update = VIAMUser::query()->where('id', $this->viamUser->id)
+                            ->whereHas('policies', function ($e) use ($instanceId){
+                                $e->where(Policy::INSTANCE_ID, $instanceId)
+                                    ->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
+                            })->exists();
+                        $deleteAccountUser = $this->policyViamUserOld && !$policyEc2Update; //delete account when ViamUser Before update has Policy EC2 but after update is not has
+                        $this->deleteUser($policy, $ssmClient, $deleteAccountUser);
+                    }
                 }
             }
         }
     }
 
-    private function createUser($policy)
+    private function createUser($policy, $ssmClient)
     {
         $type = $policy->type;
         $groupName = $policy->name;
         $instanceId = $policy->instance_id;
-
-        if($instanceId == INSTANCE_ID_240) {
-            $param = Common::configAwsSDK();
-        } else {
-            $param = Common::configAwsSDK($instanceId);
-        }
-        $ssmClient = new SsmClient($param);
 
         $parameters = [
             'InstanceIds' => [$instanceId],
@@ -118,16 +126,9 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         sleep(count($userNotExists));
     }
 
-    private function deleteUser($policy)
+    private function deleteUser($policy, $ssmClient, $deleteAccountUser)
     {
         $instanceId = $policy->instance_id;
-        if($instanceId == INSTANCE_ID_240) {
-            $param = Common::configAwsSDK();
-        } else {
-            $param = Common::configAwsSDK($instanceId);
-        }
-        $ssmClient = new SsmClient($param);
-
         $usernames = [];
         foreach ($this->viamUser->users as $user) {
             $usernames[] = $user->name;
@@ -143,7 +144,7 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
         }
 
         $command = [];
-        if ($this->deleteAccountUser) {
+        if ($deleteAccountUser) {
             foreach ($userExists as $username) {
                 $command[] = "echo '' | sudo -u $username tee /home/$username/.ssh/authorized_keys > /dev/null";
                 $command[] = "sudo sed -i '/^$username ALL=(ALL) NOPASSWD:/d' /etc/sudoers";

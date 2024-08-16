@@ -127,13 +127,7 @@ class VIAMUserRepository extends BaseRepository implements VIAMUserRepositoryInt
                 ]);
             }
 
-            $policyEc2Update = VIAMUser::query()->where('id', $id)
-                ->whereHas('policies', function ($e) {
-                    $e->whereIn(Policy::TYPE, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']]);
-                })->exists();
-
-            $deleteAccountUser = !$policyEc2Update && $policyEc2Old;
-            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $removePolicies, 'delete', $deleteAccountUser);
+            UpdateUserEC2WithViamUserJob::dispatch($viamUser, $removePolicies, 'delete', $policyEc2Old);
             UpdateUserEC2WithViamUserJob::dispatch($viamUser, $addPolicies, 'create');
         } else {
             $model = parent::update($attributes, $id);
