@@ -47,7 +47,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
     {
         $data = $this->model;
         if(isset($attributes['instance_id']) && !empty($attributes['instance_id'])) {
-            $data = $data->whereRaw("TRIM(" . Policy::INSTANCE_ID . ") = ?", [$attributes['instance_id']]);
+            $data = $data->where(Policy::INSTANCE_ID, [$attributes['instance_id']]);
         }
 
         return $data->get();
@@ -62,13 +62,12 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             ->get();
         $servers = [];
         foreach ($instances as $key => $instance) {
-            $instance_id = trim($instance->instance_id);
+            $instance_id = $instance->instance_id;
             if (@TEXT_NAME_SERVER[$instance_id]) {
                 $servers[$key]['instance_id'] = $instance_id;
                 $servers[$key]['name'] = TEXT_NAME_SERVER[$instance_id];
             }
         }
-
         return $servers;
     }
 
@@ -80,6 +79,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
     public function create(array $attributes)
     {
         $type = $attributes['type'];
+        $attributes['instance_id'] = trim($attributes['instance_id']);
         try {
             if ($type == POLICY_TYPE['EC2_admin'] || $type == POLICY_TYPE['EC2_deploy']) {
                 $instanceId = $attributes['instance_id'];
@@ -124,7 +124,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             }
 
             if ($type == POLICY_TYPE['AWS']) {
-                $arnRoleExist = $this->model->where(Policy::ARN_ROLE, $attributes['arn_role'])
+                $arnRoleExist = $this->model
                     ->where(Policy::TYPE, POLICY_TYPE['AWS'])
                     ->where(Policy::INSTANCE_ID, $attributes['instance_id'])
                     ->exists();
@@ -230,6 +230,7 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         $typeEC2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
         $policyTypeOld = $policy->type;
         $policyTypeNew = $attributes['type'];
+        $attributes['instance_id'] = trim($attributes['instance_id']);
 
         if (in_array($policyTypeOld, $typeEC2) || in_array($policyTypeNew, $typeEC2)) {
             $updateEc2 = $this->updatePolicyEc2($id, $policy, $attributes);
@@ -239,9 +240,12 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         }
 
         if (in_array(POLICY_TYPE['AWS'], [$policyTypeOld, $policyTypeNew])) {
-            $updateAws = $this->updatePolicyAws($policy, $attributes);
-            if ($updateAws->original['code'] != CODE_SUCCESS) {
-                return $updateAws;
+            $arnRoleExist = $this->model->where(Policy::INSTANCE_ID, $attributes['instance_id'])
+                ->where(Policy::TYPE, POLICY_TYPE['AWS'])
+                ->where('id', '!=', $policy->id)
+                ->exists();
+            if ($arnRoleExist) {
+                return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.aws_existed'), trans('api.policy.aws_existed'));
             }
         }
 
@@ -369,6 +373,8 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
         return ResponseService::responseJson(CODE_SUCCESS);
     }
 
+    /*
+    Trust policy needs to be processed on the server which needs to connect, can not be processed on the current server
     private function updatePolicyAws(Policy $policy, array $attributes)
     {
         if (config('app.env') === ENVIRONMENT_UPDATE && ($policy->type != $attributes['type'] || $policy->arn_role != $attributes['arn_role'])) {
@@ -380,61 +386,61 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.aws_existed'), trans('api.policy.aws_existed'));
             }
 
-            /* trust policy needs to be processed on the server which needs to connect, can not be processed on the current server
-             * $typeAws = POLICY_TYPE['AWS'];
-             * $arnIamRoleAdd = $attributes['arn_role'];
-             * $typeOld = $policy->type;
-             * $typeNew = $attributes['type'];
-             * $param = Common::configAwsSDK();
-             * $ec2Client = new Ec2Client($param);
-             * $iamClient = new IamClient($param);
-             * try {
-             *     $infoIamRoleSelf = $this->getInfoIamRoleSelf($ec2Client, $iamClient);
-             *     if (!$infoIamRoleSelf) {
-             *         return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.instance_id_not_found'), trans('api.policy.instance_id_not_found'));
-             *     }
-             *     $currentTrustPolicy = $infoIamRoleSelf['currentTrustPolicy'];
-             *     if ($typeOld != $typeAws && $typeNew == $typeAws) {//other => AWS
-             *         $currentTrustPolicy['Statement'][] = [
-             *             'Effect' => 'Allow',
-             *             'Principal' => ['AWS' => $arnIamRoleAdd],
-             *             'Action' => 'sts:AssumeRole'
-             *         ];
-             *     } elseif ($typeOld == $typeAws && $typeNew != $typeAws) {//AWS => other
-             *         $policyDelete = [
-             *             'Effect' => 'Allow',
-             *             'Principal' => ['AWS' => $policy->arn_role],
-             *             'Action' => 'sts:AssumeRole'
-             *         ];
-             *         $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
-             *             return $policy != $policyDelete;
-             *         });
-             *     } else { //AWS -> AWS
-             *         $policyDelete = [
-             *             'Effect' => 'Allow',
-             *             'Principal' => ['AWS' => $policy->arn_role],
-             *             'Action' => 'sts:AssumeRole'
-             *         ];
-             *         $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
-             *             return $policy != $policyDelete;
-             *         });
-             *         $currentTrustPolicy['Statement'][] = [
-             *             'Effect' => 'Allow',
-             *             'Principal' => ['AWS' => $arnIamRoleAdd],
-             *             'Action' => 'sts:AssumeRole'
-             *         ];
-             *     }
-             *     $iamClient->updateAssumeRolePolicy([
-             *         'PolicyDocument' => json_encode($currentTrustPolicy),
-             *         'RoleName' => $infoIamRoleSelf['iamRoleSelf'],
-             *     ]);
-             * } catch (AwsException $e) {
-             *     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e->getMessage());
-             * }
-             */
+            /trust policy needs to be processed on the server which needs to connect, can not be processed on the current server
+             $typeAws = POLICY_TYPE['AWS'];
+             $arnIamRoleAdd = $attributes['arn_role'];
+             $typeOld = $policy->type;
+             $typeNew = $attributes['type'];
+             $param = Common::configAwsSDK();
+             $ec2Client = new Ec2Client($param);
+             $iamClient = new IamClient($param);
+             try {
+                 $infoIamRoleSelf = $this->getInfoIamRoleSelf($ec2Client, $iamClient);
+                 if (!$infoIamRoleSelf) {
+                     return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.policy.instance_id_not_found'), trans('api.policy.instance_id_not_found'));
+                 }
+                 $currentTrustPolicy = $infoIamRoleSelf['currentTrustPolicy'];
+                 if ($typeOld != $typeAws && $typeNew == $typeAws) {//other => AWS
+                     $currentTrustPolicy['Statement'][] = [
+                         'Effect' => 'Allow',
+                         'Principal' => ['AWS' => $arnIamRoleAdd],
+                         'Action' => 'sts:AssumeRole'
+                     ];
+                 } elseif ($typeOld == $typeAws && $typeNew != $typeAws) {//AWS => other
+                     $policyDelete = [
+                         'Effect' => 'Allow',
+                         'Principal' => ['AWS' => $policy->arn_role],
+                         'Action' => 'sts:AssumeRole'
+                     ];
+                     $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
+                         return $policy != $policyDelete;
+                     });
+                 } else { //AWS -> AWS
+                     $policyDelete = [
+                         'Effect' => 'Allow',
+                         'Principal' => ['AWS' => $policy->arn_role],
+                         'Action' => 'sts:AssumeRole'
+                     ];
+                     $currentTrustPolicy['Statement'] = array_filter($currentTrustPolicy['Statement'], function ($policy) use ($policyDelete) {
+                         return $policy != $policyDelete;
+                     });
+                     $currentTrustPolicy['Statement'][] = [
+                         'Effect' => 'Allow',
+                         'Principal' => ['AWS' => $arnIamRoleAdd],
+                         'Action' => 'sts:AssumeRole'
+                     ];
+                 }
+                 $iamClient->updateAssumeRolePolicy([
+                     'PolicyDocument' => json_encode($currentTrustPolicy),
+                     'RoleName' => $infoIamRoleSelf['iamRoleSelf'],
+                 ]);
+             } catch (AwsException $e) {
+                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage(), $e->getMessage());
+             }
+
         }
         return ResponseService::responseJson(CODE_SUCCESS);
-    }
+    } */
 
     public function delete($id)
     {
@@ -443,16 +449,20 @@ class PolicyRepository extends BaseRepository implements PolicyRepositoryInterfa
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('messages.mes.data_not_found'));
         }
 
-        if (in_array($id, POLICY_V_FACE_ID) || $policy->type == POLICY_TYPE['AWS']) {
+        if (in_array($id, POLICY_V_FACE_ID)) {
             return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
-        if (config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']])) {
+        $arrayTypeEc2 = [POLICY_TYPE['EC2_admin'], POLICY_TYPE['EC2_deploy']];
+        if (config('app.env') === ENVIRONMENT_UPDATE && in_array($policy->type, $arrayTypeEc2)) {
             $this->deleteUserAdminOrDeployWithPolicy($policy, $policy->instance_id, true, $policy->type); //delete admin
         }
-        if (config('app.env') === ENVIRONMENT_UPDATE && $policy->type == POLICY_TYPE['AWS']) {
-            $deleteAws = $this->deletePolicyAws($policy);
-            if ($deleteAws->original['code'] != CODE_SUCCESS)
-                return $deleteAws;
+        if ($policy->type == POLICY_TYPE['AWS']) {
+            $policyConnect = $this->model->query()
+                ->where(Policy::INSTANCE_ID, $policy->instance_id)
+                ->whereIn(Policy::TYPE, $arrayTypeEc2)
+                ->exists();
+            if($policyConnect)
+                return ResponseService::responseJson(Response::HTTP_UNPROCESSABLE_ENTITY, null, trans('messages.mes.delete_fail'));
         }
         VIAMUserPolicy::query()->where(VIAMUserPolicy::POLICY_ID, $id)->delete();
         parent::delete($id);
