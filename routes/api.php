@@ -56,6 +56,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::get('schedule/one-day', 'ScheduleController@scheduleOneDay');
         Route::get('schedule/result-chat-gpt', 'ScheduleController@getChatGPT');
         Route::get('schedule', 'ScheduleController@index')->withoutMiddleware(['managerRole']);
+        Route::get('policy-all-serer', 'PolicyController@listAllServer');
         Route::get('policy-option', 'PolicyController@listOption');
         Route::get('policy/project_name', 'PolicyController@getProject');
         Route::apiResource('policy', 'PolicyController');
