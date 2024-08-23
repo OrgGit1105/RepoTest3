@@ -208,7 +208,7 @@ export default {
       if (newType !== 2) {
         this.formEdit.arn_role = '';
       }
-      if (newType !== 3 && newType !== 4) {
+      if (newType !== 2 && newType !== 3 && newType !== 4) {
         this.formEdit.instance_id = null;
       }
       if (newType !== 4) {

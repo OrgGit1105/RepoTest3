@@ -15,6 +15,23 @@
         <div class="use-management-title-table mt-5">
           <div class="fill">
             <i class="el-icon-circle-plus-outline custom-icon-add cursor-pointer" @click="createForm()" />
+            <div class="d-flex justify-content-end align-items-center">
+              <div class="select-custom">
+                <el-select v-model="serverValue" placeholder="Select" class="el-select-custom" @change="fillSearch(serverValue)">
+                  <el-option
+                    class="el-option-custom"
+                    label="All Server"
+                    value=""
+                  />
+                  <el-option
+                    v-for="item in listServer"
+                    :key="item.instance_id"
+                    :label="item.name"
+                    :value="item.instance_id"
+                  />
+                </el-select>
+              </div>
+            </div>
           </div>
           <hr class="line">
           <div class="">
@@ -163,10 +180,12 @@
 </template>
 
 <script>
-import { deleteOneUser, getAllUser, postOneUser, getIstance } from '../../api/viampolicy';
+import { deleteOneUser, getAllUser, postOneUser, getIstance, getAllServer } from '../../api/viampolicy';
 import { MakeToast } from '../../utils/toast_message';
 import * as CONFIGS from '../../configs/index';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
+// eslint-disable-next-line no-unused-vars
+import { getAllUserWithoutPagination } from '@/api/user';
 
 export default {
   name: 'ViamManagement',
@@ -183,6 +202,8 @@ export default {
         total_records: 0,
         isDisable: false,
       },
+      serverValue: '',
+      listServer: [],
       headQuarter: CONFIGS.UserRoleId.HEAD_QUARTER,
       infoModel: {},
       listUser: [],
@@ -233,6 +254,7 @@ export default {
   },
   created() {
     this.getListAllUser();
+    this.getListServer();
   },
   methods: {
     openLoading() {
@@ -243,6 +265,9 @@ export default {
     },
     focusInput(){
       this.checkInstance = true;
+    },
+    fillSearch(){
+      this.getListAllUser();
     },
     async blurInput(){
       if (this.form.instance_id && (this.form.type === 3 || this.form.type === 4)){
@@ -257,7 +282,6 @@ export default {
           this.OptionName = [];
           if (data){
             data.map(item => {
-              console.log('item', item);
               OPTION.push({
                 id: item,
                 name: item,
@@ -276,12 +300,12 @@ export default {
       }
     },
     async getListAllUser() {
-      const url = `/policy`;
+      let url = `/policy`;
       // this.pagination.isDisable = true;
-      // const PARAMS = {
-      //   page: this.pagination.current_page,
-      //   per_page: this.pagination.per_page,
-      // };
+      if (this.serverValue) {
+        url = url + '?instance_id=' + this.serverValue;
+      }
+
       await getAllUser(url)
         .then((response) => {
           if (response.code === 200) {
@@ -304,7 +328,6 @@ export default {
         });
     },
     goToEditScreen(val) {
-      console.log('vall', val);
       this.$router.push({ path: `/viam/edit/${val.id}` }, (onAbort) => {});
     },
     toCreatePage() {
@@ -380,6 +403,17 @@ export default {
           });
         });
       }
+    },
+    async getListServer() {
+      await getAllServer()
+        .then((response) => {
+          if (response.code === 200) {
+            this.listServer = response.data;
+          }
+        })
+        .catch(() => {
+          this.listServer = [];
+        });
     },
     // copy cua Yen
     rowWorkingStyle({ row, rowIndex }) {
