@@ -43,6 +43,7 @@ const ENVIRONMENT_UPDATE = 'production';
 const ENVIRONMENT_UPDATE_RDS = 'production';
 const RDS_LOCAL = 0;
 
+// instance_id of servers need to connect
 const INSTANCE_ID_240 = 'i-0553d99830b279164';
 const INSTANCE_ID_142 = 'i-04239f041017b687f';
 const INSTANCE_ID_176 = 'i-0c46b59f952de209c';

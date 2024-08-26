@@ -43,7 +43,7 @@ class Common
         return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 
-    public function configAwsSDK($instanceId = null)
+    public static function configAwsSDK($instanceId = null)
     {
         if (!App::environment('local')) {
             $param = [
@@ -119,10 +119,16 @@ class Common
         $path = '';
         switch ($instanceId) {
             case INSTANCE_ID_240:
-                $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin'; //node của 240
+                $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin/node'; //node của 240
                 break;
             case INSTANCE_ID_142:
                 $path = '/usr/bin/node';
+                break;
+            case INSTANCE_ID_176:
+                $path = '/home/ec2-user/.nvm/versions/node/v14.21.3/bin/node';
+                break;
+            case INSTANCE_ID_235:
+                $path = '/home/ec2-user/.nvm/versions/node/v20.14.0/bin/node';
                 break;
         }
 
@@ -264,21 +270,47 @@ class Common
         }
 
         $ssmClient = new SsmClient($param);
+        $commands = [
+            "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
+            "sudo chown -R :$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
+            "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
+            "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
+            "find /var/www/$projectName -type d -path \"*/public/js\" -exec chmod -R 775 {} \;",
+            "sudo chmod -R g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
+            "for user in \$(getent group $groupOldOfProject | cut -d: -f4 | tr ',' ' '); do sudo usermod -aG $groupName \$user; done", // thêm tk ec2-user, apache, deploy vào nhóm
+        ];
+
+        $commandAdd = [];
+        $commandAddDefault = [
+            "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
+        ];
+        switch ($instanceId) {
+            case INSTANCE_ID_240:
+                $commandAdd = $commandAddDefault;
+                break;
+            case INSTANCE_ID_142:
+                $commandAdd = array_merge($commandAddDefault, [
+                    "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
+                ]);
+                break;
+            case INSTANCE_ID_235:
+                $commandAdd = array_merge($commandAddDefault, [
+                    "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
+                    "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
+                ]);
+                break;
+            case INSTANCE_ID_176:
+                $commandAdd = array_merge($commandAddDefault, [
+                    "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
+                ]);
+                break;
+        }
+
         $parameters = [
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript',
             'Parameters' => [
-                'commands' => [
-                    "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
-                    "sudo chown -R :$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
-                    "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
-                    "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
-                    "find /var/www/$projectName -type d -path \"*/public/js\" -exec chmod -R 775 {} \;",
-                    "sudo chmod -R g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
-                    "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
-                    "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
-                    "for user in \$(getent group $groupOldOfProject | cut -d: -f4 | tr ',' ' '); do sudo usermod -aG $groupName \$user; done", // thêm tk ec2-user, apache, deploy vào nhóm
-                ],
+                'commands' => array_merge($commands, $commandAdd),
             ],
         ];
         $ssmClient->sendCommand($parameters);
