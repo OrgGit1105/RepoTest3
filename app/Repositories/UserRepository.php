@@ -206,7 +206,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function getAll()
     {
-        return $this->model->select(['id', 'name'])->get();
+        return $this->model->select(['id', 'name'])->whereNull('retirement_date')->get();
     }
 
     public function detail($id)
