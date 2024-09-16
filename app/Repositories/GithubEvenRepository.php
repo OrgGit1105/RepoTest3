@@ -85,7 +85,11 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
             $region = $decodedJson['Region'];
             $contentTop = null;
             if(explode('-', $dimensions[0]['value'])[0] == 'i' && count(explode('-', $dimensions[0]['value'])) > 1){
-                $responseTopServer = $this->getInfoTopServer($dimensions[0]['value']);
+                if($metricName == 'mem_used_percent'){
+                    $responseTopServer = $this->getInfoTopServer($dimensions[0]['value'], 'MEM');
+                }else{
+                    $responseTopServer = $this->getInfoTopServer($dimensions[0]['value'], 'CPU');
+                }
                 $contentTop = $responseTopServer['StandardOutputContent'];
             }
             // Chuẩn bị nội dung chi tiết của issue
@@ -178,19 +182,21 @@ Please do not reply directly to this email. If you have any questions or comment
         return response()->json(['message' => 'Notification received'], 200);
 
     }
-
-    private function getInfoTopServer($instanceId)
+    /*
+     * $sortBy:   PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+     */
+    private function getInfoTopServer($instanceId, $sortBy = 'CPU')
     {
         $param = ($instanceId != INSTANCE_ID_240) ? Common::configAwsSDK($instanceId) : Common::configAwsSDK();
         $ssmClient = new SsmClient($param);
-
         $parameters = [
             'InstanceIds' => [$instanceId],
             'DocumentName' => 'AWS-RunShellScript',
             'Parameters' => [
-                'commands' => ["export COLUMNS=500; top -c -b -o +%CPU | head -n 20"],
+                'commands' => ["export COLUMNS=500; top -c -b -o +%{$sortBy} | head -n 20"],
             ],
         ];
+
         $response = $ssmClient->sendCommand($parameters);
         $commandId = $response['Command']['CommandId'];
 
