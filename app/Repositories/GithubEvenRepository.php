@@ -59,7 +59,7 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
                                     **Title**: {$parsedMessage['title']}
                                     **Timestamp**: {$alarmDetails['time']}";
 
-                $response = $this->createGithubIssue('New GuardDuty Finding'. $parsedMessage['type'], $issueTemplate, $alarmDetails['account']);
+                $response = $this->createGithubIssue('New GuardDuty Finding'. $parsedMessage['type'], $issueTemplate, $alarmDetails['account'], 2);
                 return $this->buildResponse($response);
             }
 
@@ -125,7 +125,7 @@ If you wish to stop receiving notifications from this topic, please unsubscribe:
 ";
     }
 
-    private function createGithubIssue($title, $issueBody, $instance)
+    private function createGithubIssue($title, $issueBody, $instance, $milestone = 1)
     {
         $assignee = $this->getAssignee($instance);
 
@@ -133,7 +133,7 @@ If you wish to stop receiving notifications from this topic, please unsubscribe:
             'title' => "ALARM: {$title}",
             'body' => $issueBody,
             'assignees' => [$assignee],
-            'milestone' => 1,
+            'milestone' => $milestone,
             'labels' => ['low priority']
         ];
         return Http::withHeaders($this->getGithubHeaders())
