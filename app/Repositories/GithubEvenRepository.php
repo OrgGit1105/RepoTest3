@@ -45,8 +45,10 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
                 return $this->buildResponse($response);
             }else if(isset($alarmDetails['detail-type']) && $alarmDetails['detail-type'] === 'GuardDuty Finding'){
                 $parsedMessage = $alarmDetails['detail'];
-                $resourceDetails = $parsedMessage['resource']['instanceDetails'];
-                $issueTemplate = "# AWS GuardDuty Finding: {$parsedMessage['type']}
+                $issueTemplate = null;
+                if ($parsedMessage['resource']){
+                    $resourceDetails = $parsedMessage['resource']['instanceDetails'];
+                    $issueTemplate = "# AWS GuardDuty Finding: {$parsedMessage['type']}
 
                                     **Finding ID**: {$parsedMessage['id']}
                                     **Severity**: {$parsedMessage['severity']}
@@ -58,6 +60,18 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
 
                                     **Title**: {$parsedMessage['title']}
                                     **Timestamp**: {$alarmDetails['time']}";
+                }else{
+                    $issueTemplate = "# AWS GuardDuty Finding: {$parsedMessage['type']}
+
+                                    **Finding ID**: {$parsedMessage['id']}
+                                    **Description**: {$parsedMessage['detail']['resource']['description']}
+
+                                    ---
+
+                                    **Title**: {$parsedMessage['title']}
+                                    **Timestamp**: {$alarmDetails['time']}";
+                }
+
 
                 $response = $this->createGithubIssue('New GuardDuty Finding'. $parsedMessage['type'], $issueTemplate, $alarmDetails['account'], 2);
                 return $this->buildResponse($response);
