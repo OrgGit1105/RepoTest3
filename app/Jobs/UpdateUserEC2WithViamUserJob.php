@@ -119,6 +119,8 @@ class UpdateUserEC2WithViamUserJob implements ShouldQueue
             }
         }
 
+        sleep(2);
+        
         if($command) {
             $parameters['Parameters']['commands'] = $command;
             $ssmClient->sendCommand($parameters);
