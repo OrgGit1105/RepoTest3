@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\HistoryUpdatePaidOff;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -32,7 +33,15 @@ class PaidOffWithYearJob implements ShouldQueue
      */
     public function handle()
     {
-        $employees = User::query()->whereNotNull('entry_date')->get();
+        $date = Carbon::now()->format('Y-m-d');
+        $employees = User::query()
+            ->whereNotNull('entry_date')
+            ->where(function ($query) use ($date) {
+                $query->whereNull('retirement_date')
+                    ->orWhere('retirement_date', '>=', $date);
+            })
+            ->get();
+
         foreach ($employees as $employee)
         {
             $currentDate = Carbon::now();
@@ -40,8 +49,19 @@ class PaidOffWithYearJob implements ShouldQueue
             if($currentDate >= $thirteenMonthsLater) {
                 $paid_off = $employee->paid_off;
                 $paid_off = ($paid_off > 0) ? $paid_off + 12 : 12;
+
+                $paid_off_before = $employee->paid_off;
                 $employee->paid_off = $paid_off;
                 $employee->save();
+
+                if($paid_off_before != $paid_off) {
+                    HistoryUpdatePaidOff::create([
+                        HistoryUpdatePaidOff::USER_ID => $employee->id,
+                        HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_AUTO_YEAR,
+                        HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
+                        HistoryUpdatePaidOff::PAID_OFF_AFTER => $paid_off
+                    ]);
+                }
             }
         }
     }

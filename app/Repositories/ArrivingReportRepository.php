@@ -11,6 +11,7 @@ use App\Http\Resources\BaseResource;
 use App\Models\ArrivingReport;
 use App\Models\BreakTime;
 use App\Models\HistoryEditReport;
+use App\Models\HistoryUpdatePaidOff;
 use App\Models\User;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use Carbon\Carbon;
@@ -111,7 +112,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $type_date = $attributes['type_date'];
         $morning = DateTime::createFromFormat('H:i', '12:00')->format('H:i:s');
         $afternoon = DateTime::createFromFormat('H:i', '13:30')->format('H:i:s');
-
+        $history = null;
         // Kiểm tra ngày này đã check-in check-out chưa
         $arrivingIn_time = $this->model
             ->where("user_id", $attributes['user_id'])
@@ -176,13 +177,24 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $day_off = Carbon::parse($in_time);
 
             if($day_off >= $entry_date) {
+                $paid_off = $user->paid_off;
+                $paid_off_before = $paid_off;
+
                 if($in_time->diff($out_time)->h >= 8) {
-                    $user->paid_off = $user->paid_off - 1;
+                    $paid_off = $paid_off - 1;
                 } else {
-                    $user->paid_off = $user->paid_off - 0.5;
+                    $paid_off = $paid_off - 0.5;
                 }
+                $user->paid_off = $paid_off;
+                $user->save();
+
+                $history = HistoryUpdatePaidOff::create([
+                    HistoryUpdatePaidOff::USER_ID => $user->id,
+                    HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
+                    HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
+                    HistoryUpdatePaidOff::PAID_OFF_AFTER => $paid_off
+                ]);
             }
-            $user->save();
         }
 
         $late = 0;
@@ -196,7 +208,14 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $attributes['status'] = 1;
         $attributes['created_at'] = Carbon::now();
         $attributes['late'] = $late;
-        return ResponseService::responseJson(200, new BaseResource(parent::create($attributes)));
+
+        $report = parent::create($attributes);
+        if($history) {
+            $history->report_id = $report->id;
+            $history->save();
+        }
+
+        return ResponseService::responseJson(200, new BaseResource($report));
     }
 
     public function detail($id)
@@ -303,6 +322,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $day_off_report = Carbon::parse($report->intime);
         $is_official_update = $day_off_update >= $entry_date;
         $is_official_report = $day_off_report >= $entry_date;
+        $paid_off_before = $user->paid_off;
 
         //Update time với type date cũ và mới đều là take_off
         if($type_update == $report->type_date && $report->type_date == $type_take_off) {
@@ -348,6 +368,16 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             }
         }
         $user->save();
+
+        if($paid_off_before != $user->paid_off) {
+            HistoryUpdatePaidOff::create([
+                HistoryUpdatePaidOff::USER_ID => $user->id,
+                HistoryUpdatePaidOff::REPORT_ID => $report->id,
+                HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
+                HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
+                HistoryUpdatePaidOff::PAID_OFF_AFTER => $user->paid_off
+            ]);
+        }
     }
 
     public function createArriving($input = [])
@@ -399,7 +429,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                         $arrivingReport->status = 1;
                         $arrivingReport->save();
                     } else {
-                        ArrivingReport::create([
+                        $report = ArrivingReport::create([
                             'user_id' => $user->id,
                             'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
                             'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
@@ -408,13 +438,24 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                             'status' => 1,
                         ]);
                         if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
+                            $paid_off_before = $user->paid_off;
+
                             if (Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
                                 $paid_off = 0.5;
                             } else {
                                 $paid_off = 1;
                             }
+
                             $user->paid_off = $user->paid_off - $paid_off;
                             $user->save();
+
+                            HistoryUpdatePaidOff::create([
+                                HistoryUpdatePaidOff::USER_ID => $user->id,
+                                HistoryUpdatePaidOff::REPORT_ID => $report->id,
+                                HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
+                                HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
+                                HistoryUpdatePaidOff::PAID_OFF_AFTER => $user->paid_off
+                            ]);
                         }
                     }
                     return response()->json([
@@ -446,7 +487,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 $dataInsert = [];
                 $paid_off = 0;
                 $type_date = $this->getTypeDate($messages[0]);
-
+                $isHistory = false;
                 for ($i = 0; $i < $diffInDays; $i++) {
                     $dateOff = Carbon::parse($messages['1'])->addDays($index);
                     if ($this->holiday($dateOff)) {
@@ -469,9 +510,10 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                             $arrivingReport->status = $dataInsert['status'];
                             $arrivingReport->save();
                         } else {
-                            ArrivingReport::create($dataInsert);
+                            $report = ArrivingReport::create($dataInsert);
 
                             if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
+                                $isHistory = true;
                                 $paid_off++;
                             }
                         }
@@ -479,8 +521,21 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
 
                     $index++;
                 }
+
+                $paid_off_before = $user->paid_off;
                 $user->paid_off = $user->paid_off - $paid_off;
                 $user->save();
+
+                if($isHistory) {
+                    HistoryUpdatePaidOff::create([
+                        HistoryUpdatePaidOff::USER_ID => $user->id,
+                        HistoryUpdatePaidOff::REPORT_ID => $report->id,
+                        HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
+                        HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
+                        HistoryUpdatePaidOff::PAID_OFF_AFTER => $user->paid_off
+                    ]);
+                }
+
                 return response()->json([
                     'response_type' => 'in_channel',
                     'text' => $user->name . ' ' . __('analytic.success'),

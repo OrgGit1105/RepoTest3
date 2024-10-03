@@ -9,6 +9,7 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\EmotionRepositoryInterface;
 use App\Repositories\Contracts\GithubEvenRepositoryInterface;
 use App\Repositories\Contracts\HistoryEditReportRepositoryInterface;
+use App\Repositories\Contracts\HistoryUpdatePaidOffRepositoryInterface;
 use App\Repositories\Contracts\ImageFaceRepositoryInterface;
 use App\Repositories\Contracts\PolicyRepositoryInterface;
 use App\Repositories\Contracts\RDSManagerRepositoryInterface;
@@ -27,6 +28,7 @@ use Repository\AnalyticRepository;
 use Repository\EmotionRepository;
 use Repository\GithubEvenRepository;
 use Repository\HistoryEditReportRepository;
+use Repository\HistoryUpdatePaidOffRepository;
 use Repository\ImageFaceRepository;
 use Repository\PolicyRepository;
 use Repository\RDSManagerRepository;
@@ -62,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
     $this->app->bind(VIAMRDSRepositoryInterface::class, VIAMRDSRepository::class);
     $this->app->bind(UploadFileRepositoryInterface::class, UploadFileRepository::class);
     $this->app->bind(GithubEvenRepositoryInterface::class, GithubEvenRepository::class);
+    $this->app->bind(HistoryUpdatePaidOffRepositoryInterface::class, HistoryUpdatePaidOffRepository::class);
 
       //Customer
     if ($this->app->environment('local', 'testing')) {
