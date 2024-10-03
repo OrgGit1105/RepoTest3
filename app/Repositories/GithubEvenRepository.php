@@ -99,7 +99,20 @@ class GithubEvenRepository extends BaseRepository implements GithubEvenRepositor
 
     private function getAlarmTopServerInfo($alarmDetails)
     {
-        $instanceId = $alarmDetails['Trigger']['Dimensions'][0]['value'];
+        $instanceId = null;
+        foreach ($alarmDetails['Trigger']['Dimensions'] as $dimension) {
+            if ($dimension['name'] === 'InstanceId') {
+                $instanceId = $dimension['value'];
+                break;
+            }
+        }
+
+        // Kiểm tra nếu không tìm thấy instanceId
+        if (!$instanceId) {
+            return null;
+        }
+
+
         $metricName = $alarmDetails['Trigger']['MetricName'];
         if ($this->isInstanceValid($instanceId)) {
             return $this->getInfoTopServer($instanceId, $metricName == 'mem_used_percent' ? 'MEM' : 'CPU')['StandardOutputContent'];
