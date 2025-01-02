@@ -45,11 +45,12 @@ class PaidOffWithMonthJob implements ShouldQueue
         foreach ($employees as $employee)
         {
             $dateStart = Carbon::parse($employee->entry_date);
-            $currentDate = Carbon::now();
-            $probationary_staff = Carbon::parse($employee->entry_date)->addMonth(2);
-            $threeMonthsLater = Carbon::parse($employee->entry_date)->addMonth(3);
-            $nextYear = Carbon::parse($employee->entry_date)->addYear();
-            $thirteenMonthsLater = Carbon::parse($employee->entry_date)->addMonth(13);
+            $currentDate = Carbon::now()->format('Y-m-d');
+            $startOfYear = Carbon::parse(Carbon::now()->format('Y') . '-01-01');
+            $probationary_staff = Carbon::parse($employee->entry_date)->addMonth(2)->format('Y-m-d');
+            $threeMonthsLater = Carbon::parse($employee->entry_date)->addMonth(3)->format('Y-m-d');
+            $nextYear = Carbon::parse($employee->entry_date)->addYear()->format('Y-m-d');
+            $thirteenMonthsLater = Carbon::parse($employee->entry_date)->addMonth(13)->format('Y-m-d');
             $paid_off_start = $employee->paid_off_start;
             $paid_off = $employee->paid_off;
             if ($currentDate < $nextYear) {
@@ -65,12 +66,15 @@ class PaidOffWithMonthJob implements ShouldQueue
                     else
                         $paid_off = ($paid_off_start > 0) ? ($paid_off_start + 1) : 3;
                 } else {
-                    $paid_off += 1;
+                    if($currentDate == $startOfYear->format('Y-m-d') && $paid_off < 0) {
+                        $paid_off = 1;
+                    } else {
+                        $paid_off += 1;
+                    }
                 }
             }
 
             if($currentDate >= $nextYear && $currentDate < $thirteenMonthsLater) {
-                $startOfYear = Carbon::parse($currentDate->format('Y') . '-01-01');
                 $monthsPassed = $startOfYear->diffInMonths($currentDate);
                 $paid_off += 12 - $monthsPassed;
             }
