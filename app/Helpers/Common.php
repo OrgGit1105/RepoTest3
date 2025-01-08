@@ -273,7 +273,7 @@ class Common
         $commands = [
             "if ! grep -q \"^$groupName:\" /etc/group; then sudo groupadd $groupName; fi",
             "sudo chown -R :$groupName /var/www/$projectName", // thư mục thuộc về group, thuộc sở hữu của người dùng root
-            "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
+//            "find /var/www/$projectName -type d -name \"storage\" -exec chmod -R 777 {} \;",
             "find /var/www/$projectName -type d -name \".git\" -exec chmod -R 777 {} \;",
             "find /var/www/$projectName -type d -path \"*/public/js\" -exec chmod -R 775 {} \;",
             "sudo chmod -R g+s /var/www/$projectName", // đảm bảo rằng tất cả các thư mục con được tạo trong đó sẽ kế thừa nhóm của thư mục gốc
