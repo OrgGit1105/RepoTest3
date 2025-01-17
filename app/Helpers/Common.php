@@ -122,6 +122,8 @@ class Common
                 $path = '/home/ec2-user/.nvm/versions/node/v14.5.0/bin/node'; //node của 240
                 break;
             case INSTANCE_ID_142:
+            case INSTANCE_ID_223:
+            case INSTANCE_ID_22:
                 $path = '/usr/bin/node';
                 break;
             case INSTANCE_ID_176:
@@ -283,26 +285,20 @@ class Common
         $commandAdd = [];
         $commandAddDefault = [
             "if id -u apache > /dev/null 2>&1; then sudo usermod -aG $groupName apache; fi", // thêm tk apache vào nhóm
+            "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
         ];
         switch ($instanceId) {
             case INSTANCE_ID_240:
                 $commandAdd = $commandAddDefault;
                 break;
             case INSTANCE_ID_142:
-                $commandAdd = array_merge($commandAddDefault, [
-                    "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
-                ]);
-                break;
             case INSTANCE_ID_235:
                 $commandAdd = array_merge($commandAddDefault, [
                     "if id -u admin > /dev/null 2>&1; then sudo usermod -aG $groupName admin; fi", // thêm tk admin vào nhóm
-                    "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
                 ]);
                 break;
-            case INSTANCE_ID_176:
-                $commandAdd = array_merge($commandAddDefault, [
-                    "if id -u ec2-user > /dev/null 2>&1; then sudo usermod -aG $groupName ec2-user; fi", // thêm tk ec2-user vào nhóm
-                ]);
+            default:
+                $commandAdd = array_merge($commandAddDefault, []);
                 break;
         }
 
