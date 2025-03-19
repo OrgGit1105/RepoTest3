@@ -185,251 +185,6 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
         }
     }
 
-    private function getInfoImage(array $attributes)
-    {
-        $rekognitionClient = $this->configRekognitionClient();
-        $createEmotions = [];
-        if (request()->hasFile('file')) {
-            // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
-            $checkImageMustOne = $rekognitionClient->detectFaces(
-                [
-                    'Image' => [
-                        'Bytes' => file_get_contents($attributes['file']),
-                    ],
-                    'Attributes' => ['EMOTIONS'],
-                ]
-            );
-            // Ảnh chỉ được phép một người
-            if (count($checkImageMustOne['FaceDetails']) != 1) {
-                return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
-            }
-            $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
-            $result = [];
-            try {
-                $result = $rekognitionClient->searchFacesByImage(
-                    [
-                        'CollectionId' => "WithoutMask",
-                        'Image' => [
-                            'Bytes' => file_get_contents($attributes['file']),
-                        ],
-                    ]
-                );
-            } catch (RekognitionException $ex) {
-                // Nếu không có lỗi thì tìm kiếm trong Collection WithMask
-                try {
-                    $result = $rekognitionClient->searchFacesByImage(
-                        [
-                            'CollectionId' => "WithMask",
-                            'Image' => [
-                                'Bytes' => file_get_contents($attributes['file']),
-                            ],
-                        ]
-                    );
-                } catch (RekognitionException $ex) {
-                    return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getAwsErrorMessage(), $ex->getAwsErrorMessage());
-                }
-            }
-        } else {
-            // Chuyển đổi dữ liệu Base64 thành định dạng binary
-            $imageData = $attributes['file'];
-
-            // Loại bỏ phần khai báo định dạng ảnh
-            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
-
-            // Giải mã chuỗi base64 thành dữ liệu binary
-            $imageData = base64_decode($imageData);
-
-            // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
-            $checkImageMustOne = $rekognitionClient->detectFaces(
-                [
-                    'Image' => [
-                        'Bytes' => $imageData,
-                    ],
-                    'Attributes' => ['EMOTIONS'],
-                ],
-        );
-            // Ảnh chỉ được phép một người
-            if (count($checkImageMustOne['FaceDetails']) != 1) {
-                return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
-            }
-            $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
-            $result = [];
-            try {
-                $result = $rekognitionClient->searchFacesByImage(
-                    [
-                        'CollectionId' => "WithoutMask",
-                        'Image' => [
-                            'Bytes' => $imageData,
-                        ],
-                    ]
-                );
-            } catch (RekognitionException $ex) {
-                // Nếu không có lỗi thì tìm kiếm trong Collection WithMask
-                try {
-                    $result = $rekognitionClient->searchFacesByImage(
-                        [
-                            'CollectionId' => "WithMask",
-                            'Image' => [
-                                'Bytes' => $imageData,
-                            ],
-                        ]
-                    );
-                } catch (RekognitionException $ex) {
-                    return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getAwsErrorMessage(), $ex->getAwsErrorMessage());
-                }
-            }
-        }
-        if ($result->get("FaceMatches") == []) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
-        }
-        $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
-        $image = $this->model->where("face_rekognition_id", $faceId)->first();
-        if ($image == null) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
-        }
-        $user = User::find($image->user_id);
-
-        if ($user == null) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login.false'));
-        }
-
-        if (!$user->getRoleVFace($user)) {
-            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login_not_granted'));
-        }
-        return ResponseService::responseJson(CODE_SUCCESS, compact('user', 'image', 'createEmotions'));
-    }
-
-    public function compareFace(array $attributes)
-    {
-        $timeNow = Carbon::now()->format('H:i:s');
-        $now = Carbon::now();
-
-        $dataImage = $this->getInfoImage($attributes);
-        if($dataImage->original['code'] != CODE_SUCCESS) {
-            return $dataImage;
-        }
-        $dataImage = $dataImage->original['data'];
-        $user = $dataImage['user'];
-        $image = $dataImage['image'];
-        $createEmotions = $dataImage['createEmotions'];
-
-        $dateNow = Carbon::now()->format('Y-m-d');
-        $morning = Carbon::parse('12:00')->format('H:i:s');
-        $afternoon = Carbon::parse('13:30')->format('H:i:s');
-        $isCheckIn = false;
-        $isCheckOut = false;
-        $checkInInfo = ArrivingReport::query()
-            ->whereDate("in_time", $dateNow)
-            ->where("user_id", $user->id)
-            ->where("type_date", config('analytic.type.work'))
-            ->whereNotNull('in_time')
-            ->whereNull('out_time')
-            ->first();
-        switch ($attributes['time']) {
-            case 'in':
-                // Kiểm tra nhân viên này hôm nay đã check in chưa?
-                $arrivingIn_time = ArrivingReport::query()
-                    ->whereDate("in_time", $dateNow)
-                    ->where("user_id", $user->id)
-                    ->where("type_date", config('analytic.type.work'))
-                    ->when($timeNow < $morning, function ($e) use($morning){
-                        $e->whereTime("in_time", "<", $morning);
-                    }, function ($e) use ($morning) {
-                        $e->whereTime('in_time', '>=', $morning);
-                    })->first();
-
-                if ($arrivingIn_time) {
-                    $isCheckIn = true;
-                } else {
-                    if($checkInInfo) {
-                        return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_out'), trans('api.arriving_report.need_check_out'));
-                    }
-
-                    $arrivingIn_time = new ArrivingReport();
-                    $arrivingIn_time->in_time = $now;
-                    $late = 0;
-                    if($now->hour < 12 && $now->between($now->copy()->setHour(9)->setMinute(1), $now->copy()->setHour(18)->setMinute(0))) {
-                        $late = 1;
-                    }
-                    $arrivingIn_time->late = $late;
-                    $arrivingIn_time->user_id = $user->id;
-                    $arrivingIn_time->link_face_in = $image->file;
-                    if (request()->hasFile('file')) {
-                        $arrivingIn_time->link_check_in = $this->saveImageFileForAWSs3($attributes['file'], "CheckIn");
-                    } else {
-                        $arrivingIn_time->link_check_in = $this->saveImage64ForAWSs3($attributes['file'], "CheckIn", $user->name);
-                    }
-                    $arrivingIn_time->type_date = 1;
-                    $arrivingIn_time->status = 1;
-                    $arrivingIn_time->created_at = Carbon::now();
-                    if (array_key_exists("registration_type", $attributes)) {
-                        $arrivingIn_time->registration_type = $attributes['registration_type'];
-                    }
-                    $arrivingIn_time->save();
-                    $this->saveEmotion($createEmotions, $arrivingIn_time->id, $user->id, 'in');
-                }
-                break;
-            case 'out':
-                // Kiểm tra nhân viên này hôm nay đã check out chưa?
-                $arrivingOut_time = ArrivingReport::query()
-                    ->whereDate("out_time", $dateNow)
-                    ->where("user_id", $user->id)
-                    ->where("type_date", config('analytic.type.work'))
-                    ->when($timeNow <= $afternoon, function ($e) use ($afternoon) {
-                        $e->whereTime("out_time", "<=", $afternoon);
-                    }, function ($e) use ($afternoon) {
-                        $e->whereTime('out_time', '>=', $afternoon);
-                    })->first();
-
-                if ($arrivingOut_time) {
-                    $isCheckOut = true;
-                } else {
-                    if ($checkInInfo) {
-                        $isCheckIn = true;
-                        // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
-                        $arrivingOut_time = $checkInInfo;
-                        $arrivingOut_time->user_id = $user->id;
-                        $arrivingOut_time->out_time = $now;
-                        $arrivingOut_time->link_face_out = $image->file;
-                        if (request()->hasFile('file')) {
-                            $arrivingOut_time->link_check_out = $this->saveImageFileForAWSs3($attributes['file'], "CheckOut");
-                        } else {
-                            $arrivingOut_time->link_check_out = $this->saveImage64ForAWSs3($attributes['file'], "CheckOut", $user->name);
-                        }
-                        $arrivingOut_time->type_date = 1;
-                        $arrivingOut_time->status = 1;
-                        $arrivingOut_time->updated_at = Carbon::now();
-                        if (array_key_exists("registration_type", $attributes)) {
-                            $arrivingOut_time->registration_type = $attributes['registration_type'];
-                        }
-                        $arrivingOut_time->save();
-                        $this->saveEmotion($createEmotions, $arrivingOut_time->id, $user->id, 'out');
-                    } else {
-                        return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST,trans('api.arriving_report.need_check_time_in'), trans('api.arriving_report.need_check_time_in'));
-                    }
-                }
-                break;
-        }
-
-        try {
-            $token = JWTAuth::fromUser($user);
-            $user->jwt_active = $token;
-            $user->save();
-        } catch (Exception $ex) {
-            return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getMessage());
-        }
-
-        return ResponseService::responseJson(200, [
-            'access_token' => "Bearer " . $token,
-            'profile' => new UserResource($user),
-            'in_time' => @$arrivingIn_time,
-            'is_check_in' => $isCheckIn,
-            'out_time' => @$arrivingOut_time,
-            'is_check_out' => $isCheckOut,
-            'imageLink' => config('services.aws.urlImage') . $image->file
-        ]);
-    }
-
     public function saveImageFileForAWSs3($file, $folder)
     {
         $name = time() . $file->getClientOriginalName();
@@ -605,5 +360,207 @@ class ImageFaceRepository extends BaseRepository implements ImageFaceRepositoryI
                 break;
         }
         return ResponseService::responseJson(CODE_SUCCESS, $msg);
+    }
+
+    public function compareFace(array $attributes)
+    {
+        $now = Carbon::now();
+        $timeNow = $now->format('H:i:s');
+        $dateNow = $now->format('Y-m-d');
+        $morning = '12:00:00';
+        $afternoon = '13:30:00';
+
+        // Lấy info từ ảnh
+        $dataImage = $this->getInfoImage($attributes);
+        if ($dataImage->original['code'] != CODE_SUCCESS) {
+            return $dataImage;
+        }
+
+        $dataImage = $dataImage->original['data'];
+        $user = $dataImage['user'];
+        $image = $dataImage['image'];
+        $createEmotions = $dataImage['createEmotions'];
+
+        $checkInInfo = ArrivingReport::query()
+            ->whereDate("in_time", $dateNow)
+            ->where("user_id", $user->id)
+            ->where("type_date", config('analytic.type.work'))
+            ->whereNotNull('in_time')
+            ->whereNull('out_time')
+            ->first();
+
+        $isCheckIn = false;
+        $isCheckOut = false;
+
+        if ($attributes['time'] === 'in') {
+            // Kiểm tra nhân viên này hôm nay đã check in chưa?
+            $arrivingIn_time = ArrivingReport::query()
+                ->whereDate("in_time", $dateNow)
+                ->where("user_id", $user->id)
+                ->where("type_date", config('analytic.type.work'))
+                ->when($timeNow < $morning, function ($e) use ($morning) {
+                    $e->whereTime("in_time", "<", $morning);
+                }, function ($e) use ($morning) {
+                    $e->whereTime('in_time', '>=', $morning);
+                })->first();
+
+            if ($arrivingIn_time) {
+                $isCheckIn = true;
+            } else {
+                if ($checkInInfo) {
+                    return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.arriving_report.need_check_out'));
+                }
+                $arrivingIn_time = new ArrivingReport([
+                    'in_time' => $now,
+                    'late' => ($now->hour < 12 && $now->between($now->copy()->setHour(9)->setMinute(1), $now->copy()->setHour(18)->setMinute(0))) ? 1 : 0,
+                    'user_id' => $user->id,
+                    'link_face_in' => $image->file,
+                    'type_date' => 1,
+                    'status' => 1,
+                    'created_at' => $now,
+                ]);
+
+                $arrivingIn_time->link_check_in = $this->saveImageToS3($attributes['file'], "CheckIn", $user->name);
+                if (array_key_exists("registration_type", $attributes)) {
+                    $arrivingIn_time->registration_type = $attributes['registration_type'];
+                }
+                $arrivingIn_time->save();
+                $this->saveEmotion($createEmotions, $arrivingIn_time->id, $user->id, 'in');
+            }
+        }
+
+        if ($attributes['time'] === 'out') {
+            // Kiểm tra nhân viên này hôm nay đã check out chưa?
+            $arrivingOut_time = ArrivingReport::query()
+                ->whereDate("out_time", $dateNow)
+                ->where("user_id", $user->id)
+                ->where("type_date", config('analytic.type.work'))
+                ->when($timeNow <= $afternoon, function ($e) use ($afternoon) {
+                    $e->whereTime("out_time", "<=", $afternoon);
+                }, function ($e) use ($afternoon) {
+                    $e->whereTime('out_time', '>=', $afternoon);
+                })->first();
+
+            if ($arrivingOut_time) {
+                $isCheckOut = true;
+            } else {
+                if ($checkInInfo) {
+                    $isCheckIn = true;
+                    // Nếu tìm thấy ngày check in ngày hôm nay thì cập nhật
+                    $arrivingOut_time = $checkInInfo;
+                    $arrivingOut_time->fill([
+                        'out_time' => $now,
+                        'type_date' => 1,
+                        'status' => 1,
+                        'updated_at' => $now,
+                    ]);
+                    $arrivingOut_time->link_check_out = $this->saveImageToS3($attributes['file'], "CheckOut", $user->name);
+                    if (array_key_exists("registration_type", $attributes)) {
+                        $arrivingOut_time->registration_type = $attributes['registration_type'];
+                    }
+                    $arrivingOut_time->save();
+                    $this->saveEmotion($createEmotions, $arrivingOut_time->id, $user->id, 'out');
+                } else {
+                    return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.arriving_report.need_check_time_in'));
+                }
+            }
+        }
+
+        try {
+            $token = JWTAuth::fromUser($user);
+            $user->jwt_active = $token;
+            $user->save();
+        } catch (Exception $ex) {
+            return ResponseService::responseJsonError(Response::HTTP_INTERNAL_SERVER_ERROR, $ex->getMessage());
+        }
+
+        return ResponseService::responseJson(200, [
+            'access_token' => "Bearer " . $token,
+            'profile' => new UserResource($user),
+            'in_time' => @$arrivingIn_time,
+            'is_check_in' => $isCheckIn,
+            'out_time' => @$arrivingOut_time,
+            'is_check_out' => $isCheckOut,
+            'imageLink' => config('services.aws.urlImage') . $image->file
+        ]);
+    }
+
+    private function getImageBytes($file)
+    {
+        if (request()->hasFile('file')) {
+            return file_get_contents($file);
+        } else {
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $file);
+            return base64_decode($imageData);
+        }
+    }
+
+    private function saveImageToS3($file, $type, $userName)
+    {
+        if (request()->hasFile('file')) {
+            return $this->saveImageFileForAWSs3($file, $type);
+        } else {
+            return $this->saveImage64ForAWSs3($file, $type, $userName);
+        }
+    }
+
+    private function getInfoImage(array $attributes)
+    {
+        $rekognitionClient = $this->configRekognitionClient();
+        // Đọc file image 1 lần duy nhất
+        $imageBytes = $this->getImageBytes($attributes['file']);
+        if (!$imageBytes) {
+            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, 'Image data invalid');
+        }
+
+        // Kiểm tra đảm bảo ảnh chỉ có một người, nếu ảnh có từ 2 người trở lên thì báo lỗi
+        $checkImageMustOne = $rekognitionClient->detectFaces(
+            [
+                'Image' => [
+                    'Bytes' => $imageBytes,
+                ],
+                'Attributes' => ['EMOTIONS'],
+            ]
+        );
+        // Ảnh chỉ được phép một người
+        if (count($checkImageMustOne['FaceDetails']) != 1) {
+            return ResponseService::responseJsonError(Response::HTTP_BAD_REQUEST, trans('api.image_face.must_one_person'), trans('api.image_face.must_one_person'));
+        }
+        $createEmotions = $checkImageMustOne['FaceDetails'][0]['Emotions'];
+
+        $result = null;
+        foreach (['WithoutMask', 'WithMask'] as $collection) {
+            try {
+                $result = $rekognitionClient->searchFacesByImage([
+                    'CollectionId' => $collection,
+                    'Image' => ['Bytes' => $imageBytes],
+                    'FaceMatchThreshold' => 85,
+                    'MaxFaces' => 1,
+                ]);
+                if (count($result->get("FaceMatches")) > 0) break;
+            } catch (RekognitionException $ex) {
+                continue;
+            }
+        }
+
+        if (!$result || count($result->get("FaceMatches")) == 0) {
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
+        }
+
+        $faceId = $result->get("FaceMatches")[0]["Face"]["FaceId"];
+        $image = $this->model->where("face_rekognition_id", $faceId)->first();
+        if ($image == null) {
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.image_face.face_compare_not_found'), trans('api.image_face.face_compare_not_found'));
+        }
+        $user = User::find($image->user_id);
+
+        if ($user == null) {
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login.false'));
+        }
+
+        if (!$user->getRoleVFace($user)) {
+            return ResponseService::responseJsonError(Response::HTTP_NOT_FOUND, trans('api.user.login_not_granted'));
+        }
+        return ResponseService::responseJson(CODE_SUCCESS, compact('user', 'image', 'createEmotions'));
     }
 }
