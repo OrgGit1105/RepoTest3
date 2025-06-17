@@ -8,6 +8,7 @@ return [
     'err_format_two_date' => 'Please write in correct format: date type (remote/take off/special), start date (YYYY-MM-DD), end date (YYYY-MM-DD), reason',
     'not_found_bot' => 'Bot is not active in this channel',
     'check_date' => 'Date must be greater than or equal to today',
+    'check_command' => "Please use one of the following commands: 'take off', 'take off morning', 'take off afternoon', 'remote', 'remote morning', 'remote afternoon'",
     'holiday' => 'Please choose the date again',
     'type' => [
         1 => 'Working',

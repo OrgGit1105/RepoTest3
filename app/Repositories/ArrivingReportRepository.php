@@ -15,6 +15,7 @@ use App\Models\HistoryUpdatePaidOff;
 use App\Models\User;
 use App\Repositories\Contracts\ArrivingReportRepositoryInterface;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use DateTime;
 use DateTimeZone;
 use Helper\ResponseService;
@@ -126,7 +127,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $checkPeriodMorning = $this->model
             ->where("user_id", $attributes['user_id'])
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use ($morning) {
                 $e->whereTime("in_time", "<", $morning);
             }, function ($e) use ($morning) {
                 $e->whereTime('in_time', '>=', $morning);
@@ -136,7 +137,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.in_time_exist'), trans('api.arriving_report.in_time_exist'));
         }
 
-        if($out_time) {
+        if ($out_time) {
             // Kiểm tra xem có cùng ngày không
             if ($in_time->format('Y-m-d') != $out_time->format('Y-m-d')) {
                 return ResponseService::responseJsonError(Response::HTTP_UNPROCESSABLE_ENTITY, trans('api.arriving_report.must_same_date'), trans('api.arriving_report.must_same_date'));
@@ -154,13 +155,13 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
                     $e->whereTime("out_time", "<=", $afternoon);
                 }, function ($e) use ($morning, $afternoon, $in_time) {
-                    $e->where(function ($e) use($afternoon, $morning, $in_time){
+                    $e->where(function ($e) use ($afternoon, $morning, $in_time) {
                         $e->whereTime('out_time', '>=', $afternoon)
-                        ->orWhere(function ($query) use ($morning, $in_time) {
-                            $query->whereNull('out_time')
-                                ->whereDate('in_time', $in_time)
-                                ->whereTime('in_time', '>=', $morning);
-                        });
+                            ->orWhere(function ($query) use ($morning, $in_time) {
+                                $query->whereNull('out_time')
+                                    ->whereDate('in_time', $in_time)
+                                    ->whereTime('in_time', '>=', $morning);
+                            });
                     });
                 })
                 ->first();
@@ -171,16 +172,16 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             $out_time = null;
         }
 
-        if($type_date == config('analytic.type.take off')) { // chỉ trừ paid_off với nhân viên chinh thuc
+        if ($type_date == config('analytic.type.take off')) { // chỉ trừ paid_off với nhân viên chinh thuc
             $user = User::query()->find($attributes['user_id']);
             $entry_date = Carbon::parse($user->entry_date)->addMonth(2);
             $day_off = Carbon::parse($in_time);
 
-            if($day_off >= $entry_date) {
+            if ($day_off >= $entry_date) {
                 $paid_off = $user->paid_off;
                 $paid_off_before = $paid_off;
 
-                if($in_time->diff($out_time)->h >= 8) {
+                if ($in_time->diff($out_time)->h >= 8) {
                     $paid_off = $paid_off - 1;
                 } else {
                     $paid_off = $paid_off - 0.5;
@@ -198,9 +199,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         $late = 0;
-        if($type_date == config('analytic.type.work')) {
+        if ($type_date == config('analytic.type.work')) {
             $checkin_time = Carbon::parse($in_time);
-            if($checkin_time->hour < 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
+            if ($checkin_time->hour < 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
                 $late = 1;
             }
         }
@@ -210,7 +211,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $attributes['late'] = $late;
 
         $report = parent::create($attributes);
-        if($history) {
+        if ($history) {
             $history->report_id = $report->id;
             $history->save();
         }
@@ -251,7 +252,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
             ->where("id", '!=', $id)
             ->where("user_id", $report->user_id)
             ->whereDate("in_time", $in_time->format('Y-m-d'))
-            ->when($in_time->format('H:i:s') < $morning, function ($e) use($morning){
+            ->when($in_time->format('H:i:s') < $morning, function ($e) use ($morning) {
                 $e->whereTime("in_time", "<", $morning);
             }, function ($e) use ($morning) {
                 $e->whereTime('in_time', '>=', $morning);
@@ -279,7 +280,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
                 ->when($out_time->format('H:i:s') <= $afternoon, function ($e) use ($afternoon) {
                     $e->whereTime("out_time", "<=", $afternoon);
                 }, function ($e) use ($morning, $afternoon, $in_time, $id) {
-                    $e->where(function ($query) use($morning, $afternoon, $in_time, $id) {
+                    $e->where(function ($query) use ($morning, $afternoon, $in_time, $id) {
                         $query->whereTime('out_time', '>=', $afternoon)
                             ->orWhere(function ($query) use ($morning, $afternoon, $in_time, $id) {
                                 $query->whereNull('out_time')
@@ -298,9 +299,9 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $this->updatePaidOff($report, $in_time, $out_time, $type_update);
 
         $late = 0;
-        if($type_update == config('analytic.type.work')) {
+        if ($type_update == config('analytic.type.work')) {
             $checkin_time = Carbon::parse($in_time);
-            if($checkin_time->hour <= 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
+            if ($checkin_time->hour <= 12 && $checkin_time->between($checkin_time->copy()->setHour(9)->setMinute(1), $checkin_time->copy()->setHour(18)->setMinute(0))) {
                 $late = 1;
             }
         }
@@ -314,7 +315,8 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         return ResponseService::responseJson(200, new BaseResource(parent::update($attributes, $id)));
     }
 
-    private function updatePaidOff($report, $in_time, $out_time, $type_update) {
+    private function updatePaidOff($report, $in_time, $out_time, $type_update)
+    {
         $type_take_off = config('analytic.type.take off');
         $user = User::query()->find($report->user_id);
         $entry_date = Carbon::parse($user->entry_date)->addMonth(2);
@@ -325,20 +327,20 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         $paid_off_before = $user->paid_off;
 
         //Update time với type date cũ và mới đều là take_off
-        if($type_update == $report->type_date && $report->type_date == $type_take_off) {
+        if ($type_update == $report->type_date && $report->type_date == $type_take_off) {
             $report_in_time = DateTime::createFromFormat('Y-m-d H:i:s', $report->in_time);
             $report_out_time = DateTime::createFromFormat('Y-m-d H:i:s', $report->out_time);
 
-            if($report_in_time != $in_time || $report_out_time != $out_time) {
-                if($is_official_report) {
-                    if($report_in_time->diff($report_out_time)->h >= 8){
+            if ($report_in_time != $in_time || $report_out_time != $out_time) {
+                if ($is_official_report) {
+                    if ($report_in_time->diff($report_out_time)->h >= 8) {
                         $user->paid_off = $user->paid_off + 1;
                     } else {
                         $user->paid_off = $user->paid_off + 0.5;
                     }
                 }
-                if($is_official_update) {
-                    if($in_time->diff($out_time)->h >= 8) {
+                if ($is_official_update) {
+                    if ($in_time->diff($out_time)->h >= 8) {
                         $user->paid_off = $user->paid_off - 1;
                     } else {
                         $user->paid_off = $user->paid_off - 0.5;
@@ -348,19 +350,19 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
 
         //update type từ take_off -> khác hoặc từ loại khác về take_off
-        if($type_update != $report->type_date) {
-            if($type_update == $type_take_off && $is_official_update) {
-                if($in_time->diff($out_time)->h >= 8) {
+        if ($type_update != $report->type_date) {
+            if ($type_update == $type_take_off && $is_official_update) {
+                if ($in_time->diff($out_time)->h >= 8) {
                     $user->paid_off = $user->paid_off - 1;
                 } else {
                     $user->paid_off = $user->paid_off - 0.5;
                 }
             }
-            if($report->type_date == $type_take_off && $is_official_report) {
+            if ($report->type_date == $type_take_off && $is_official_report) {
                 $in_time_report = DateTime::createFromFormat('Y-m-d H:i:s', $report->in_time);
                 $out_time_report = DateTime::createFromFormat('Y-m-d H:i:s', $report->out_time);
 
-                if($in_time_report->diff($out_time_report)->h >= 8) {
+                if ($in_time_report->diff($out_time_report)->h >= 8) {
                     $user->paid_off = $user->paid_off + 1;
                 } else {
                     $user->paid_off = $user->paid_off + 0.5;
@@ -369,7 +371,7 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
         }
         $user->save();
 
-        if($paid_off_before != $user->paid_off) {
+        if ($paid_off_before != $user->paid_off) {
             HistoryUpdatePaidOff::create([
                 HistoryUpdatePaidOff::USER_ID => $user->id,
                 HistoryUpdatePaidOff::REPORT_ID => $report->id,
@@ -384,167 +386,146 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     {
         try {
             // check channel
-            if ($input['channel_name'] != config('app.channel')) {
+            if ($input['channel_name'] !== config('app.channel')) {
                 return __('analytic.not_found_bot');
             }
 
             $messages = explode(',', str_replace(', ', ',', $input['text']));
+            if (count($messages) !== 3 && count($messages) !== 4) {
+                return __('analytic.err_format');
+            }
 
             $user = User::where('email', 'like', '%' . $input['user_name'] . '%')->first();
             if (!$user) {
                 return __('analytic.no_user');
             }
 
-            if (count($messages) != 3 && count($messages) != 4) {
-                return __('analytic.err_format');
+            $commands = ['take off', 'take off morning', 'take off afternoon', 'remote', 'remote morning', 'remote afternoon'];
+            if (!in_array($messages[0], $commands, true)) {
+                return __('analytic.check_command');
             }
 
-            if (!$this->validateDate($messages['1'])) {
-                return __('analytic.err_format_one_date');
+            $typeDate = $this->getTypeDate($messages[0]);
+            $officialStaff = Carbon::parse($user->entry_date)->addMonths(2);
+            if (count($messages) === 3) {
+                return $this->handleSingleDate($messages, $typeDate, $user, $officialStaff);
             }
 
-            if (Carbon::parse($messages['1'])->format('Y-m-d') < Carbon::now()->format('Y-m-d')) {
-                return __('analytic.check_date');
-            }
-
-            $official_staff = Carbon::parse($user->entry_date)->addMonth(2);
-            $dateOff = Carbon::parse($messages['1']);
-            if (count($messages) == 3) {
-//             if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-//                 return __('analytic.check_date');
-//             }
-                if (!$this->holiday($messages['1'])) {
-                    return __('analytic.holiday');
-                } else {
-                    $type_date = $this->getTypeDate($messages[0]);
-                    $arrivingReport = ArrivingReport::query()
-                        ->where('user_id', $user->id)
-                        ->where('in_time', $this->inTimeDate($messages['0'], $messages['1']))
-                        ->where('out_time', $this->outTimeDate($messages['0'], $messages['1']))
-                        ->where('type_date', $type_date)
-                        ->first();
-
-                    if($arrivingReport) {
-                        $arrivingReport->remark = $messages[2];
-                        $arrivingReport->status = 1;
-                        $arrivingReport->save();
-                    } else {
-                        $report = ArrivingReport::create([
-                            'user_id' => $user->id,
-                            'in_time' => $this->inTimeDate($messages['0'], $messages['1']),
-                            'out_time' => $this->outTimeDate($messages['0'], $messages['1']),
-                            'type_date' => $type_date,
-                            'remark' => $messages[2],
-                            'status' => 1,
-                        ]);
-                        if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
-                            $paid_off_before = $user->paid_off;
-
-                            if (Str::contains($messages[0], 'morning') || Str::contains($messages[0], 'afternoon')) {
-                                $paid_off = 0.5;
-                            } else {
-                                $paid_off = 1;
-                            }
-
-                            $user->paid_off = $user->paid_off - $paid_off;
-                            $user->save();
-
-                            HistoryUpdatePaidOff::create([
-                                HistoryUpdatePaidOff::USER_ID => $user->id,
-                                HistoryUpdatePaidOff::REPORT_ID => $report->id,
-                                HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
-                                HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
-                                HistoryUpdatePaidOff::PAID_OFF_AFTER => $user->paid_off
-                            ]);
-                        }
-                    }
-                    return response()->json([
-                        'response_type' => 'in_channel',
-                        'text' => $user->name . ' ' . __('analytic.success'),
-                    ]);
-                }
-            }
-
-            if (count($messages) == 4) {
-                if (!$this->validateDate($messages[1]) || !$this->validateDate($messages[2])) {
-                    return __('analytic.err_format_two_date');
-                }
-
-                // if (!(Carbon::parse(Carbon::now()->format('Y-m-d H:i:s'))->lte(Carbon::parse($messages['1'])->format('Y-m-d 08:30:00')))) {
-                //     return __('analytic.check_date');
-                // }
-
-                if ($messages['2'] < $messages['1'] || $messages['2'] == $messages['1']) {
-                    return __('analytic.date_err');
-                }
-
-                if (!$this->holiday($messages['1']) || !$this->holiday($messages['2'])) {
-                    return __('analytic.holiday');
-                }
-
-                $diffInDays = (Carbon::parse($messages['2'])->diffInDays($messages['1'])) + 1;
-                $index = 0;
-                $dataInsert = [];
-                $paid_off = 0;
-                $type_date = $this->getTypeDate($messages[0]);
-                $isHistory = false;
-                for ($i = 0; $i < $diffInDays; $i++) {
-                    $dateOff = Carbon::parse($messages['1'])->addDays($index);
-                    if ($this->holiday($dateOff)) {
-                        $dataInsert = [
-                            'user_id' => $user->id,
-                            'in_time' => $dateOff->format('Y-m-d 08:30:00'),
-                            'out_time' => $dateOff->format('Y-m-d 18:00:00'),
-                            'type_date' => $type_date,
-                            'remark' => $messages[3],
-                            'status' => 1,
-                        ];
-                        $arrivingReport = ArrivingReport::query()
-                            ->where('user_id', $dataInsert['user_id'])
-                            ->where('in_time', $dataInsert['in_time'])
-                            ->where('out_time', $dataInsert['out_time'])
-                            ->where('type_date', $dataInsert['type_date'])
-                            ->first();
-                        if($arrivingReport) {
-                            $arrivingReport->remark = $dataInsert['remark'];
-                            $arrivingReport->status = $dataInsert['status'];
-                            $arrivingReport->save();
-                        } else {
-                            $report = ArrivingReport::create($dataInsert);
-
-                            if ($type_date == config('analytic.type.take off') && $dateOff >= $official_staff) {
-                                $isHistory = true;
-                                $paid_off++;
-                            }
-                        }
-                    }
-
-                    $index++;
-                }
-
-                $paid_off_before = $user->paid_off;
-                $user->paid_off = $user->paid_off - $paid_off;
-                $user->save();
-
-                if($isHistory) {
-                    HistoryUpdatePaidOff::create([
-                        HistoryUpdatePaidOff::USER_ID => $user->id,
-                        HistoryUpdatePaidOff::REPORT_ID => $report->id,
-                        HistoryUpdatePaidOff::TYPE => UPDATE_PAID_OFF_REGISTER_REPORT,
-                        HistoryUpdatePaidOff::PAID_OFF_BEFORE => $paid_off_before,
-                        HistoryUpdatePaidOff::PAID_OFF_AFTER => $user->paid_off
-                    ]);
-                }
-
-                return response()->json([
-                    'response_type' => 'in_channel',
-                    'text' => $user->name . ' ' . __('analytic.success'),
-                ]);
+            if (count($messages) === 4) {
+                return $this->handleMultiDate($messages, $user, $typeDate, $officialStaff);
             }
         } catch (\Exception $exception) {
             Log::info($exception->getMessage());
             return $exception->getMessage();
         }
+    }
+
+    private function handleSingleDate(array $messages, int $typeDate, User $user, Carbon $official)
+    {
+        [$command, $dateOff, $remark] = $messages;
+
+        if (!$this->validateDate($dateOff)) {
+            return __('analytic.err_format_one_date');
+        }
+
+        if (Carbon::now()->startOfDay()->gt(Carbon::parse($dateOff)->startOfDay())) {
+            return __('analytic.check_date');
+        }
+
+        if (!$this->holiday($dateOff)) {
+            return __('analytic.holiday');
+        } else {
+            $report = ArrivingReport::query()->firstOrCreate([
+                'user_id' => $user->id,
+                'in_time' => $this->inTimeDate($command, $dateOff),
+                'out_time' => $this->outTimeDate($command, $dateOff),
+                'type_date' => $typeDate
+            ], [
+                'remark' => $remark,
+                'status' => 1
+            ]);
+
+            if ($report->wasRecentlyCreated && $typeDate === config('analytic.type.take off') && Carbon::parse($dateOff)->startOfDay()->gte($official->startOfDay())) {
+                $paid = Str::contains($command, ['morning', 'afternoon']) ? 0.5 : 1;
+                $this->handlePaidOffDeduction($user, $report, $paid);
+            }
+            return $this->respondSuccess($user);
+        }
+    }
+
+    private function handleMultiDate(array $messages, User $user, int $typeDate, Carbon $officialDate)
+    {
+        [$command, $startDate, $endDate, $remark] = $messages;
+
+        if (!$this->validateDate($startDate) || !$this->validateDate($endDate)) {
+            return __('analytic.err_format_two_date');
+        }
+
+        if (Carbon::now()->startOfDay()->gt(Carbon::parse($startDate)->startOfDay())) {
+            return __('analytic.check_date');
+        }
+
+        if (Carbon::parse($endDate)->startOfDay()->lte(Carbon::parse($startDate)->startOfDay())) {
+            return __('analytic.date_err');
+        }
+
+        $paidOffCount = 0;
+        $report = null;
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        foreach ($period as $dateOff) {
+            if (!$this->holiday($dateOff)) {
+                continue;
+            }
+
+            $report = ArrivingReport::query()->firstOrCreate([
+                'user_id' => $user->id,
+                'in_time' => $this->inTimeDate($command, $dateOff),
+                'out_time' => $this->outTimeDate($command, $dateOff),
+                'type_date' => $typeDate
+            ], [
+                'remark' => $remark,
+                'status' => 1
+            ]);
+
+            if ($report->wasRecentlyCreated && $typeDate === config('analytic.type.take off') && $dateOff->startOfDay()->gte($officialDate->startOfDay())) {
+                $paidOffCount++;
+            }
+        }
+
+        if ($paidOffCount > 0) {
+            $this->handlePaidOffDeduction($user, $report, $paidOffCount);
+        }
+
+        return $this->respondSuccess($user);
+    }
+
+    private function handlePaidOffDeduction($user, $report, $paid)
+    {
+        $before = $user->paid_off;
+        $user->paid_off -= $paid;
+        $user->save();
+
+        $this->createHistory($user, $report, $before);
+    }
+
+    private function createHistory($user, $report, $before)
+    {
+        HistoryUpdatePaidOff::create([
+            'user_id' => $user->id,
+            'report_id' => $report->id,
+            'type' => UPDATE_PAID_OFF_REGISTER_REPORT,
+            'paid_off_before' => $before,
+            'paid_off_after' => $user->paid_off
+        ]);
+    }
+
+    private function respondSuccess($user)
+    {
+        return response()->json([
+            'response_type' => 'in_channel',
+            'text' => $user->name . ' ' . __('analytic.success'),
+        ]);
     }
 
     private function getTypeDate($messages)
@@ -661,15 +642,15 @@ class ArrivingReportRepository extends BaseRepository implements ArrivingReportR
     public function delete($id)
     {
         $data = $this->model->find($id);
-        if($data->type_date == config('analytic.type.take off')) {
+        if ($data->type_date == config('analytic.type.take off')) {
             $user = User::query()->find($data->user_id);
             $in_time = DateTime::createFromFormat('Y-m-d H:i:s', $data->in_time);
             $out_time = DateTime::createFromFormat('Y-m-d H:i:s', $data->out_time);
             $entry_date = Carbon::parse($user->entry_date);
             $day_off = Carbon::parse($data->in_time);
 
-            if($day_off >= $entry_date->addMonth(2)) {
-                if($in_time->diff($out_time)->h >= 8) {
+            if ($day_off >= $entry_date->addMonth(2)) {
+                if ($in_time->diff($out_time)->h >= 8) {
                     $user->paid_off = $user->paid_off + 1;
                 } else {
                     $user->paid_off = $user->paid_off + 0.5;
