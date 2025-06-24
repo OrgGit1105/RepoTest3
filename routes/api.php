@@ -85,6 +85,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api', 'middleware' => ['cors'
         Route::delete('viam_rds/{user_id}', [VIAMRDSController::class, 'destroy']);
 
     });
+    
 });
 
 Route::post('/slack/events', [SlackEventModeController::class, 'handleVerification']);
