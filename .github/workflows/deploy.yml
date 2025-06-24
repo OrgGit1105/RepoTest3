@@ -21,6 +21,7 @@ jobs:
         run: composer dump-autoload
       - name: Backend:Directory Permissions
         run: chmod -R 775 storage
+
       - name: Install dependencies
         run: n 14 npm install
 
