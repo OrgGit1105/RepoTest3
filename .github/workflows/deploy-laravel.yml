@@ -13,8 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Clear Composer Cache
-        run: composer clear-cache
       - name: Backend:Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
       - name: Dumpauto-load
