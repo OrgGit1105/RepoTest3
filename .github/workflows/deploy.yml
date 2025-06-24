@@ -40,3 +40,4 @@ jobs:
           fi
           rsync -rzu --delete --exclude=.env --exclude=storage --exclude=vendor ./ $USER@$HOST:$DEPLOYPATH
           ssh $USER@$HOST "cd $DEPLOYPATH && php82 artisan migrate --force"
+
