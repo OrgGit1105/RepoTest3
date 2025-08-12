@@ -1,109 +1,41 @@
-## Installation 
-### Server Requirements
+"""
+## 概要: Login error
+## 詳細:
+- **発生事象:** After the user enters the correct email and password, the system still reports an error and cannot log in.
+- **あるべき事象:** Allow system login when information is correct
+## タスクリスト:
+- Implement validation rules in LoginRequest.php to ensure email and password are required.
+- Update AuthController.php to handle login errors more effectively and provide clear feedback.
+- Ensure AuthRepository.php correctly processes login attempts and returns appropriate messages.
+- Modify login.js to handle error responses from the API and display them in the UI.
+- Enhance index.vue to show error messages when login fails.
+## 変更するファイル:
+- app/Http/Requests/LoginRequest.php
+- app/Http/Controllers/Api/AuthController.php
+- app/Repositories/AuthRepository.php
+- resources/js/api/login.js
+- resources/js/views/Login/index.vue
+## 参考資料:
+## メモ:
 
-- PHP version 7.4.11
-- MySQL version 8.0.21
-- Composer
-- Git
-- NPM
+---
 
-### === Change config PHP .int file  ====
-```terminal
-
-max_input_time=6000
-max_execution_time=1200
-upload_max_filesize=1G
-memory_limit=1G
-
-```
-### 1. Command install 
-
-```terminal
-chmod -R 777 storage/
-
-composer update
-
-#install npm
-npm install
-```
-
-### 2. Make environment configuration  
-```terminal
-cp .env.example .env
-
-cp .env.testing.example .env.testing
-
-```
-
-### 3. Configuration database connection in .env file
-```terminal
-DB_CONNECTION=mysql
-DB_HOST=localhost
-DB_PORT=3306
-DB_DATABASE=my_db_name
-DB_USERNAME=my_db_user
-DB_PASSWORD=my_password
-```
-
-### 4. Add more variable in .env file
-```terminal
-MIX_BASE_API="/api"
-MIX_LARAVEL_LANG="ja"
-MIX_SHOW_LANG=false
-MIX_STORE_IMAGE_URL= "${APP_URL}/storage/"
-```
-
-### 5. Migrate database and seeder
-
-```terminal
-php artisan key:generate
-
-php artisan jwt:secret
-
-php artisan l5-swagger:generate 
-
-php artisan reload:cache
-
-php artisan migrate
-
-php artisan db:seed
-```
-
-
-### 6. Run project in localhost
-
-```terminal
-npm run prod
-php artisan queue:w --timeout=0
-```
-
-### 7. Run test
-```terminal
-Before Unit test, setting enviroment test
---create file 'database.sqlite' in folder database
-
--For FE test
-npm run test
-
-After running the test, please refresh the DB to avoid heavy test data file and recreate the account. Because after each test run the user table will lose data.
-
-command to fresh test DB: php artisan migrate:fresh --seed --env=testing 
-
-#run unit test
--run all file Unit Test
-php artisan test
--run one file unit test
-php artisan test tests/Unit/Http/Controllers/+filename
-example:php artisan test tests/Unit/Http/Controllers/UserTest.php
-
-#install dusk test
-php artisan dusk:install
-
-# run IT test
--run one file
-php artisan dusk tests/Browser/+filename
-Example:php artisan dusk tests/Browser/UserTest.php
-
-# run system test
-php artisan dusk tests/Browser/Systems/SystemTest.php
-```
+## Tóm tắt: Lỗi đăng nhập
+## Chi tiết:
+- **Sự kiện xảy ra:** Sau khi người dùng nhập đúng email và mật khẩu, hệ thống vẫn báo lỗi và không thể đăng nhập.
+- **Sự kiện mong đợi:** Cho phép đăng nhập vào hệ thống khi thông tin đúng
+## Danh sách tác vụ:
+- Triển khai quy tắc xác thực trong LoginRequest.php để đảm bảo email và mật khẩu là bắt buộc.
+- Cập nhật AuthController.php để xử lý lỗi đăng nhập hiệu quả hơn và cung cấp phản hồi rõ ràng.
+- Đảm bảo AuthRepository.php xử lý đúng các nỗ lực đăng nhập và trả về thông điệp phù hợp.
+- Chỉnh sửa login.js để xử lý các phản hồi lỗi từ API và hiển thị chúng trong giao diện người dùng.
+- Nâng cao index.vue để hiển thị thông điệp lỗi khi đăng nhập thất bại.
+## Tệp tin cần thay đổi:
+- app/Http/Requests/LoginRequest.php
+- app/Http/Controllers/Api/AuthController.php
+- app/Repositories/AuthRepository.php
+- resources/js/api/login.js
+- resources/js/views/Login/index.vue
+## Tài liệu tham khảo:
+## Ghi chú:
+"""
